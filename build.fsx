@@ -52,7 +52,7 @@ let nugetDir = binDir @@ "nuget"
 let workingDir = binDir @@ "build"
 let libDir = workingDir @@ @"lib\net45\"
 let nugetExe = FullName @"src\.nuget\NuGet.exe"
-let slnFile = "./src/Akka.Persistence.PostgreSql.sln"
+let slnFile = "./src/Akka.Persistence.SqlServer.sln"
 
 open Fake.RestorePackageHelper
 Target "RestorePackages" (fun _ -> 
@@ -103,7 +103,7 @@ Target "CopyOutput" <| fun _ ->
         let src = "src" @@ project @@ @"bin/Release/"
         let dst = binDir @@ project
         CopyDir dst src allFiles
-    [ "Akka.Persistence.PostgreSql"
+    [ "Akka.Persistence.SqlServer"
       ]
     |> List.iter copyOutput
 
