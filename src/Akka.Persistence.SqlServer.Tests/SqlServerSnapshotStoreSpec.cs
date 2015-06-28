@@ -10,9 +10,9 @@ namespace Akka.Persistence.SqlServer.Tests
 
         static SqlServerSnapshotStoreSpec()
         {
-            var connectionString = ConfigurationManager.ConnectionStrings["TestDb"].ConnectionString;
+            var connectionString = ConfigurationManager.ConnectionStrings["TestDb"].ConnectionString.Replace(@"\", "\\");
 
-            SpecConfig = ConfigurationFactory.ParseString(@"
+            var specString = @"
                         akka.persistence {
                             publish-plugin-commands = on
                             snapshot-store {
@@ -23,10 +23,12 @@ namespace Akka.Persistence.SqlServer.Tests
                                     table-name = SnapshotStore
                                     schema-name = dbo
                                     auto-initialize = on
-                                    connection-string = """+ connectionString + @"""
+                                    connection-string = """ + connectionString + @"""
                                 }
                             }
-                        }");
+                        }";
+
+            SpecConfig = ConfigurationFactory.ParseString(specString);
 
 
             //need to make sure db is created before the tests start
