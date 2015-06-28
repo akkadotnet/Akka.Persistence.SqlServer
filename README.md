@@ -81,5 +81,8 @@ The SqlServer tests are packaged and run as part of the default "All" build task
 In order to run the tests, you must do the following things:
 
 1. Download and install SQL Server Express 2014 from: http://www.microsoft.com/en-us/server-cloud/Products/sql-server-editions/sql-server-express.aspx
-2. Install SQL Server Express with the default settings.  The default connection string uses the following credentials: `Data Source=localhost\SQLEXPRESS;Integrated Security=True`
-3. A custom app.config file can be used and needs to be placed in the same folder as the dll
+2. Install SQL Server Express with the default settings.
+3. Create a new user called `akkadotnet` with the password `akkadotnet` and give them rights to create new databases on the server.
+4. The default connection string uses the following credentials: `Data Source=localhost\SQLEXPRESS;Database=akka_persistence_tests;User Id=akkadotnet;
+Password=akkadotnet;`
+5. A custom app.config file can be used and needs to be placed in the same folder as the dll
