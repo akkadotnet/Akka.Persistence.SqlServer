@@ -23,7 +23,7 @@ namespace Akka.Persistence.SqlServer.Tests
                                     table-name = SnapshotStore
                                     schema-name = dbo
                                     auto-initialize = on
-                                    connection-string = """ + connectionString + @"""
+                                    connection-string = ""Data Source=localhost\\SQLEXPRESS;Database=akka_persistence_tests;User Id=akkadotnet;Password=akkadotnet;""
                                 }
                             }
                         }";
