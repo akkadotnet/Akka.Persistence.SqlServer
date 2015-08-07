@@ -153,6 +153,44 @@ module Nuget =
       | _ -> release.NugetVersion
 
 open Nuget
+open NuGet.Update
+
+//--------------------------------------------------------------------------------
+// Upgrade nuget package versions for dev and production
+
+let updateNugetPackages _ =
+  printfn "Updating NuGet dependencies"
+
+  let getConfigFile preRelease =
+    match preRelease with
+    | true -> "src/.nuget/NuGet.Dev.Config" 
+    | false -> "src/.nuget/NuGet.Config" 
+
+  let getPackages project =
+    match project with
+    | "Akka.Persistence.SqlServer" -> ["Akka.Persistence";"Akka.Persistence.Sql.Common"]
+    | "Akka.Persistence.SqlServer.Tests" -> ["Akka.Persistence.TestKit";"Akka.Persistence.Sql.Common";]
+    | _ -> []
+
+  for projectFile in !! "src/**/*.csproj" do
+    printfn "Updating packages for %s" projectFile
+    let project = Path.GetFileNameWithoutExtension projectFile
+    let projectDir = Path.GetDirectoryName projectFile
+    let config = projectDir @@ "packages.config"
+
+    NugetUpdate
+        (fun p ->
+                { p with
+                    ConfigFile = Some (getConfigFile isPreRelease)
+                    Prerelease = true
+                    ToolPath = nugetExe
+                    RepositoryPath = "src/Packages"
+                    Ids = getPackages project
+                    }) config
+
+Target "UpdateDependencies" <| fun _ ->
+    printfn "Invoking updateNugetPackages"
+    updateNugetPackages()
 
 //--------------------------------------------------------------------------------
 // Clean nuget directory
@@ -383,7 +421,7 @@ Target "HelpDocs" <| fun _ ->
 //--------------------------------------------------------------------------------
 
 // build dependencies
-"Clean" ==> "AssemblyInfo" ==> "RestorePackages" ==> "Build" ==> "CopyOutput" ==> "BuildRelease"
+"Clean" ==> "AssemblyInfo" ==> "RestorePackages" ==> "UpdateDependencies" ==> "Build" ==> "CopyOutput" ==> "BuildRelease"
 
 // tests dependencies
 "CleanTests" ==> "RunTests"
