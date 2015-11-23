@@ -1,6 +1,7 @@
 ﻿using System.Configuration;
 using Akka.Configuration;
 using Akka.Persistence.TestKit.Journal;
+using Xunit.Abstractions;
 
 namespace Akka.Persistence.SqlServer.Tests
 {
@@ -35,8 +36,8 @@ namespace Akka.Persistence.SqlServer.Tests
             DbUtils.Initialize();
         }
 
-        public SqlServerJournalSpec()
-            : base(SpecConfig, "SqlServerJournalSpec")
+        public SqlServerJournalSpec(ITestOutputHelper output)
+            : base(SpecConfig, "SqlServerJournalSpec", output)
         {
             DbUtils.Clean();
             Initialize();
