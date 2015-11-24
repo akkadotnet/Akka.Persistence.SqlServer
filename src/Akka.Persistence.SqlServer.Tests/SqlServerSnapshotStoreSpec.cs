@@ -1,6 +1,7 @@
 ﻿using System.Configuration;
 using Akka.Configuration;
 using Akka.Persistence.TestKit.Snapshot;
+using Xunit.Abstractions;
 
 namespace Akka.Persistence.SqlServer.Tests
 {
@@ -35,8 +36,8 @@ namespace Akka.Persistence.SqlServer.Tests
             DbUtils.Initialize();
         }
 
-        public SqlServerSnapshotStoreSpec()
-            : base(SpecConfig, "SqlServerSnapshotStoreSpec")
+        public SqlServerSnapshotStoreSpec(ITestOutputHelper output)
+            : base(SpecConfig, "SqlServerSnapshotStoreSpec", output)
         {
             DbUtils.Clean();
             Initialize();

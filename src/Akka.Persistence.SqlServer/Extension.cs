@@ -39,8 +39,22 @@ namespace Akka.Persistence.SqlServer
     /// <summary>
     /// An actor system extension initializing support for SQL Server persistence layer.
     /// </summary>
-    public class SqlServerPersistenceExtension : IExtension
+    public class SqlServerPersistence : IExtension
     {
+        /// <summary>
+        /// Returns a default configuration for akka persistence SQLite-based journals and snapshot stores.
+        /// </summary>
+        /// <returns></returns>
+        public static Config DefaultConfiguration()
+        {
+            return ConfigurationFactory.FromResource<SqlServerPersistence>("Akka.Persistence.SqlServer.sql-server.conf");
+        }
+
+        public static SqlServerPersistence Get(ActorSystem system)
+        {
+            return system.WithExtension<SqlServerPersistence, SqlServerPersistenceProvider>();
+        }
+
         /// <summary>
         /// Journal-related settings loaded from HOCON configuration.
         /// </summary>
@@ -49,23 +63,23 @@ namespace Akka.Persistence.SqlServer
         /// <summary>
         /// Snapshot store related settings loaded from HOCON configuration.
         /// </summary>
-        public readonly SqlServerSnapshotSettings SnapshotStoreSettings;
+        public readonly SqlServerSnapshotSettings SnapshotSettings;
 
-        public SqlServerPersistenceExtension(ExtendedActorSystem system)
+        public SqlServerPersistence(ExtendedActorSystem system)
         {
-            system.Settings.InjectTopLevelFallback(SqlServerPersistence.DefaultConfiguration());
+            system.Settings.InjectTopLevelFallback(DefaultConfiguration());
 
             JournalSettings = new SqlServerJournalSettings(system.Settings.Config.GetConfig(SqlServerJournalSettings.ConfigPath));
-            SnapshotStoreSettings = new SqlServerSnapshotSettings(system.Settings.Config.GetConfig(SqlServerSnapshotSettings.ConfigPath));
+            SnapshotSettings = new SqlServerSnapshotSettings(system.Settings.Config.GetConfig(SqlServerSnapshotSettings.ConfigPath));
 
             if (JournalSettings.AutoInitialize)
             {
                 SqlServerInitializer.CreateSqlServerJournalTables(JournalSettings.ConnectionString, JournalSettings.SchemaName, JournalSettings.TableName);
             }
 
-            if (SnapshotStoreSettings.AutoInitialize)
+            if (SnapshotSettings.AutoInitialize)
             {
-                SqlServerInitializer.CreateSqlServerSnapshotStoreTables(SnapshotStoreSettings.ConnectionString, SnapshotStoreSettings.SchemaName, SnapshotStoreSettings.TableName);
+                SqlServerInitializer.CreateSqlServerSnapshotStoreTables(SnapshotSettings.ConnectionString, SnapshotSettings.SchemaName, SnapshotSettings.TableName);
             }
         }
     }
@@ -73,37 +87,11 @@ namespace Akka.Persistence.SqlServer
     /// <summary>
     /// Singleton class used to setup SQL Server backend for akka persistence plugin.
     /// </summary>
-    public class SqlServerPersistence : ExtensionIdProvider<SqlServerPersistenceExtension>
+    public class SqlServerPersistenceProvider : ExtensionIdProvider<SqlServerPersistence>
     {
-        public static readonly SqlServerPersistence Instance = new SqlServerPersistence();
-
-        /// <summary>
-        /// Initializes a SQL Server persistence plugin inside provided <paramref name="actorSystem"/>.
-        /// </summary>
-        public static void Init(ActorSystem actorSystem)
+        public override SqlServerPersistence CreateExtension(ExtendedActorSystem system)
         {
-            Instance.Apply(actorSystem);
-        }
-
-        private SqlServerPersistence() { }
-        
-        /// <summary>
-        /// Creates an actor system extension for akka persistence SQL Server support.
-        /// </summary>
-        /// <param name="system"></param>
-        /// <returns></returns>
-        public override SqlServerPersistenceExtension CreateExtension(ExtendedActorSystem system)
-        {
-            return new SqlServerPersistenceExtension(system);
-        }
-
-        /// <summary>
-        /// Returns a default configuration for akka persistence SQL Server-based journals and snapshot stores.
-        /// </summary>
-        /// <returns></returns>
-        public static Config DefaultConfiguration()
-        {
-            return ConfigurationFactory.FromResource<SqlServerPersistence>("Akka.Persistence.SqlServer.sql-server.conf");
+            return new SqlServerPersistence(system);
         }
     }
 }

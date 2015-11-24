@@ -10,10 +10,10 @@ namespace Akka.Persistence.SqlServer
             BEGIN
                 CREATE TABLE {0}.{1} (
 	                PersistenceID NVARCHAR(200) NOT NULL,
-                    CS_PID AS CHECKSUM(PersistenceID),
 	                SequenceNr BIGINT NOT NULL,
 	                IsDeleted BIT NOT NULL,
-                    PayloadType NVARCHAR(500) NOT NULL,
+                    Timestamp DATETIME2 NOT NULL,
+                    Manifest NVARCHAR(500) NOT NULL,
 	                Payload VARBINARY(MAX) NOT NULL
                     CONSTRAINT PK_{3} PRIMARY KEY (PersistenceID, SequenceNr)
                 );
@@ -27,10 +27,9 @@ namespace Akka.Persistence.SqlServer
             BEGIN
                 CREATE TABLE {0}.{1} (
 	                PersistenceID NVARCHAR(200) NOT NULL,
-                    CS_PID AS CHECKSUM(PersistenceID),
 	                SequenceNr BIGINT NOT NULL,
                     Timestamp DATETIME2 NOT NULL,
-                    SnapshotType NVARCHAR(500) NOT NULL,
+                    Manifest NVARCHAR(500) NOT NULL,
 	                Snapshot VARBINARY(MAX) NOT NULL
                     CONSTRAINT PK_{3} PRIMARY KEY (PersistenceID, SequenceNr)
                 );

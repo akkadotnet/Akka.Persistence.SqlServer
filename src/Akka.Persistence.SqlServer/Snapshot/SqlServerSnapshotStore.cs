@@ -8,21 +8,23 @@ namespace Akka.Persistence.SqlServer.Snapshot
     /// <summary>
     /// Actor used for storing incoming snapshots into persistent snapshot store backed by SQL Server database.
     /// </summary>
-    public class SqlServerSnapshotStore : DbSnapshotStore
+    public class SqlServerSnapshotStore : SqlSnapshotStore
     {
-        private readonly SqlServerSnapshotSettings _settings;
+        private readonly SqlServerPersistence  _extension;
 
-        public SqlServerSnapshotStore() : base()
+        public SqlServerSnapshotStore()
         {
-            _settings = SqlServerPersistence.Instance.Apply(Context.System).SnapshotStoreSettings;
-            QueryBuilder = new DefaultSnapshotQueryBuilder(_settings.SchemaName, _settings.TableName);
+            _extension = SqlServerPersistence.Get(Context.System);
+            QueryBuilder = new SqlServerSnapshotQueryBuilder(_extension.SnapshotSettings);
+            QueryMapper = new SqlServerQueryMapper(Context.System.Serialization);
         }
 
-        protected override SnapshotStoreSettings Settings { get { return _settings; } }
 
-        protected override DbConnection CreateDbConnection()
+        protected override DbConnection CreateDbConnection(string connectionString)
         {
-            return new SqlConnection(Settings.ConnectionString);
+            return new SqlConnection(connectionString);
         }
+
+        protected override SnapshotStoreSettings Settings { get { return _extension.SnapshotSettings; } }
     }
 }
