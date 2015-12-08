@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Configuration;
 using Akka.Actor;
 using Akka.Configuration;
 using Akka.Persistence.Sql.Common;
@@ -74,12 +75,20 @@ namespace Akka.Persistence.SqlServer
 
             if (JournalSettings.AutoInitialize)
             {
-                SqlServerInitializer.CreateSqlServerJournalTables(JournalSettings.ConnectionString, JournalSettings.SchemaName, JournalSettings.TableName);
+                var connectionString = string.IsNullOrEmpty(JournalSettings.ConnectionString)
+                    ? ConfigurationManager.ConnectionStrings[JournalSettings.ConnectionStringName].ConnectionString
+                    : JournalSettings.ConnectionString;
+
+                SqlServerInitializer.CreateSqlServerJournalTables(connectionString, JournalSettings.SchemaName, JournalSettings.TableName);
             }
 
             if (SnapshotSettings.AutoInitialize)
             {
-                SqlServerInitializer.CreateSqlServerSnapshotStoreTables(SnapshotSettings.ConnectionString, SnapshotSettings.SchemaName, SnapshotSettings.TableName);
+                var connectionString = string.IsNullOrEmpty(SnapshotSettings.ConnectionString)
+                    ? ConfigurationManager.ConnectionStrings[SnapshotSettings.ConnectionStringName].ConnectionString
+                    : SnapshotSettings.ConnectionString;
+
+                SqlServerInitializer.CreateSqlServerSnapshotStoreTables(connectionString, SnapshotSettings.SchemaName, SnapshotSettings.TableName);
             }
         }
     }

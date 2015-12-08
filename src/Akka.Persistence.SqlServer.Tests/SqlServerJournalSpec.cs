@@ -24,7 +24,7 @@ namespace Akka.Persistence.SqlServer.Tests
                                 table-name = EventJournal
                                 schema-name = dbo
                                 auto-initialize = on
-                                connection-string = ""Data Source=localhost\\SQLEXPRESS;Database=akka_persistence_tests;User Id=akkadotnet;Password=akkadotnet;""
+                                connection-string-name = ""TestDb""
                             }
                         }
                     }";
@@ -39,7 +39,6 @@ namespace Akka.Persistence.SqlServer.Tests
         public SqlServerJournalSpec(ITestOutputHelper output)
             : base(SpecConfig, "SqlServerJournalSpec", output)
         {
-            DbUtils.Clean();
             Initialize();
         }
 
