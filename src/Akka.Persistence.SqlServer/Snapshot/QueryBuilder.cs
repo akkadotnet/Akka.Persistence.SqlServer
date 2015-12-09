@@ -17,9 +17,9 @@ namespace Akka.Persistence.SqlServer.Snapshot
         {
             var schemaName = settings.SchemaName;
             var tableName = settings.TableName;
-            _deleteSql = @"DELETE FROM {0}.{1} WHERE CS_PID = CHECKSUM(@PersistenceId) ".QuoteSchemaAndTable(schemaName, tableName);
+            _deleteSql = @"DELETE FROM {0}.{1} WHERE PersistenceId = @PersistenceId ".QuoteSchemaAndTable(schemaName, tableName);
             _insertSql = @"INSERT INTO {0}.{1} (PersistenceId, SequenceNr, Timestamp, Manifest, Snapshot) VALUES (@PersistenceId, @SequenceNr, @Timestamp, @Manifest, @Snapshot)".QuoteSchemaAndTable(schemaName, tableName);
-            _selectSql = @"SELECT PersistenceId, SequenceNr, Timestamp, Manifest, Snapshot FROM {0}.{1} WHERE CS_PID = CHECKSUM(@PersistenceId)".QuoteSchemaAndTable(schemaName, tableName);
+            _selectSql = @"SELECT PersistenceId, SequenceNr, Timestamp, Manifest, Snapshot FROM {0}.{1} WHERE PersistenceId = @PersistenceId".QuoteSchemaAndTable(schemaName, tableName);
         }
 
         public DbCommand DeleteOne(string persistenceId, long sequenceNr, DateTime timestamp)

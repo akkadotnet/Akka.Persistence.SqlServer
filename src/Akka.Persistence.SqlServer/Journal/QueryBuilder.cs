@@ -23,7 +23,7 @@ namespace Akka.Persistence.SqlServer.Journal
             _tableName = tableName;
             _schemaName = schemaName;
 
-            _insertMessagesSql = "INSERT INTO {0}.{1} (PersistenceID, SequenceNr, IsDeleted, Manifest, Timestamp, Payload) VALUES (@PersistenceId, @SequenceNr, @IsDeleted, @Manifest, @Timestamp, @Payload)"
+            _insertMessagesSql = "INSERT INTO {0}.{1} (PersistenceID, SequenceNr, IsDeleted, Manifest, Payload, Timestamp) VALUES (@PersistenceId, @SequenceNr, @IsDeleted, @Manifest, @Payload, @Timestamp)"
                 .QuoteSchemaAndTable(_schemaName, _tableName);
             _selectHighestSequenceNrSql = @"SELECT MAX(SequenceNr) FROM {0}.{1} WHERE PersistenceID = @pid".QuoteSchemaAndTable(_schemaName, _tableName);
         }
@@ -37,7 +37,7 @@ namespace Akka.Persistence.SqlServer.Journal
                 .Where(x => !string.IsNullOrEmpty(x));
 
             var where = string.Join(" AND ", sqlized);
-            var sql = new StringBuilder("SELECT PersistenceID, SequenceNr, IsDeleted, Manifest, Timestamp, Payload FROM {0}.{1} ".QuoteSchemaAndTable(_schemaName, _tableName));
+            var sql = new StringBuilder("SELECT PersistenceID, SequenceNr, IsDeleted, Manifest, Payload, Timestamp FROM {0}.{1} ".QuoteSchemaAndTable(_schemaName, _tableName));
             if (!string.IsNullOrEmpty(where))
             {
                 sql.Append(" WHERE ").Append(where);
@@ -170,8 +170,8 @@ namespace Akka.Persistence.SqlServer.Journal
                     SequenceNr,
                     IsDeleted,
                     Manifest,
-                    Timestamp,
-                    Payload ", max != long.MaxValue ? "TOP " + max : string.Empty)
+                    Payload,
+                    Timestamp ", max != long.MaxValue ? "TOP " + max : string.Empty)
                 .Append(" FROM {0}.{1} WHERE PersistenceId = @pid".QuoteSchemaAndTable(_schemaName, _tableName));
 
             // since we guarantee type of fromSequenceNr, toSequenceNr and max

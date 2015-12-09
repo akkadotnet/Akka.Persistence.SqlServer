@@ -17,8 +17,8 @@ namespace Akka.Persistence.SqlServer
 	                Payload VARBINARY(MAX) NOT NULL
                     CONSTRAINT PK_{3} PRIMARY KEY (PersistenceID, SequenceNr)
                 );
-                CREATE INDEX IX_{3}_CS_PID ON {0}.{1}(CS_PID);
                 CREATE INDEX IX_{3}_SequenceNr ON {0}.{1}(SequenceNr);
+                CREATE INDEX IX_{3}_Timestamp ON {0}.{1}(Timestamp);
             END
             ";
 
@@ -33,7 +33,6 @@ namespace Akka.Persistence.SqlServer
 	                Snapshot VARBINARY(MAX) NOT NULL
                     CONSTRAINT PK_{3} PRIMARY KEY (PersistenceID, SequenceNr)
                 );
-                CREATE INDEX IX_{3}_CS_PID ON {0}.{1}(CS_PID);
                 CREATE INDEX IX_{3}_SequenceNr ON {0}.{1}(SequenceNr);
                 CREATE INDEX IX_{3}_Timestamp ON {0}.{1}(Timestamp);
             END
