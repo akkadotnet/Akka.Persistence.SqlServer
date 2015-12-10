@@ -10,15 +10,15 @@ namespace Akka.Persistence.SqlServer
             BEGIN
                 CREATE TABLE {0}.{1} (
 	                PersistenceID NVARCHAR(200) NOT NULL,
-                    CS_PID AS CHECKSUM(PersistenceID),
 	                SequenceNr BIGINT NOT NULL,
 	                IsDeleted BIT NOT NULL,
-                    PayloadType NVARCHAR(500) NOT NULL,
+                    Timestamp DATETIME2 NOT NULL,
+                    Manifest NVARCHAR(500) NOT NULL,
 	                Payload VARBINARY(MAX) NOT NULL
                     CONSTRAINT PK_{3} PRIMARY KEY (PersistenceID, SequenceNr)
                 );
-                CREATE INDEX IX_{3}_CS_PID ON {0}.{1}(CS_PID);
                 CREATE INDEX IX_{3}_SequenceNr ON {0}.{1}(SequenceNr);
+                CREATE INDEX IX_{3}_Timestamp ON {0}.{1}(Timestamp);
             END
             ";
 
@@ -27,14 +27,12 @@ namespace Akka.Persistence.SqlServer
             BEGIN
                 CREATE TABLE {0}.{1} (
 	                PersistenceID NVARCHAR(200) NOT NULL,
-                    CS_PID AS CHECKSUM(PersistenceID),
 	                SequenceNr BIGINT NOT NULL,
                     Timestamp DATETIME2 NOT NULL,
-                    SnapshotType NVARCHAR(500) NOT NULL,
+                    Manifest NVARCHAR(500) NOT NULL,
 	                Snapshot VARBINARY(MAX) NOT NULL
                     CONSTRAINT PK_{3} PRIMARY KEY (PersistenceID, SequenceNr)
                 );
-                CREATE INDEX IX_{3}_CS_PID ON {0}.{1}(CS_PID);
                 CREATE INDEX IX_{3}_SequenceNr ON {0}.{1}(SequenceNr);
                 CREATE INDEX IX_{3}_Timestamp ON {0}.{1}(Timestamp);
             END

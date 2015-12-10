@@ -40,16 +40,16 @@ SQL Server persistence plugin defines a default table schema used for both journ
 
 **EventJournal table**:
 
-    +---------------+--------+------------+-----------+---------------+----------------+
-    | PersistenceId | CS_PID | SequenceNr | IsDeleted |  PayloadType  |     Payload    |
-    +---------------+--------+------------+-----------+---------------+----------------+
-    | nvarchar(200) |  int   |   bigint   |    bit    | nvarchar(500) | varbinary(max) |
-    +---------------+--------+------------+-----------+---------------+----------------+
- 
+    +---------------+--------+------------+-----------+-----------+---------------+----------------+
+    | PersistenceId | CS_PID | SequenceNr | IsDeleted | Timestamp |    Manifest   |     Payload    |
+    +---------------+--------+------------+-----------+-----------+---------------+----------------+
+    | nvarchar(200) |  int   |   bigint   |    bit    | datetime2 | nvarchar(500) | varbinary(max) |
+    +---------------+--------+------------+-----------+-----------+---------------+----------------+
+
 **SnapshotStore table**:
- 
+
     +---------------+--------+------------+-----------+-----------+---------------+-----------------+
-    | PersistenceId | CS_PID | SequenceNr | Timestamp | IsDeleted | SnapshotType  |     Snapshot    |
+    | PersistenceId | CS_PID | SequenceNr | Timestamp | IsDeleted |   Manifest    |     Snapshot    |
     +---------------+--------+------------+-----------+-----------+---------------+-----------------+
     | nvarchar(200) |  int   |   bigint   | datetime2 |    bit    | nvarchar(500) |  varbinary(max) |
     +---------------+--------+------------+-----------+-----------+---------------+-----------------+
@@ -59,9 +59,9 @@ While most of the tables columns maps directly to persistence primitives and are
 Underneath Akka.Persistence.SqlServer uses a raw ADO.NET commands. You may choose not to use a dedicated built in ones, but to create your own being better fit for your use case. To do so, you have to create your own versions of `IJournalQueryBuilder` and `IJournalQueryMapper` (for custom journals) or `ISnapshotQueryBuilder` and `ISnapshotQueryMapper` (for custom snapshot store) and then attach inside journal, just like in the example below:
 
 ```csharp
-class MyCustomSqlServerJournal: Akka.Persistence.SqlServer.Journal.SqlServerJournal 
+class MyCustomSqlServerJournal: Akka.Persistence.SqlServer.Journal.SqlServerJournal
 {
-    public MyCustomSqlServerJournal() : base() 
+    public MyCustomSqlServerJournal() : base()
     {
         QueryBuilder = new MyCustomJournalQueryBuilder();
         QueryMapper = new MyCustomJournalQueryMapper();
