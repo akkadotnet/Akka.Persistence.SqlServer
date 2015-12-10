@@ -1,11 +1,16 @@
 #### 1.0.5 August 08 2015 ####
 
+- Changed tables schema: removed CS_PID column from journal and snapshot tables
+- Changed tables schema: added Timestamp column to journal table
+- Added compatibility with Persistent queries API
+- Added ability to specify connection string stored in \*.config files
+
 #### 1.0.4 August 07 2015 ####
 
 #### 1.0.3 June 12 2015 ####
 **Bugfix release for Akka.NET v1.0.2.**
 
-This release addresses an issue with Akka.Persistence.SqlServer and Akka.Persistence.PostgreSql where both packages were missing a reference to Akka.Persistence.Sql.Common. 
+This release addresses an issue with Akka.Persistence.SqlServer and Akka.Persistence.PostgreSql where both packages were missing a reference to Akka.Persistence.Sql.Common.
 
 In Akka.NET v1.0.3 we've packaged Akka.Persistence.Sql.Common into its own NuGet package and referenced it in the affected packages.
 
