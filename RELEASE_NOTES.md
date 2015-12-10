@@ -1,6 +1,7 @@
 #### 1.0.5 August 08 2015 ####
 
 - Changed tables schema: removed CS_PID column from journal and snapshot tables
+- Changed tables schema: renamed PayloadType column to Manifest for journal and snapshot tables
 - Changed tables schema: added Timestamp column to journal table
 - Added compatibility with Persistent queries API
 - Added ability to specify connection string stored in \*.config files
