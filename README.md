@@ -29,10 +29,12 @@ Both journal and snapshot store share the same configuration keys (however they 
 - `class` (string with fully qualified type name) - determines class to be used as a persistent journal. Default: *Akka.Persistence.SqlServer.Journal.SqlServerJournal, Akka.Persistence.SqlServer* (for journal) and *Akka.Persistence.SqlServer.Snapshot.SqlServerSnapshotStore, Akka.Persistence.SqlServer* (for snapshot store).
 - `plugin-dispatcher` (string with configuration path) - describes a message dispatcher for persistent journal. Default: *akka.actor.default-dispatcher*
 - `connection-string` - connection string used to access SQL Server database. Default: *none*.
+- `connection-string-name` - in case when connection-string is empty, this field specifies entry in the \*.config connection string section, from where connection string will be taken. Default: *none*.
 - `connection-timeout` - timespan determining default connection timeouts on database-related operations. Default: *30s*
 - `schema-name` - name of the database schema, where journal or snapshot store tables should be placed. Default: *dbo*
 - `table-name` - name of the table used by either journal or snapshot store. Default: *EventJournal* (for journal) or *SnapshotStore* (for snapshot store)
 - `auto-initialize` - flag determining if journal or snapshot store related tables should by automatically created when they have not been found in connected database. Default: *false*
+- `timestamp-provider` (journal only) - type of the object used to generate journal event timestamps. Default: *Akka.Persistence.Sql.Common.Journal.DefaultTimestampProvider, Akka.Persistence.Sql.Common*
 
 ### Custom SQL data queries
 
