@@ -41,7 +41,7 @@ SQL Server persistence plugin defines a default table schema used for both journ
 **EventJournal table**:
 
     +---------------+--------+------------+-----------+-----------+---------------+----------------+
-    | PersistenceId | CS_PID | SequenceNr | IsDeleted | Timestamp |  PayloadType  |     Payload    |
+    | PersistenceId | CS_PID | SequenceNr | IsDeleted | Timestamp |    Manifest   |     Payload    |
     +---------------+--------+------------+-----------+-----------+---------------+----------------+
     | nvarchar(200) |  int   |   bigint   |    bit    | datetime2 | nvarchar(500) | varbinary(max) |
     +---------------+--------+------------+-----------+-----------+---------------+----------------+
@@ -49,7 +49,7 @@ SQL Server persistence plugin defines a default table schema used for both journ
 **SnapshotStore table**:
 
     +---------------+--------+------------+-----------+-----------+---------------+-----------------+
-    | PersistenceId | CS_PID | SequenceNr | Timestamp | IsDeleted | SnapshotType  |     Snapshot    |
+    | PersistenceId | CS_PID | SequenceNr | Timestamp | IsDeleted |   Manifest    |     Snapshot    |
     +---------------+--------+------------+-----------+-----------+---------------+-----------------+
     | nvarchar(200) |  int   |   bigint   | datetime2 |    bit    | nvarchar(500) |  varbinary(max) |
     +---------------+--------+------------+-----------+-----------+---------------+-----------------+
