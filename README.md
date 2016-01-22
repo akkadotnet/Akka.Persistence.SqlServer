@@ -29,10 +29,12 @@ Both journal and snapshot store share the same configuration keys (however they 
 - `class` (string with fully qualified type name) - determines class to be used as a persistent journal. Default: *Akka.Persistence.SqlServer.Journal.SqlServerJournal, Akka.Persistence.SqlServer* (for journal) and *Akka.Persistence.SqlServer.Snapshot.SqlServerSnapshotStore, Akka.Persistence.SqlServer* (for snapshot store).
 - `plugin-dispatcher` (string with configuration path) - describes a message dispatcher for persistent journal. Default: *akka.actor.default-dispatcher*
 - `connection-string` - connection string used to access SQL Server database. Default: *none*.
+- `connection-string-name` - in case when connection-string is empty, this field specifies entry in the \*.config connection string section, from where connection string will be taken. Default: *none*.
 - `connection-timeout` - timespan determining default connection timeouts on database-related operations. Default: *30s*
 - `schema-name` - name of the database schema, where journal or snapshot store tables should be placed. Default: *dbo*
 - `table-name` - name of the table used by either journal or snapshot store. Default: *EventJournal* (for journal) or *SnapshotStore* (for snapshot store)
 - `auto-initialize` - flag determining if journal or snapshot store related tables should by automatically created when they have not been found in connected database. Default: *false*
+- `timestamp-provider` (journal only) - type of the object used to generate journal event timestamps. Default: *Akka.Persistence.Sql.Common.Journal.DefaultTimestampProvider, Akka.Persistence.Sql.Common*
 
 ### Custom SQL data queries
 
@@ -74,6 +76,28 @@ The final step is to setup your custom journal using akka config:
 ```
 akka.persistence.journal.sql-server.class = "MyModule.MyCustomSqlServerJournal, MyModule"
 ```
+
+### Migration from 1.0.4 up
+
+The number of schema changes occurred between versions 1.0.4 and 1.0.5, including:
+
+- EventJournal table got Timestamp column (used only for querying).
+- EventJournal table dropped CS_PID column - primary key now relies on PersistenceID and SequenceNr directly.
+- EventJournal and SnapshotStore tables have PayloadType column renamed to Manifest.
+
+In case of the problems you may migrate your existing database columns using following script:
+
+```sql
+-- use default GETDATE in case when you have existing events inside the journal
+ALTER TABLE dbo.EventJournal ADD Timestamp DATETIME2 NOT NULL DEFAULT GETDATE();
+ALTER TABLE dbo.EventJournal DROP CONSTRAINT PK_EventJournal;
+ALTER TABLE dbo.EventJournal DROP COLUMN CS_PID;
+ALTER TABLE dbo.EventJournal ADD CONSTRAINT PK_EventJournal PRIMARY KEY (PersistenceID, SequenceNr);
+sp_RENAME 'EventJournal.PayloadType', 'Manifest', 'COLUMN';
+
+sp_RENAME 'SnapshotStore.PayloadType', 'Manifest', 'COLUMN';
+```
+
 ### Tests
 
 The SqlServer tests are packaged and run as part of the default "All" build task.
