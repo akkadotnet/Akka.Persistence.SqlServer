@@ -1,4 +1,29 @@
-#### 1.0.6 December 10 2015 ####
+#### 1.0.6 January 22 2016 ####
+Upgraded core Akka.Persistence dependencies up to v1.0.6.
+
+Made additional schema changes to underlying SQL server table definition. Migration guide:
+
+**Migration from 1.0.4 up**
+
+The number of schema changes occurred between versions 1.0.4 and 1.0.5, including:
+
+- EventJournal table got Timestamp column (used only for querying).
+- EventJournal table dropped CS_PID column - primary key now relies on PersistenceID and SequenceNr directly.
+- EventJournal and SnapshotStore tables have PayloadType column renamed to Manifest.
+
+In case of the problems you may migrate your existing database columns using following script:
+
+```sql
+-- use default GETDATE in case when you have existing events inside the journal
+ALTER TABLE dbo.EventJournal ADD Timestamp DATETIME2 NOT NULL DEFAULT GETDATE();
+ALTER TABLE dbo.EventJournal DROP CONSTRAINT PK_EventJournal;
+ALTER TABLE dbo.EventJournal DROP COLUMN CS_PID;
+ALTER TABLE dbo.EventJournal ADD CONSTRAINT PK_EventJournal PRIMARY KEY (PersistenceID, SequenceNr);
+sp_RENAME 'EventJournal.PayloadType', 'Manifest', 'COLUMN';
+
+sp_RENAME 'SnapshotStore.PayloadType', 'Manifest', 'COLUMN';
+```
+
 
 #### 1.0.5 August 08 2015 ####
 
