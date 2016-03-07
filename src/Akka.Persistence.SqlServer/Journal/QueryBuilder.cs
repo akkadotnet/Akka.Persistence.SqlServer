@@ -116,6 +116,7 @@ namespace Akka.Persistence.SqlServer.Journal
         public DbCommand InsertBatchMessages(IPersistentRepresentation[] messages)
         {
             var command = new SqlCommand(_insertMessagesSql);
+
             command.Parameters.Add("@PersistenceId", SqlDbType.NVarChar);
             command.Parameters.Add("@SequenceNr", SqlDbType.BigInt);
             command.Parameters.Add("@IsDeleted", SqlDbType.Bit);
@@ -126,29 +127,11 @@ namespace Akka.Persistence.SqlServer.Journal
             return command;
         }
 
-        public DbCommand DeleteBatchMessages(string persistenceId, long toSequenceNr, bool permanent)
-        {
-            var sql = BuildDeleteSql(toSequenceNr, permanent);
-            var command = new SqlCommand(sql)
-            {
-                Parameters = { PersistenceIdToSqlParam(persistenceId) }
-            };
-
-            return command;
-        }
-
-        private string BuildDeleteSql(long toSequenceNr, bool permanent)
+        public DbCommand DeleteBatchMessages(string persistenceId, long toSequenceNr)
         {
             var sqlBuilder = new StringBuilder();
 
-            if (permanent)
-            {
-                sqlBuilder.Append("DELETE FROM {0}.{1} ".QuoteSchemaAndTable(_schemaName, _tableName));
-            }
-            else
-            {
-                sqlBuilder.Append("UPDATE {0}.{1} SET IsDeleted = 1 ".QuoteSchemaAndTable(_schemaName, _tableName));
-            }
+            sqlBuilder.Append("DELETE FROM {0}.{1} ".QuoteSchemaAndTable(_schemaName, _tableName));
 
             sqlBuilder.Append("WHERE PersistenceId = @pid");
 
@@ -157,8 +140,10 @@ namespace Akka.Persistence.SqlServer.Journal
                 sqlBuilder.Append(" AND SequenceNr <= ").Append(toSequenceNr);
             }
 
-            var sql = sqlBuilder.ToString();
-            return sql;
+            return new SqlCommand(sqlBuilder.ToString())
+            {
+                Parameters = { PersistenceIdToSqlParam(persistenceId) }
+            };
         }
 
         private string BuildSelectMessagesSql(long fromSequenceNr, long toSequenceNr, long max)
