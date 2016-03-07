@@ -11,8 +11,6 @@ namespace Akka.Persistence.SqlServer.Tests
 
         static SqlServerJournalSpec()
         {
-            var connectionString = ConfigurationManager.ConnectionStrings["TestDb"].ConnectionString.Replace(@"\", "\\");
-
             var specString = @"
                     akka.persistence {
                         publish-plugin-commands = on

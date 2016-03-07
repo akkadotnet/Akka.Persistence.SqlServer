@@ -11,15 +11,19 @@ namespace Akka.Persistence.SqlServer.Snapshot
     {
         private readonly string _deleteSql;
         private readonly string _insertSql;
+        private readonly string _updateSql;
         private readonly string _selectSql;
+        private readonly string _checkSnapshotSql;
 
         public SqlServerSnapshotQueryBuilder(SqlServerSnapshotSettings settings)
         {
             var schemaName = settings.SchemaName;
             var tableName = settings.TableName;
             _deleteSql = @"DELETE FROM {0}.{1} WHERE PersistenceId = @PersistenceId ".QuoteSchemaAndTable(schemaName, tableName);
+            _selectSql = @"SELECT TOP 1 PersistenceId, SequenceNr, Timestamp, Manifest, Snapshot FROM {0}.{1} WHERE PersistenceId = @PersistenceId".QuoteSchemaAndTable(schemaName, tableName);
             _insertSql = @"INSERT INTO {0}.{1} (PersistenceId, SequenceNr, Timestamp, Manifest, Snapshot) VALUES (@PersistenceId, @SequenceNr, @Timestamp, @Manifest, @Snapshot)".QuoteSchemaAndTable(schemaName, tableName);
-            _selectSql = @"SELECT PersistenceId, SequenceNr, Timestamp, Manifest, Snapshot FROM {0}.{1} WHERE PersistenceId = @PersistenceId".QuoteSchemaAndTable(schemaName, tableName);
+            _updateSql = @"UPDATE {0}.{1} SET PersistenceId = @PersistenceId, SequenceNr = @SequenceNr, Timestamp = @Timestamp, Manifest = @Manifest, Snapshot = @Snapshot WHERE SequenceNr = @SequenceNr AND PersistenceId = @PersistenceId".QuoteSchemaAndTable(schemaName, tableName);
+            _checkSnapshotSql = "SELECT COUNT(*) FROM {0}.{1} WHERE SequenceNr = @SequenceNr AND PersistenceId = @PersistenceId".QuoteSchemaAndTable(schemaName, tableName);
         }
 
         public DbCommand DeleteOne(string persistenceId, long sequenceNr, DateTime timestamp)
@@ -70,7 +74,15 @@ namespace Akka.Persistence.SqlServer.Snapshot
 
         public DbCommand InsertSnapshot(SnapshotEntry entry)
         {
-            var sqlCommand = new SqlCommand(_insertSql)
+            var sb = new StringBuilder();
+            sb.Append("IF (");
+            sb.Append(_checkSnapshotSql);
+            sb.Append(") > 0 ");
+            sb.Append(_updateSql);
+            sb.Append(" ELSE ");
+            sb.Append(_insertSql);
+
+            var sqlCommand = new SqlCommand(sb.ToString())
             {
                 Parameters =
                 {
