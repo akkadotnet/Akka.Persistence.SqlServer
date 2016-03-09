@@ -16,6 +16,7 @@ namespace Akka.Persistence.SqlServer.Journal
         private readonly string _tableName;
 
         private readonly string _insertMessagesSql;
+        private readonly string _deleteSql;
         private readonly string _selectHighestSequenceNrSql;
 
         public SqlServerJournalQueryBuilder(string tableName, string schemaName, string metadataTable)
@@ -25,6 +26,8 @@ namespace Akka.Persistence.SqlServer.Journal
 
             _insertMessagesSql = "INSERT INTO {0}.{1} (PersistenceID, SequenceNr, IsDeleted, Manifest, Payload, Timestamp) VALUES (@PersistenceId, @SequenceNr, @IsDeleted, @Manifest, @Payload, @Timestamp)"
                 .QuoteSchemaAndTable(_schemaName, _tableName);
+
+            _deleteSql = "DELETE FROM {0}.{1} ".QuoteSchemaAndTable(_schemaName, _tableName);
 
             var sb = new StringBuilder("SELECT TOP 1 SequenceNr FROM ( ");
             sb.Append("SELECT SequenceNr FROM {0}.{1} WHERE PersistenceID = @PersistenceId UNION ".QuoteSchemaAndTable(_schemaName, metadataTable));
@@ -142,7 +145,7 @@ namespace Akka.Persistence.SqlServer.Journal
         {
             var sqlBuilder = new StringBuilder();
 
-            sqlBuilder.Append("DELETE FROM {0}.{1} ".QuoteSchemaAndTable(_schemaName, _tableName));
+            sqlBuilder.Append(_deleteSql);
 
             sqlBuilder.Append("WHERE PersistenceId = @PersistenceId");
 
