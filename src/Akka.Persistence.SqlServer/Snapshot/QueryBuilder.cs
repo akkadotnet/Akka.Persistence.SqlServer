@@ -10,20 +10,28 @@ namespace Akka.Persistence.SqlServer.Snapshot
     internal class SqlServerSnapshotQueryBuilder : ISnapshotQueryBuilder
     {
         private readonly string _deleteSql;
-        private readonly string _insertSql;
-        private readonly string _updateSql;
         private readonly string _selectSql;
-        private readonly string _checkSnapshotSql;
+        private readonly string _insertSql;
 
         public SqlServerSnapshotQueryBuilder(SqlServerSnapshotSettings settings)
         {
-            var schemaName = settings.SchemaName;
-            var tableName = settings.TableName;
-            _deleteSql = @"DELETE FROM {0}.{1} WHERE PersistenceId = @PersistenceId ".QuoteSchemaAndTable(schemaName, tableName);
-            _selectSql = @"SELECT TOP 1 PersistenceId, SequenceNr, Timestamp, Manifest, Snapshot FROM {0}.{1} WHERE PersistenceId = @PersistenceId".QuoteSchemaAndTable(schemaName, tableName);
-            _insertSql = @"INSERT INTO {0}.{1} (PersistenceId, SequenceNr, Timestamp, Manifest, Snapshot) VALUES (@PersistenceId, @SequenceNr, @Timestamp, @Manifest, @Snapshot)".QuoteSchemaAndTable(schemaName, tableName);
-            _updateSql = @"UPDATE {0}.{1} SET PersistenceId = @PersistenceId, SequenceNr = @SequenceNr, Timestamp = @Timestamp, Manifest = @Manifest, Snapshot = @Snapshot WHERE SequenceNr = @SequenceNr AND PersistenceId = @PersistenceId".QuoteSchemaAndTable(schemaName, tableName);
-            _checkSnapshotSql = "SELECT COUNT(*) FROM {0}.{1} WHERE SequenceNr = @SequenceNr AND PersistenceId = @PersistenceId".QuoteSchemaAndTable(schemaName, tableName);
+            string schemaName = settings.SchemaName;
+            string tableName = settings.TableName;
+
+            _deleteSql = @"DELETE FROM {0}.{1} WHERE PersistenceId = @PersistenceId "
+                    .QuoteSchemaAndTable(settings.SchemaName, settings.TableName);
+            _selectSql = @"SELECT TOP 1 PersistenceId, SequenceNr, Timestamp, Manifest, Snapshot FROM {0}.{1} WHERE PersistenceId = @PersistenceId"
+                    .QuoteSchemaAndTable(schemaName, tableName);
+
+            var insertSqlBuilder = new StringBuilder();
+            insertSqlBuilder.Append("IF (SELECT COUNT(*) FROM {0}.{1} WHERE SequenceNr = @SequenceNr AND PersistenceId = @PersistenceId) > 0 "
+                .QuoteSchemaAndTable(schemaName, tableName));
+            insertSqlBuilder.Append(@"UPDATE {0}.{1} SET PersistenceId = @PersistenceId, SequenceNr = @SequenceNr, Timestamp = @Timestamp, Manifest = @Manifest, Snapshot = @Snapshot WHERE SequenceNr = @SequenceNr AND PersistenceId = @PersistenceId ELSE "
+                .QuoteSchemaAndTable(schemaName, tableName));
+            insertSqlBuilder.Append(@"INSERT INTO {0}.{1} (PersistenceId, SequenceNr, Timestamp, Manifest, Snapshot) VALUES (@PersistenceId, @SequenceNr, @Timestamp, @Manifest, @Snapshot)"
+                .QuoteSchemaAndTable(schemaName, tableName));
+
+            _insertSql = insertSqlBuilder.ToString();
         }
 
         public DbCommand DeleteOne(string persistenceId, long sequenceNr, DateTime timestamp)
@@ -53,6 +61,7 @@ namespace Akka.Persistence.SqlServer.Snapshot
         {
             var sqlCommand = new SqlCommand();
             sqlCommand.Parameters.Add(new SqlParameter("@PersistenceId", SqlDbType.NVarChar, persistenceId.Length) { Value = persistenceId });
+
             var sb = new StringBuilder(_deleteSql);
 
             if (maxSequenceNr < long.MaxValue && maxSequenceNr > 0)
@@ -74,15 +83,7 @@ namespace Akka.Persistence.SqlServer.Snapshot
 
         public DbCommand InsertSnapshot(SnapshotEntry entry)
         {
-            var sb = new StringBuilder();
-            sb.Append("IF (");
-            sb.Append(_checkSnapshotSql);
-            sb.Append(") > 0 ");
-            sb.Append(_updateSql);
-            sb.Append(" ELSE ");
-            sb.Append(_insertSql);
-
-            var sqlCommand = new SqlCommand(sb.ToString())
+            var sqlCommand = new SqlCommand(_insertSql)
             {
                 Parameters =
                 {

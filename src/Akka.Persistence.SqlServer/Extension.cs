@@ -16,9 +16,12 @@ namespace Akka.Persistence.SqlServer
         /// </summary>
         public bool AutoInitialize { get; private set; }
 
+        public string MetadataTableName { get; private set; }
+
         public SqlServerJournalSettings(Config config) : base(config)
         {
             AutoInitialize = config.GetBoolean("auto-initialize");
+            MetadataTableName = config.GetString("metadata-table-name");
         }
     }
 
@@ -80,6 +83,7 @@ namespace Akka.Persistence.SqlServer
                     : JournalSettings.ConnectionString;
 
                 SqlServerInitializer.CreateSqlServerJournalTables(connectionString, JournalSettings.SchemaName, JournalSettings.TableName);
+                SqlServerInitializer.CreateSqlServerMetadataTables(connectionString, JournalSettings.SchemaName, JournalSettings.MetadataTableName);
             }
 
             if (SnapshotSettings.AutoInitialize)

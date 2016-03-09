@@ -7,6 +7,7 @@ using Xunit.Abstractions;
 
 namespace Akka.Persistence.SqlServer.Tests
 {
+    [Collection("SqlServerSpec")]
     public class SqlServerSnapshotStoreSpec : SnapshotStoreSpec
     {
         private static readonly Config SpecConfig;
@@ -38,13 +39,10 @@ namespace Akka.Persistence.SqlServer.Tests
             DbUtils.Initialize();
         }
 
-        private readonly TestProbe _senderProbe;
-
         public SqlServerSnapshotStoreSpec(ITestOutputHelper output)
             : base(SpecConfig, "SqlServerSnapshotStoreSpec", output)
         {
             Initialize();
-            _senderProbe = CreateTestProbe();
         }
 
         protected override void Dispose(bool disposing)
@@ -56,6 +54,7 @@ namespace Akka.Persistence.SqlServer.Tests
         [Fact]
         public void SnapshotStore_should_save_and_overwrite_snapshot_with_same_sequence_number()
         {
+            TestProbe _senderProbe = CreateTestProbe();
             var md = Metadata[4];
             SnapshotStore.Tell(new SaveSnapshot(md, "s-5-modified"), _senderProbe.Ref);
             var md2 = _senderProbe.ExpectMsg<SaveSnapshotSuccess>().Metadata;

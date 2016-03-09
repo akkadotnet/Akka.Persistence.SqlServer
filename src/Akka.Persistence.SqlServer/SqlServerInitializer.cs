@@ -38,6 +38,17 @@ namespace Akka.Persistence.SqlServer
             END
             ";
 
+        private const string SqlMetadataFormat = @"
+            IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = '{2}' AND TABLE_NAME = '{3}')
+            BEGIN
+                CREATE TABLE {0}.{1} (
+	                PersistenceID NVARCHAR(200) NOT NULL,
+	                SequenceNr BIGINT NOT NULL,
+                    CONSTRAINT PK_{3} PRIMARY KEY (PersistenceID, SequenceNr)
+                );
+            END
+            ";
+
         /// <summary>
         /// Initializes a SQL Server journal-related tables according to 'schema-name', 'table-name' 
         /// and 'connection-string' values provided in 'akka.persistence.journal.sql-server' config.
@@ -58,6 +69,13 @@ namespace Akka.Persistence.SqlServer
             ExecuteSql(connectionString, sql);
         }
 
+
+        internal static void CreateSqlServerMetadataTables(string connectionString, string schemaName, string metadataTableName)
+        {
+            var sql = InitMetadataSql(metadataTableName, schemaName);
+            ExecuteSql(connectionString, sql);
+        }
+
         private static string InitJournalSql(string tableName, string schemaName = null)
         {
             if (string.IsNullOrEmpty(tableName)) throw new ArgumentNullException("tableName", "Akka.Persistence.SqlServer journal table name is required");
@@ -74,6 +92,16 @@ namespace Akka.Persistence.SqlServer
 
             var cb = new SqlCommandBuilder();
             return string.Format(SqlSnapshotStoreFormat, cb.QuoteIdentifier(schemaName), cb.QuoteIdentifier(tableName), cb.UnquoteIdentifier(schemaName), cb.UnquoteIdentifier(tableName));
+        }
+
+        private static string InitMetadataSql(string metadataTable, string schemaName)
+        {
+            if (string.IsNullOrEmpty(metadataTable)) throw new ArgumentNullException("metadataTable", "Akka.Persistence.SqlServer journal table name is required");
+            schemaName = schemaName ?? "dbo";
+
+            var cb = new SqlCommandBuilder();
+            return string.Format(SqlMetadataFormat, cb.QuoteIdentifier(schemaName), cb.QuoteIdentifier(metadataTable), cb.UnquoteIdentifier(schemaName), cb.UnquoteIdentifier(metadataTable));
+
         }
 
         private static void ExecuteSql(string connectionString, string sql)
