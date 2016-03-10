@@ -20,7 +20,7 @@ akka.persistence.snapshot-store.plugin = "akka.persistence.snapshot-store.sql-se
 akka.persistence.snapshot-store.sql-server.connection-string = "<database connection string>"
 ```
 
-Remember that connection string must be provided separately to Journal and Snapshot Store. To finish setup simply initialize plugin using: `SqlServerPersistence.Init(actorSystem);`
+Remember that connection string must be provided separately to Journal and Snapshot Store.
 
 ### Configuration
 
@@ -35,6 +35,7 @@ Both journal and snapshot store share the same configuration keys (however they 
 - `table-name` - name of the table used by either journal or snapshot store. Default: *EventJournal* (for journal) or *SnapshotStore* (for snapshot store)
 - `auto-initialize` - flag determining if journal or snapshot store related tables should by automatically created when they have not been found in connected database. Default: *false*
 - `timestamp-provider` (journal only) - type of the object used to generate journal event timestamps. Default: *Akka.Persistence.Sql.Common.Journal.DefaultTimestampProvider, Akka.Persistence.Sql.Common*
+- `metadata-table-name` - name of table used to store the highest sequence number.
 
 ### Custom SQL data queries
 
