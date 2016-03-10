@@ -20,7 +20,7 @@ akka.persistence.snapshot-store.plugin = "akka.persistence.snapshot-store.sql-se
 akka.persistence.snapshot-store.sql-server.connection-string = "<database connection string>"
 ```
 
-Remember that connection string must be provided separately to Journal and Snapshot Store. To finish setup simply initialize plugin using: `SqlServerPersistence.Init(actorSystem);`
+Remember that connection string must be provided separately to Journal and Snapshot Store.
 
 ### Configuration
 
@@ -35,6 +35,7 @@ Both journal and snapshot store share the same configuration keys (however they 
 - `table-name` - name of the table used by either journal or snapshot store. Default: *EventJournal* (for journal) or *SnapshotStore* (for snapshot store)
 - `auto-initialize` - flag determining if journal or snapshot store related tables should by automatically created when they have not been found in connected database. Default: *false*
 - `timestamp-provider` (journal only) - type of the object used to generate journal event timestamps. Default: *Akka.Persistence.Sql.Common.Journal.DefaultTimestampProvider, Akka.Persistence.Sql.Common*
+- `metadata-table-name` - name of table used to store the highest sequence number.
 
 ### Custom SQL data queries
 
@@ -42,21 +43,19 @@ SQL Server persistence plugin defines a default table schema used for both journ
 
 **EventJournal table**:
 
-    +---------------+--------+------------+-----------+-----------+---------------+----------------+
-    | PersistenceId | CS_PID | SequenceNr | IsDeleted | Timestamp |    Manifest   |     Payload    |
-    +---------------+--------+------------+-----------+-----------+---------------+----------------+
-    | nvarchar(200) |  int   |   bigint   |    bit    | datetime2 | nvarchar(500) | varbinary(max) |
-    +---------------+--------+------------+-----------+-----------+---------------+----------------+
+    +---------------+------------+-----------+-----------+---------------+----------------+
+    | PersistenceId | SequenceNr | IsDeleted | Timestamp |    Manifest   |     Payload    |
+    +---------------+------------+-----------+-----------+---------------+----------------+
+    | nvarchar(200) |  bigint    |    bit    | datetime2 | nvarchar(500) | varbinary(max) |
+    +---------------+------------+-----------+-----------+---------------+----------------+
 
 **SnapshotStore table**:
 
-    +---------------+--------+------------+-----------+-----------+---------------+-----------------+
-    | PersistenceId | CS_PID | SequenceNr | Timestamp | IsDeleted |   Manifest    |     Snapshot    |
-    +---------------+--------+------------+-----------+-----------+---------------+-----------------+
-    | nvarchar(200) |  int   |   bigint   | datetime2 |    bit    | nvarchar(500) |  varbinary(max) |
-    +---------------+--------+------------+-----------+-----------+---------------+-----------------+
-
-While most of the tables columns maps directly to persistence primitives and are required, CS_PID cached a PersistenceId checksum and server only for performance.
+    +---------------+------------+-----------+-----------+---------------+-----------------+
+    | PersistenceId | SequenceNr | Timestamp | IsDeleted |   Manifest    |     Snapshot    |
+    +---------------+------------+-----------+-----------+---------------+-----------------+
+    | nvarchar(200) |  bigint    | datetime2 |    bit    | nvarchar(500) |  varbinary(max) |
+    +---------------+------------+-----------+-----------+---------------+-----------------+
 
 Underneath Akka.Persistence.SqlServer uses a raw ADO.NET commands. You may choose not to use a dedicated built in ones, but to create your own being better fit for your use case. To do so, you have to create your own versions of `IJournalQueryBuilder` and `IJournalQueryMapper` (for custom journals) or `ISnapshotQueryBuilder` and `ISnapshotQueryMapper` (for custom snapshot store) and then attach inside journal, just like in the example below:
 
@@ -75,27 +74,6 @@ The final step is to setup your custom journal using akka config:
 
 ```
 akka.persistence.journal.sql-server.class = "MyModule.MyCustomSqlServerJournal, MyModule"
-```
-
-### Migration from 1.0.4 up
-
-The number of schema changes occurred between versions 1.0.4 and 1.0.5, including:
-
-- EventJournal table got Timestamp column (used only for querying).
-- EventJournal table dropped CS_PID column - primary key now relies on PersistenceID and SequenceNr directly.
-- EventJournal and SnapshotStore tables have PayloadType column renamed to Manifest.
-
-In case of the problems you may migrate your existing database columns using following script:
-
-```sql
--- use default GETDATE in case when you have existing events inside the journal
-ALTER TABLE dbo.EventJournal ADD Timestamp DATETIME2 NOT NULL DEFAULT GETDATE();
-ALTER TABLE dbo.EventJournal DROP CONSTRAINT PK_EventJournal;
-ALTER TABLE dbo.EventJournal DROP COLUMN CS_PID;
-ALTER TABLE dbo.EventJournal ADD CONSTRAINT PK_EventJournal PRIMARY KEY (PersistenceID, SequenceNr);
-sp_RENAME 'EventJournal.PayloadType', 'Manifest', 'COLUMN';
-
-sp_RENAME 'SnapshotStore.PayloadType', 'Manifest', 'COLUMN';
 ```
 
 ### Tests

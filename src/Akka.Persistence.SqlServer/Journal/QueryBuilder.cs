@@ -15,17 +15,25 @@ namespace Akka.Persistence.SqlServer.Journal
         private readonly string _schemaName;
         private readonly string _tableName;
 
-        private readonly string _selectHighestSequenceNrSql;
         private readonly string _insertMessagesSql;
+        private readonly string _deleteSql;
+        private readonly string _selectHighestSequenceNrSql;
 
-        public SqlServerJournalQueryBuilder(string tableName, string schemaName)
+        public SqlServerJournalQueryBuilder(string tableName, string schemaName, string metadataTable)
         {
             _tableName = tableName;
             _schemaName = schemaName;
 
             _insertMessagesSql = "INSERT INTO {0}.{1} (PersistenceID, SequenceNr, IsDeleted, Manifest, Payload, Timestamp) VALUES (@PersistenceId, @SequenceNr, @IsDeleted, @Manifest, @Payload, @Timestamp)"
                 .QuoteSchemaAndTable(_schemaName, _tableName);
-            _selectHighestSequenceNrSql = @"SELECT MAX(SequenceNr) FROM {0}.{1} WHERE PersistenceID = @pid".QuoteSchemaAndTable(_schemaName, _tableName);
+
+            _deleteSql = "DELETE FROM {0}.{1} ".QuoteSchemaAndTable(_schemaName, _tableName);
+
+            var sb = new StringBuilder("SELECT TOP 1 SequenceNr FROM ( ");
+            sb.Append("SELECT SequenceNr FROM {0}.{1} WHERE PersistenceID = @PersistenceId UNION ".QuoteSchemaAndTable(_schemaName, metadataTable));
+            sb.Append("SELECT SequenceNr FROM {0}.{1} WHERE PersistenceID = @PersistenceId".QuoteSchemaAndTable(_schemaName, tableName));
+            sb.Append(") as tbl ORDER BY SequenceNr DESC");
+            _selectHighestSequenceNrSql = sb.ToString();
         }
 
         public DbCommand SelectEvents(IEnumerable<IHint> hints)
@@ -75,7 +83,7 @@ namespace Akka.Persistence.SqlServer.Journal
                 var i = 0;
                 foreach (var persistenceId in range.PersistenceIds)
                 {
-                    var paramName = "@Pid" + (i++);
+                    var paramName = "@PersistenceId" + (i++);
                     sb.Append(paramName).Append(',');
                     command.Parameters.AddWithValue(paramName, persistenceId);
                 }
@@ -97,7 +105,10 @@ namespace Akka.Persistence.SqlServer.Journal
             var sql = BuildSelectMessagesSql(fromSequenceNr, toSequenceNr, max);
             var command = new SqlCommand(sql)
             {
-                Parameters = { PersistenceIdToSqlParam(persistenceId) }
+                Parameters =
+                {
+                    new SqlParameter("@PersistenceId", SqlDbType.NVarChar, persistenceId.Length) { Value = persistenceId }
+                }
             };
 
             return command;
@@ -107,7 +118,10 @@ namespace Akka.Persistence.SqlServer.Journal
         {
             var command = new SqlCommand(_selectHighestSequenceNrSql)
             {
-                Parameters = { PersistenceIdToSqlParam(persistenceId) }
+                Parameters =
+                {
+                    new SqlParameter("@PersistenceId", SqlDbType.NVarChar, persistenceId.Length) { Value = persistenceId }
+                }
             };
 
             return command;
@@ -116,6 +130,7 @@ namespace Akka.Persistence.SqlServer.Journal
         public DbCommand InsertBatchMessages(IPersistentRepresentation[] messages)
         {
             var command = new SqlCommand(_insertMessagesSql);
+
             command.Parameters.Add("@PersistenceId", SqlDbType.NVarChar);
             command.Parameters.Add("@SequenceNr", SqlDbType.BigInt);
             command.Parameters.Add("@IsDeleted", SqlDbType.Bit);
@@ -126,39 +141,26 @@ namespace Akka.Persistence.SqlServer.Journal
             return command;
         }
 
-        public DbCommand DeleteBatchMessages(string persistenceId, long toSequenceNr, bool permanent)
-        {
-            var sql = BuildDeleteSql(toSequenceNr, permanent);
-            var command = new SqlCommand(sql)
-            {
-                Parameters = { PersistenceIdToSqlParam(persistenceId) }
-            };
-
-            return command;
-        }
-
-        private string BuildDeleteSql(long toSequenceNr, bool permanent)
+        public DbCommand DeleteBatchMessages(string persistenceId, long toSequenceNr)
         {
             var sqlBuilder = new StringBuilder();
 
-            if (permanent)
-            {
-                sqlBuilder.Append("DELETE FROM {0}.{1} ".QuoteSchemaAndTable(_schemaName, _tableName));
-            }
-            else
-            {
-                sqlBuilder.Append("UPDATE {0}.{1} SET IsDeleted = 1 ".QuoteSchemaAndTable(_schemaName, _tableName));
-            }
+            sqlBuilder.Append(_deleteSql);
 
-            sqlBuilder.Append("WHERE PersistenceId = @pid");
+            sqlBuilder.Append("WHERE PersistenceId = @PersistenceId");
 
             if (toSequenceNr != long.MaxValue)
             {
                 sqlBuilder.Append(" AND SequenceNr <= ").Append(toSequenceNr);
             }
 
-            var sql = sqlBuilder.ToString();
-            return sql;
+            return new SqlCommand(sqlBuilder.ToString())
+            {
+                Parameters =
+                {
+                    new SqlParameter("@PersistenceId", SqlDbType.NVarChar, persistenceId.Length) { Value = persistenceId }
+                }
+            };
         }
 
         private string BuildSelectMessagesSql(long fromSequenceNr, long toSequenceNr, long max)
@@ -172,7 +174,7 @@ namespace Akka.Persistence.SqlServer.Journal
                     Manifest,
                     Payload,
                     Timestamp ", max != long.MaxValue ? "TOP " + max : string.Empty)
-                .Append(" FROM {0}.{1} WHERE PersistenceId = @pid".QuoteSchemaAndTable(_schemaName, _tableName));
+                .Append(" FROM {0}.{1} WHERE PersistenceId = @PersistenceId".QuoteSchemaAndTable(_schemaName, _tableName));
 
             // since we guarantee type of fromSequenceNr, toSequenceNr and max
             // we can inline them without risk of SQL injection
@@ -193,11 +195,6 @@ namespace Akka.Persistence.SqlServer.Journal
 
             var sql = sqlBuilder.ToString();
             return sql;
-        }
-
-        private static SqlParameter PersistenceIdToSqlParam(string persistenceId, string paramName = null)
-        {
-            return new SqlParameter(paramName ?? "@pid", SqlDbType.NVarChar, persistenceId.Length) { Value = persistenceId };
         }
     }
 }
