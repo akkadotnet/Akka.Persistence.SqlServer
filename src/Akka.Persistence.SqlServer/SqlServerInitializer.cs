@@ -9,9 +9,8 @@ namespace Akka.Persistence.SqlServer
             IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = '{2}' AND TABLE_NAME = '{3}')
             BEGIN
                 CREATE TABLE {0}.{1} (
-	                PersistenceID NVARCHAR(200) NOT NULL,
+	                PersistenceID NVARCHAR(255) NOT NULL,
 	                SequenceNr BIGINT NOT NULL,
-	                IsDeleted BIT NOT NULL,
                     Timestamp DATETIME2 NOT NULL,
                     Manifest NVARCHAR(500) NOT NULL,
 	                Payload VARBINARY(MAX) NOT NULL
@@ -26,7 +25,7 @@ namespace Akka.Persistence.SqlServer
             IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = '{2}' AND TABLE_NAME = '{3}')
             BEGIN
                 CREATE TABLE {0}.{1} (
-	                PersistenceID NVARCHAR(200) NOT NULL,
+	                PersistenceID NVARCHAR(255) NOT NULL,
 	                SequenceNr BIGINT NOT NULL,
                     Timestamp DATETIME2 NOT NULL,
                     Manifest NVARCHAR(500) NOT NULL,
@@ -42,7 +41,7 @@ namespace Akka.Persistence.SqlServer
             IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = '{2}' AND TABLE_NAME = '{3}')
             BEGIN
                 CREATE TABLE {0}.{1} (
-	                PersistenceID NVARCHAR(200) NOT NULL,
+	                PersistenceID NVARCHAR(255) NOT NULL,
 	                SequenceNr BIGINT NOT NULL,
                     CONSTRAINT PK_{3} PRIMARY KEY (PersistenceID, SequenceNr)
                 );
@@ -96,7 +95,7 @@ namespace Akka.Persistence.SqlServer
 
         private static string InitMetadataSql(string metadataTable, string schemaName)
         {
-            if (string.IsNullOrEmpty(metadataTable)) throw new ArgumentNullException("metadataTable", "Akka.Persistence.SqlServer journal table name is required");
+            if (string.IsNullOrEmpty(metadataTable)) throw new ArgumentNullException("metadataTable", "Akka.Persistence.SqlServer metadata table name is required");
             schemaName = schemaName ?? "dbo";
 
             var cb = new SqlCommandBuilder();
