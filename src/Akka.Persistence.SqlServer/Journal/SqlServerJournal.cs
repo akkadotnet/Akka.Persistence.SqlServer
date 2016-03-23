@@ -31,7 +31,6 @@ namespace Akka.Persistence.SqlServer.Journal
         {
             sqlCommand.Parameters["@PersistenceId"].Value = entry.PersistenceId;
             sqlCommand.Parameters["@SequenceNr"].Value = entry.SequenceNr;
-            sqlCommand.Parameters["@IsDeleted"].Value = entry.IsDeleted;
             sqlCommand.Parameters["@Manifest"].Value = entry.Manifest;
             sqlCommand.Parameters["@Timestamp"].Value = entry.Timestamp;
             sqlCommand.Parameters["@Payload"].Value = entry.Payload;

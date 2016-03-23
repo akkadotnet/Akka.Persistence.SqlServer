@@ -24,7 +24,7 @@ namespace Akka.Persistence.SqlServer.Journal
             _tableName = tableName;
             _schemaName = schemaName;
 
-            _insertMessagesSql = "INSERT INTO {0}.{1} (PersistenceID, SequenceNr, IsDeleted, Manifest, Payload, Timestamp) VALUES (@PersistenceId, @SequenceNr, @IsDeleted, @Manifest, @Payload, @Timestamp)"
+            _insertMessagesSql = "INSERT INTO {0}.{1} (PersistenceID, SequenceNr, Manifest, Payload, Timestamp) VALUES (@PersistenceId, @SequenceNr, @Manifest, @Payload, @Timestamp)"
                 .QuoteSchemaAndTable(_schemaName, _tableName);
 
             _deleteSql = "DELETE FROM {0}.{1} ".QuoteSchemaAndTable(_schemaName, _tableName);
@@ -45,7 +45,7 @@ namespace Akka.Persistence.SqlServer.Journal
                 .Where(x => !string.IsNullOrEmpty(x));
 
             var where = string.Join(" AND ", sqlized);
-            var sql = new StringBuilder("SELECT PersistenceID, SequenceNr, IsDeleted, Manifest, Payload, Timestamp FROM {0}.{1} ".QuoteSchemaAndTable(_schemaName, _tableName));
+            var sql = new StringBuilder("SELECT PersistenceID, SequenceNr, CONVERT(Bit, 0) as IsDeleted, Manifest, Payload, Timestamp FROM {0}.{1} ".QuoteSchemaAndTable(_schemaName, _tableName));
             if (!string.IsNullOrEmpty(where))
             {
                 sql.Append(" WHERE ").Append(where);
@@ -133,7 +133,6 @@ namespace Akka.Persistence.SqlServer.Journal
 
             command.Parameters.Add("@PersistenceId", SqlDbType.NVarChar);
             command.Parameters.Add("@SequenceNr", SqlDbType.BigInt);
-            command.Parameters.Add("@IsDeleted", SqlDbType.Bit);
             command.Parameters.Add("@Manifest", SqlDbType.NVarChar);
             command.Parameters.Add("@Timestamp", SqlDbType.DateTime2);
             command.Parameters.Add("@Payload", SqlDbType.VarBinary);
@@ -170,7 +169,7 @@ namespace Akka.Persistence.SqlServer.Journal
                 @"SELECT {0}
                     PersistenceID,
                     SequenceNr,
-                    IsDeleted,
+                    CONVERT(Bit, 0) as IsDeleted,
                     Manifest,
                     Payload,
                     Timestamp ", max != long.MaxValue ? "TOP " + max : string.Empty)
