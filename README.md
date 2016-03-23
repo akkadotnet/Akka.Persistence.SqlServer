@@ -114,7 +114,9 @@ class MyCustomSqlServerJournal: Akka.Persistence.SqlServer.Journal.SqlServerJour
 }
 ```
 
-### Migration from 1.0.6
+### Migration
+
+#### From 1.0.6
 ```SQL
 CREATE TABLE {your_metadata_table_name} (
   PersistenceID NVARCHAR(255) NOT NULL,
@@ -126,6 +128,18 @@ INSERT INTO {your_metadata_table_name} (PersistenceID, SequenceNr)
 SELECT PersistenceID, MAX(SequenceNr) as SequenceNr FROM {your_journal_table_name} GROUP BY PersistenceID;
 
 ALTER TABLE {your_journal_table_name} DROP COLUMN IsDeleted;
+
+ALTER TABLE {your_journal_table_name} ALTER COLUMN PersistenceID NVARCHAR(255) [NOT NULL];
+```
+
+#### From 1.0.4 to 1.0.5
+```SQL
+ALTER TABLE dbo.EventJournal ADD Timestamp DATETIME2 NOT NULL DEFAULT GETDATE();
+ALTER TABLE dbo.EventJournal DROP CONSTRAINT PK_EventJournal;
+ALTER TABLE dbo.EventJournal DROP COLUMN CS_PID;
+ALTER TABLE dbo.EventJournal ADD CONSTRAINT PK_EventJournal PRIMARY KEY (PersistenceID, SequenceNr);
+sp_RENAME 'EventJournal.PayloadType', 'Manifest', 'COLUMN';
+sp_RENAME 'SnapshotStore.PayloadType', 'Manifest', 'COLUMN';
 ```
 
 ### Tests
