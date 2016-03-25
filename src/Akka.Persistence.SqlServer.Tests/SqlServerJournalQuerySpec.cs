@@ -1,18 +1,16 @@
-﻿using Akka.Actor;
-using Akka.Configuration;
-using Akka.Persistence.TestKit.Journal;
-using Akka.TestKit;
+﻿using Akka.Configuration;
+using Akka.Persistence.Sql.Common.TestKit;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Akka.Persistence.SqlServer.Tests
 {
     [Collection("SqlServerSpec")]
-    public class SqlServerJournalSpec : JournalSpec
+    public class SqlServerJournalQuerySpec : SqlJournalQuerySpec
     {
         private static readonly Config SpecConfig;
 
-        static SqlServerJournalSpec()
+        static SqlServerJournalQuerySpec()
         {
             var specString = @"
                     akka.persistence {
@@ -28,7 +26,7 @@ namespace Akka.Persistence.SqlServer.Tests
                                 connection-string-name = ""TestDb""
                             }
                         }
-                    }";
+                    } " + TimestampConfig("akka.persistence.journal.sql-server");
 
             SpecConfig = ConfigurationFactory.ParseString(specString);
 
@@ -37,8 +35,8 @@ namespace Akka.Persistence.SqlServer.Tests
             DbUtils.Initialize();
         }
 
-        public SqlServerJournalSpec(ITestOutputHelper output)
-            : base(SpecConfig, "SqlServerJournalSpec", output)
+        public SqlServerJournalQuerySpec(ITestOutputHelper output)
+            : base(SpecConfig, "SqlServerJournalQuerySpec", output)
         {
             Initialize();
         }
@@ -47,21 +45,6 @@ namespace Akka.Persistence.SqlServer.Tests
         {
             base.Dispose(disposing);
             DbUtils.Clean();
-        }
-
-        [Fact]
-        public void Journal_should_not_reset_HighestSequenceNr_after_journal_cleanup()
-        {
-            TestProbe _receiverProbe = CreateTestProbe();
-            Journal.Tell(new ReplayMessages(0, long.MaxValue, long.MaxValue, Pid, _receiverProbe.Ref));
-            for (int i = 1; i <= 5; i++) _receiverProbe.ExpectMsg<ReplayedMessage>(m => IsReplayedMessage(m, i));
-            _receiverProbe.ExpectMsg<RecoverySuccess>(m => m.HighestSequenceNr == 5L);
-
-            Journal.Tell(new DeleteMessagesTo(Pid, long.MaxValue, _receiverProbe.Ref));
-            _receiverProbe.ExpectMsg<DeleteMessagesSuccess>(m => m.ToSequenceNr == long.MaxValue);
-
-            Journal.Tell(new ReplayMessages(0, long.MaxValue, long.MaxValue, Pid, _receiverProbe.Ref));
-            _receiverProbe.ExpectMsg<RecoverySuccess>(m => m.HighestSequenceNr == 5L);
         }
     }
 }

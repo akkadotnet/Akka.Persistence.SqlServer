@@ -24,10 +24,10 @@ namespace Akka.Persistence.SqlServer.Journal
             _tableName = tableName;
             _schemaName = schemaName;
 
-            _insertMessagesSql = "INSERT INTO {0}.{1} (PersistenceID, SequenceNr, Manifest, Payload, Timestamp) VALUES (@PersistenceId, @SequenceNr, @Manifest, @Payload, @Timestamp)"
+            _insertMessagesSql = "INSERT INTO {0}.{1} (PersistenceID, SequenceNr, IsDeleted, Manifest, Payload, Timestamp) VALUES (@PersistenceId, @SequenceNr, @IsDeleted, @Manifest, @Payload, @Timestamp)"
                 .QuoteSchemaAndTable(_schemaName, _tableName);
 
-            _deleteSql = "DELETE FROM {0}.{1} ".QuoteSchemaAndTable(_schemaName, _tableName);
+            _deleteSql = "DELETE FROM {0}.{1} WHERE PersistenceId = @PersistenceId".QuoteSchemaAndTable(_schemaName, _tableName);
 
             var sb = new StringBuilder("SELECT TOP 1 SequenceNr FROM ( ");
             sb.Append("SELECT SequenceNr FROM {0}.{1} WHERE PersistenceID = @PersistenceId UNION ".QuoteSchemaAndTable(_schemaName, metadataTable));
@@ -45,7 +45,7 @@ namespace Akka.Persistence.SqlServer.Journal
                 .Where(x => !string.IsNullOrEmpty(x));
 
             var where = string.Join(" AND ", sqlized);
-            var sql = new StringBuilder("SELECT PersistenceID, SequenceNr, CONVERT(Bit, 0) as IsDeleted, Manifest, Payload, Timestamp FROM {0}.{1} ".QuoteSchemaAndTable(_schemaName, _tableName));
+            var sql = new StringBuilder("SELECT PersistenceID, SequenceNr, IsDeleted, Manifest, Payload, Timestamp FROM {0}.{1} ".QuoteSchemaAndTable(_schemaName, _tableName));
             if (!string.IsNullOrEmpty(where))
             {
                 sql.Append(" WHERE ").Append(where);
@@ -64,13 +64,13 @@ namespace Akka.Persistence.SqlServer.Journal
 
                 if (range.From.HasValue)
                 {
-                    sb.Append(" Timestamp >= @TimestampFrom ");
+                    sb.Append(" [Timestamp] >= @TimestampFrom ");
                     command.Parameters.AddWithValue("@TimestampFrom", range.From.Value);
                 }
                 if (range.From.HasValue && range.To.HasValue) sb.Append("AND");
                 if (range.To.HasValue)
                 {
-                    sb.Append(" Timestamp < @TimestampTo ");
+                    sb.Append(" [Timestamp] < @TimestampTo ");
                     command.Parameters.AddWithValue("@TimestampTo", range.To.Value);
                 }
 
@@ -105,10 +105,7 @@ namespace Akka.Persistence.SqlServer.Journal
             var sql = BuildSelectMessagesSql(fromSequenceNr, toSequenceNr, max);
             var command = new SqlCommand(sql)
             {
-                Parameters =
-                {
-                    new SqlParameter("@PersistenceId", SqlDbType.NVarChar, persistenceId.Length) { Value = persistenceId }
-                }
+                Parameters = { PersistenceIdToSqlParam(persistenceId) }
             };
 
             return command;
@@ -118,10 +115,7 @@ namespace Akka.Persistence.SqlServer.Journal
         {
             var command = new SqlCommand(_selectHighestSequenceNrSql)
             {
-                Parameters =
-                {
-                    new SqlParameter("@PersistenceId", SqlDbType.NVarChar, persistenceId.Length) { Value = persistenceId }
-                }
+                Parameters = { PersistenceIdToSqlParam(persistenceId) }
             };
 
             return command;
@@ -133,6 +127,7 @@ namespace Akka.Persistence.SqlServer.Journal
 
             command.Parameters.Add("@PersistenceId", SqlDbType.NVarChar);
             command.Parameters.Add("@SequenceNr", SqlDbType.BigInt);
+            command.Parameters.Add("@IsDeleted", SqlDbType.Bit);
             command.Parameters.Add("@Manifest", SqlDbType.NVarChar);
             command.Parameters.Add("@Timestamp", SqlDbType.DateTime2);
             command.Parameters.Add("@Payload", SqlDbType.VarBinary);
@@ -146,8 +141,6 @@ namespace Akka.Persistence.SqlServer.Journal
 
             sqlBuilder.Append(_deleteSql);
 
-            sqlBuilder.Append("WHERE PersistenceId = @PersistenceId");
-
             if (toSequenceNr != long.MaxValue)
             {
                 sqlBuilder.Append(" AND SequenceNr <= ").Append(toSequenceNr);
@@ -155,10 +148,7 @@ namespace Akka.Persistence.SqlServer.Journal
 
             return new SqlCommand(sqlBuilder.ToString())
             {
-                Parameters =
-                {
-                    new SqlParameter("@PersistenceId", SqlDbType.NVarChar, persistenceId.Length) { Value = persistenceId }
-                }
+                Parameters = { PersistenceIdToSqlParam(persistenceId) }
             };
         }
 
@@ -169,7 +159,7 @@ namespace Akka.Persistence.SqlServer.Journal
                 @"SELECT {0}
                     PersistenceID,
                     SequenceNr,
-                    CONVERT(Bit, 0) as IsDeleted,
+                    IsDeleted,
                     Manifest,
                     Payload,
                     Timestamp ", max != long.MaxValue ? "TOP " + max : string.Empty)
@@ -194,6 +184,11 @@ namespace Akka.Persistence.SqlServer.Journal
 
             var sql = sqlBuilder.ToString();
             return sql;
+        }
+
+        private static SqlParameter PersistenceIdToSqlParam(string persistenceId, string paramName = null)
+        {
+            return new SqlParameter(paramName ?? "@PersistenceId", SqlDbType.NVarChar, persistenceId.Length) { Value = persistenceId };
         }
     }
 }

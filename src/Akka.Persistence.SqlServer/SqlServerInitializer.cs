@@ -12,6 +12,7 @@ namespace Akka.Persistence.SqlServer
 	                PersistenceID NVARCHAR(255) NOT NULL,
 	                SequenceNr BIGINT NOT NULL,
                     Timestamp DATETIME2 NOT NULL,
+                    IsDeleted BIT NOT NULL,
                     Manifest NVARCHAR(500) NOT NULL,
 	                Payload VARBINARY(MAX) NOT NULL
                     CONSTRAINT PK_{3} PRIMARY KEY (PersistenceID, SequenceNr)
@@ -68,7 +69,10 @@ namespace Akka.Persistence.SqlServer
             ExecuteSql(connectionString, sql);
         }
 
-
+        /// <summary>
+        /// Initializes a SQL Server journal-related tables according to 'schema-name', 'metadata-table-name' 
+        /// and 'connection-string' values provided in 'akka.persistence.journal.sql-server' config.
+        /// </summary>
         internal static void CreateSqlServerMetadataTables(string connectionString, string schemaName, string metadataTableName)
         {
             var sql = InitMetadataSql(metadataTableName, schemaName);

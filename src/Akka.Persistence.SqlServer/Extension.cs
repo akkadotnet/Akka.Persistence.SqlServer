@@ -6,7 +6,6 @@ using Akka.Persistence.Sql.Common;
 
 namespace Akka.Persistence.SqlServer
 {
-
     public class SqlServerJournalSettings : JournalSettings
     {
         public const string ConfigPath = "akka.persistence.journal.sql-server";
