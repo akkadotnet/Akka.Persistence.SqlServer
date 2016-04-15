@@ -81,6 +81,7 @@ CREATE TABLE {your_journal_table_name} (
   PersistenceID NVARCHAR(255) NOT NULL,
   SequenceNr BIGINT NOT NULL,
   Timestamp DATETIME2 NOT NULL,
+  IsDeleted BIT NOT NULL,
   Manifest NVARCHAR(500) NOT NULL,
   Payload VARBINARY(MAX) NOT NULL
   CONSTRAINT PK_{your_journal_table_name} PRIMARY KEY (PersistenceID, SequenceNr)
@@ -126,8 +127,6 @@ CREATE TABLE {your_metadata_table_name} (
 
 INSERT INTO {your_metadata_table_name} (PersistenceID, SequenceNr)
 SELECT PersistenceID, MAX(SequenceNr) as SequenceNr FROM {your_journal_table_name} GROUP BY PersistenceID;
-
-ALTER TABLE {your_journal_table_name} DROP COLUMN IsDeleted;
 
 ALTER TABLE {your_journal_table_name} ALTER COLUMN PersistenceID NVARCHAR(255) [NOT NULL];
 ```

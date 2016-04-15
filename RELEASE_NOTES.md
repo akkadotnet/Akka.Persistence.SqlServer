@@ -1,3 +1,6 @@
+#### 1.0.7 April 08 2016 ####
+Support for Akka 1.0.7
+ 
 #### 1.0.6 January 22 2016 ####
 Upgraded core Akka.Persistence dependencies up to v1.0.6.
 

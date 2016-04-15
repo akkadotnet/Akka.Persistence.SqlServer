@@ -14,10 +14,13 @@ namespace Akka.Persistence.SqlServer.Journal
     /// </summary>
     public class SqlServerJournalEngine : JournalDbEngine
     {
+        public readonly SqlServerJournalSettings SqlServerJournalSettings;
         public SqlServerJournalEngine(ActorSystem system)
             : base(system)
         {
-            QueryBuilder = new SqlServerJournalQueryBuilder(Settings.TableName, Settings.SchemaName, "Metadata");
+            SqlServerJournalSettings = new SqlServerJournalSettings(system.Settings.Config.GetConfig(SqlServerJournalSettings.ConfigPath));
+
+            QueryBuilder = new SqlServerJournalQueryBuilder(Settings.TableName, Settings.SchemaName, SqlServerJournalSettings.MetadataTableName);
         }
 
         protected override string JournalConfigPath { get { return SqlServerJournalSettings.ConfigPath; } }
@@ -31,6 +34,7 @@ namespace Akka.Persistence.SqlServer.Journal
         {
             sqlCommand.Parameters["@PersistenceId"].Value = entry.PersistenceId;
             sqlCommand.Parameters["@SequenceNr"].Value = entry.SequenceNr;
+            sqlCommand.Parameters["@IsDeleted"].Value = entry.IsDeleted;
             sqlCommand.Parameters["@Manifest"].Value = entry.Manifest;
             sqlCommand.Parameters["@Timestamp"].Value = entry.Timestamp;
             sqlCommand.Parameters["@Payload"].Value = entry.Payload;
@@ -59,11 +63,6 @@ namespace Akka.Persistence.SqlServer.Journal
             sb.Append(@"INSERT INTO {0}.{1} (PersistenceId, SequenceNr) VALUES (@PersistenceId, @SequenceNr)".QuoteSchemaAndTable(schemaName, tableName));
 
             _updateSequenceNrSql = sb.ToString();
-        }
-
-        public override Task<long> ReadHighestSequenceNrAsync(string persistenceId, long fromSequenceNr)
-        {
-            return DbEngine.ReadHighestSequenceNrAsync(persistenceId, fromSequenceNr);
         }
 
         protected override async Task DeleteMessagesToAsync(string persistenceId, long toSequenceNr)
