@@ -113,6 +113,7 @@
     </Compile>
     <Compile Include="DbUtils.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SqlServerConfigSpec.cs" />
     <Compile Include="SqlServerJournalQuerySpec.cs" />
     <Compile Include="Sql.Common.TestKit\SqlJournalQuerySpec.cs" />
     <Compile Include="SqlServerJournalSpec.cs" />
@@ -139,7 +140,9 @@
     <None Include="app.config">
       <SubType>Designer</SubType>
     </None>
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Akka.Persistence.SqlServer\Akka.Persistence.SqlServer.csproj">
