@@ -9,10 +9,10 @@ namespace Akka.Persistence.SqlServer
             IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = '{2}' AND TABLE_NAME = '{3}')
             BEGIN
                 CREATE TABLE {0}.{1} (
-	                PersistenceID NVARCHAR(200) NOT NULL,
+	                PersistenceID NVARCHAR(255) NOT NULL,
 	                SequenceNr BIGINT NOT NULL,
-	                IsDeleted BIT NOT NULL,
                     Timestamp DATETIME2 NOT NULL,
+                    IsDeleted BIT NOT NULL,
                     Manifest NVARCHAR(500) NOT NULL,
 	                Payload VARBINARY(MAX) NOT NULL
                     CONSTRAINT PK_{3} PRIMARY KEY (PersistenceID, SequenceNr)
@@ -26,7 +26,7 @@ namespace Akka.Persistence.SqlServer
             IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = '{2}' AND TABLE_NAME = '{3}')
             BEGIN
                 CREATE TABLE {0}.{1} (
-	                PersistenceID NVARCHAR(200) NOT NULL,
+	                PersistenceID NVARCHAR(255) NOT NULL,
 	                SequenceNr BIGINT NOT NULL,
                     Timestamp DATETIME2 NOT NULL,
                     Manifest NVARCHAR(500) NOT NULL,
@@ -35,6 +35,17 @@ namespace Akka.Persistence.SqlServer
                 );
                 CREATE INDEX IX_{3}_SequenceNr ON {0}.{1}(SequenceNr);
                 CREATE INDEX IX_{3}_Timestamp ON {0}.{1}(Timestamp);
+            END
+            ";
+
+        private const string SqlMetadataFormat = @"
+            IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = '{2}' AND TABLE_NAME = '{3}')
+            BEGIN
+                CREATE TABLE {0}.{1} (
+	                PersistenceID NVARCHAR(255) NOT NULL,
+	                SequenceNr BIGINT NOT NULL,
+                    CONSTRAINT PK_{3} PRIMARY KEY (PersistenceID, SequenceNr)
+                );
             END
             ";
 
@@ -58,6 +69,16 @@ namespace Akka.Persistence.SqlServer
             ExecuteSql(connectionString, sql);
         }
 
+        /// <summary>
+        /// Initializes a SQL Server journal-related tables according to 'schema-name', 'metadata-table-name' 
+        /// and 'connection-string' values provided in 'akka.persistence.journal.sql-server' config.
+        /// </summary>
+        internal static void CreateSqlServerMetadataTables(string connectionString, string schemaName, string metadataTableName)
+        {
+            var sql = InitMetadataSql(metadataTableName, schemaName);
+            ExecuteSql(connectionString, sql);
+        }
+
         private static string InitJournalSql(string tableName, string schemaName = null)
         {
             if (string.IsNullOrEmpty(tableName)) throw new ArgumentNullException("tableName", "Akka.Persistence.SqlServer journal table name is required");
@@ -74,6 +95,16 @@ namespace Akka.Persistence.SqlServer
 
             var cb = new SqlCommandBuilder();
             return string.Format(SqlSnapshotStoreFormat, cb.QuoteIdentifier(schemaName), cb.QuoteIdentifier(tableName), cb.UnquoteIdentifier(schemaName), cb.UnquoteIdentifier(tableName));
+        }
+
+        private static string InitMetadataSql(string metadataTable, string schemaName)
+        {
+            if (string.IsNullOrEmpty(metadataTable)) throw new ArgumentNullException("metadataTable", "Akka.Persistence.SqlServer metadata table name is required");
+            schemaName = schemaName ?? "dbo";
+
+            var cb = new SqlCommandBuilder();
+            return string.Format(SqlMetadataFormat, cb.QuoteIdentifier(schemaName), cb.QuoteIdentifier(metadataTable), cb.UnquoteIdentifier(schemaName), cb.UnquoteIdentifier(metadataTable));
+
         }
 
         private static void ExecuteSql(string connectionString, string sql)
