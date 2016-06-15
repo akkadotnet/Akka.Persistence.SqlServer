@@ -14,6 +14,7 @@ Remember that connection string must be provided separately to Journal and Snaps
 akka.persistence{
 
 	journal {
+		plugin = "akka.persistence.journal.sql-server"
 		sql-server {
 		
 			# qualified type name of the SQL Server persistence journal actor
@@ -46,6 +47,7 @@ akka.persistence{
 	}
 
 	snapshot-store {
+		plugin = "akka.persistence.snapshot-store.sql-server"
 		sql-server {
 		
 			# qualified type name of the SQL Server persistence journal actor
