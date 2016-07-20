@@ -1,10 +1,5 @@
-﻿//-----------------------------------------------------------------------
-// <copyright file="Extension.cs" company="Akka.NET Project">
-//     Copyright (C) 2009-2016 Lightbend Inc. <http://www.lightbend.com>
-//     Copyright (C) 2013-2016 Akka.NET project <https://github.com/akkadotnet/akka.net>
-// </copyright>
-//-----------------------------------------------------------------------
-
+﻿using System;
+using System.Configuration;
 using Akka.Actor;
 using Akka.Configuration;
 using Akka.Persistence.Sql.Common;
@@ -14,18 +9,33 @@ namespace Akka.Persistence.SqlServer
     public class SqlServerJournalSettings : JournalSettings
     {
         public const string ConfigPath = "akka.persistence.journal.sql-server";
-        
+
+        /// <summary>
+        /// Flag determining in in case of event journal table missing, it should be automatically initialized.
+        /// </summary>
+        public bool AutoInitialize { get; private set; }
+
+        public string MetadataTableName { get; private set; }
+
         public SqlServerJournalSettings(Config config) : base(config)
         {
+            AutoInitialize = config.GetBoolean("auto-initialize");
+            MetadataTableName = config.GetString("metadata-table-name");
         }
     }
 
     public class SqlServerSnapshotSettings : SnapshotStoreSettings
     {
         public const string ConfigPath = "akka.persistence.snapshot-store.sql-server";
-        
+
+        /// <summary>
+        /// Flag determining in in case of snapshot store table missing, it should be automatically initialized.
+        /// </summary>
+        public bool AutoInitialize { get; private set; }
+
         public SqlServerSnapshotSettings(Config config) : base(config)
         {
+            AutoInitialize = config.GetBoolean("auto-initialize");
         }
     }
 
@@ -51,20 +61,38 @@ namespace Akka.Persistence.SqlServer
         /// <summary>
         /// Journal-related settings loaded from HOCON configuration.
         /// </summary>
-        public readonly Config DefaultJournalConfig;
+        public readonly SqlServerJournalSettings JournalSettings;
 
         /// <summary>
         /// Snapshot store related settings loaded from HOCON configuration.
         /// </summary>
-        public readonly Config DefaultSnapshotConfig;
+        public readonly SqlServerSnapshotSettings SnapshotSettings;
 
         public SqlServerPersistence(ExtendedActorSystem system)
         {
-            var defaultConfig = DefaultConfiguration();
-            system.Settings.InjectTopLevelFallback(defaultConfig);
+            system.Settings.InjectTopLevelFallback(DefaultConfiguration());
 
-            DefaultJournalConfig = defaultConfig.GetConfig(SqlServerJournalSettings.ConfigPath);
-            DefaultSnapshotConfig = defaultConfig.GetConfig(SqlServerSnapshotSettings.ConfigPath);
+            JournalSettings = new SqlServerJournalSettings(system.Settings.Config.GetConfig(SqlServerJournalSettings.ConfigPath));
+            SnapshotSettings = new SqlServerSnapshotSettings(system.Settings.Config.GetConfig(SqlServerSnapshotSettings.ConfigPath));
+
+            if (JournalSettings.AutoInitialize)
+            {
+                var connectionString = string.IsNullOrEmpty(JournalSettings.ConnectionString)
+                    ? ConfigurationManager.ConnectionStrings[JournalSettings.ConnectionStringName].ConnectionString
+                    : JournalSettings.ConnectionString;
+
+                SqlServerInitializer.CreateSqlServerJournalTables(connectionString, JournalSettings.SchemaName, JournalSettings.TableName);
+                SqlServerInitializer.CreateSqlServerMetadataTables(connectionString, JournalSettings.SchemaName, JournalSettings.MetadataTableName);
+            }
+
+            if (SnapshotSettings.AutoInitialize)
+            {
+                var connectionString = string.IsNullOrEmpty(SnapshotSettings.ConnectionString)
+                    ? ConfigurationManager.ConnectionStrings[SnapshotSettings.ConnectionStringName].ConnectionString
+                    : SnapshotSettings.ConnectionString;
+
+                SqlServerInitializer.CreateSqlServerSnapshotStoreTables(connectionString, SnapshotSettings.SchemaName, SnapshotSettings.TableName);
+            }
         }
     }
 
