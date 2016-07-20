@@ -1,4 +1,11 @@
-﻿using System.Configuration;
+﻿//-----------------------------------------------------------------------
+// <copyright file="SqlServerSnapshotStoreSpec.cs" company="Akka.NET Project">
+//     Copyright (C) 2009-2016 Typesafe Inc. <http://www.typesafe.com>
+//     Copyright (C) 2013-2016 Akka.NET project <https://github.com/akkadotnet/akka.net>
+// </copyright>
+//-----------------------------------------------------------------------
+
+using System.Configuration;
 using Akka.Configuration;
 using Akka.Persistence.TestKit.Snapshot;
 using Akka.TestKit;
@@ -52,7 +59,7 @@ namespace Akka.Persistence.SqlServer.Tests
         }
 
         [Fact]
-        public void SnapshotStore_should_save_and_overwrite_snapshot_with_same_sequence_number()
+        public void SnapshotStore_should_save_and_overwrite_snapshot_with_same_sequence_number_unskipped()
         {
             TestProbe _senderProbe = CreateTestProbe();
             var md = Metadata[4];
