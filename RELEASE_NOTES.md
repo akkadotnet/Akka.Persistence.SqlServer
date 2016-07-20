@@ -1,3 +1,6 @@
+#### 1.1.1 July 20 2016 ####
+Support for Akka.NET 1.1 and Akka.Persistence.Query
+
 #### 1.0.8 May 31 2016 ####
 Support for Akka 1.0.7
  
