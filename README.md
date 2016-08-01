@@ -16,7 +16,7 @@ akka.persistence{
 	journal {
 		plugin = "akka.persistence.journal.sql-server"
 		sql-server {
-		
+
 			# qualified type name of the SQL Server persistence journal actor
 			class = "Akka.Persistence.SqlServer.Journal.SqlServerJournal, Akka.Persistence.SqlServer"
 
@@ -37,7 +37,7 @@ akka.persistence{
 
 			# should corresponding journal table be initialized automatically
 			auto-initialize = off
-			
+
 			# timestamp provider used for generation of journal entries timestamps
 			timestamp-provider = "Akka.Persistence.Sql.Common.Journal.DefaultTimestampProvider, Akka.Persistence.Sql.Common"
 
@@ -49,7 +49,7 @@ akka.persistence{
 	snapshot-store {
 		plugin = "akka.persistence.snapshot-store.sql-server"
 		sql-server {
-		
+
 			# qualified type name of the SQL Server persistence journal actor
 			class = "Akka.Persistence.SqlServer.Snapshot.SqlServerSnapshotStore, Akka.Persistence.SqlServer"
 
@@ -76,16 +76,17 @@ akka.persistence{
 ```
 ### Table Schema
 
-SQL Server persistence plugin defines a default table schema used for journal, snapshot store and metadate table.
+SQL Server persistence plugin defines a default table schema used for journal, snapshot store and metadata table.
 
 ```SQL
 CREATE TABLE {your_journal_table_name} (
   PersistenceID NVARCHAR(255) NOT NULL,
   SequenceNr BIGINT NOT NULL,
-  Timestamp DATETIME2 NOT NULL,
+  Timestamp BIGINT NOT NULL,
   IsDeleted BIT NOT NULL,
   Manifest NVARCHAR(500) NOT NULL,
-  Payload VARBINARY(MAX) NOT NULL
+  Payload VARBINARY(MAX) NOT NULL,
+	Tags NVARCHAR(100) NULL
   CONSTRAINT PK_{your_journal_table_name} PRIMARY KEY (PersistenceID, SequenceNr)
 );
 
@@ -119,7 +120,55 @@ class MyCustomSqlServerJournal: Akka.Persistence.SqlServer.Journal.SqlServerJour
 
 ### Migration
 
-#### From 1.0.6
+#### From 1.0.8 to 1.1.0
+```SQL
+-- helper function to convert between DATETIME2 and BIGINT as .NET ticks
+-- taken from: http://stackoverflow.com/questions/7386634/convert-sql-server-datetime-object-to-bigint-net-ticks
+CREATE FUNCTION [dbo].[Ticks] (@dt DATETIME)
+RETURNS BIGINT
+WITH SCHEMABINDING
+AS
+BEGIN 
+DECLARE @year INT = DATEPART(yyyy, @dt)
+DECLARE @month INT = DATEPART(mm, @dt)
+DECLARE @day INT = DATEPART(dd, @dt)
+DECLARE @hour INT = DATEPART(hh, @dt)
+DECLARE @min INT = DATEPART(mi, @dt)
+DECLARE @sec INT = DATEPART(ss, @dt)
+
+DECLARE @days INT =
+    CASE @month - 1
+        WHEN 0 THEN 0
+        WHEN 1 THEN 31
+        WHEN 2 THEN 59
+        WHEN 3 THEN 90
+        WHEN 4 THEN 120
+        WHEN 5 THEN 151
+        WHEN 6 THEN 181
+        WHEN 7 THEN 212
+        WHEN 8 THEN 243
+        WHEN 9 THEN 273
+        WHEN 10 THEN 304
+        WHEN 11 THEN 334
+        WHEN 12 THEN 365
+    END
+    IF  @year % 4 = 0 AND (@year % 100  != 0 OR (@year % 100 = 0 AND @year % 400 = 0)) AND @month > 2 BEGIN
+        SET @days = @days + 1
+    END
+RETURN CONVERT(bigint, 
+    ((((((((@year - 1) * 365) + ((@year - 1) / 4)) - ((@year - 1) / 100)) + ((@year - 1) / 400)) + @days) + @day) - 1) * 864000000000) +
+    ((((@hour * 3600) + CONVERT(bigint, @min) * 60) + CONVERT(bigint, @sec)) * 10000000) + (CONVERT(bigint, DATEPART(ms, @dt)) * CONVERT(bigint,10000));
+
+END;
+ALTER TABLE {your_journal_table_name} ADD COLUMN Timestamp_tmp BIGINT NULL;
+UPDATE {your_journal_table_name} SET Timestamp_tmp = dbo.Ticks(Timestamp);
+ALTER TABLE {your_journal_table_name} DROP COLUMN Timestamp;
+ALTER TABLE {your_journal_table_name} ALTER COLUMN Timestamp_tmp BIGINT NOT NULL;
+EXEC sp_RENAME '{your_journal_table_name}.Timestamp_tmp' , 'Timestamp', 'COLUMN';
+ALTER TABLE {your_journal_table_name} ADD COLUMN Tags NVARCHAR(100) NULL;
+```
+
+#### From 1.0.6 to 1.0.8
 ```SQL
 CREATE TABLE {your_metadata_table_name} (
   PersistenceID NVARCHAR(255) NOT NULL,
