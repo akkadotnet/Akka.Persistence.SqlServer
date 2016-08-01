@@ -112,8 +112,8 @@
       <HintPath>..\packages\Newtonsoft.Json.7.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Reactive.Streams, Version=1.0.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Reactive.Streams.1.0.1\lib\net40\Reactive.Streams.dll</HintPath>
+    <Reference Include="Reactive.Streams, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Reactive.Streams.1.0.0-RC1\lib\portable-net45+netcore45\Reactive.Streams.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -160,6 +160,7 @@
     <Compile Include="Query\SqlServerEventsByPersistenceIdSpec.cs" />
     <Compile Include="SqlServerJournalQuerySpec.cs" />
     <Compile Include="SqlServerJournalSpec.cs" />
+    <Compile Include="SqlServerSettingsSpec.cs" />
     <Compile Include="SqlServerSnapshotStoreSpec.cs" />
   </ItemGroup>
   <ItemGroup>

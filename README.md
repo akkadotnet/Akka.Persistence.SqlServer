@@ -12,11 +12,8 @@ Remember that connection string must be provided separately to Journal and Snaps
 
 ```hocon
 akka.persistence{
-
 	journal {
-		plugin = "akka.persistence.journal.sql-server"
 		sql-server {
-
 			# qualified type name of the SQL Server persistence journal actor
 			class = "Akka.Persistence.SqlServer.Journal.SqlServerJournal, Akka.Persistence.SqlServer"
 
@@ -37,7 +34,7 @@ akka.persistence{
 
 			# should corresponding journal table be initialized automatically
 			auto-initialize = off
-
+			
 			# timestamp provider used for generation of journal entries timestamps
 			timestamp-provider = "Akka.Persistence.Sql.Common.Journal.DefaultTimestampProvider, Akka.Persistence.Sql.Common"
 
@@ -47,9 +44,8 @@ akka.persistence{
 	}
 
 	snapshot-store {
-		plugin = "akka.persistence.snapshot-store.sql-server"
 		sql-server {
-
+		
 			# qualified type name of the SQL Server persistence journal actor
 			class = "Akka.Persistence.SqlServer.Snapshot.SqlServerSnapshotStore, Akka.Persistence.SqlServer"
 
@@ -86,7 +82,7 @@ CREATE TABLE {your_journal_table_name} (
   IsDeleted BIT NOT NULL,
   Manifest NVARCHAR(500) NOT NULL,
   Payload VARBINARY(MAX) NOT NULL,
-	Tags NVARCHAR(100) NULL
+  Tags NVARCHAR(100) NULL
   CONSTRAINT PK_{your_journal_table_name} PRIMARY KEY (PersistenceID, SequenceNr)
 );
 
