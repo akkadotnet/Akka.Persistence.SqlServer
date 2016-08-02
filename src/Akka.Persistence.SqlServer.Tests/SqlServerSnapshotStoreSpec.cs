@@ -21,8 +21,6 @@ namespace Akka.Persistence.SqlServer.Tests
 
         static SqlServerSnapshotStoreSpec()
         {
-            var connectionString = ConfigurationManager.ConnectionStrings["TestDb"].ConnectionString.Replace(@"\", "\\");
-
             var specString = @"
                         akka.persistence {
                             publish-plugin-commands = on
@@ -56,21 +54,6 @@ namespace Akka.Persistence.SqlServer.Tests
         {
             base.Dispose(disposing);
             DbUtils.Clean();
-        }
-
-        [Fact]
-        public void SnapshotStore_should_save_and_overwrite_snapshot_with_same_sequence_number_unskipped()
-        {
-            TestProbe _senderProbe = CreateTestProbe();
-            var md = Metadata[4];
-            SnapshotStore.Tell(new SaveSnapshot(md, "s-5-modified"), _senderProbe.Ref);
-            var md2 = _senderProbe.ExpectMsg<SaveSnapshotSuccess>().Metadata;
-            Assert.Equal(md.SequenceNr, md2.SequenceNr);
-            SnapshotStore.Tell(new LoadSnapshot(Pid, new SnapshotSelectionCriteria(md.SequenceNr), long.MaxValue), _senderProbe.Ref);
-            var result = _senderProbe.ExpectMsg<LoadSnapshotResult>();
-            Assert.Equal("s-5-modified", result.Snapshot.Snapshot.ToString());
-            Assert.Equal(md.SequenceNr, result.Snapshot.Metadata.SequenceNr);
-            // metadata timestamp may have been changed
         }
     }
 }
