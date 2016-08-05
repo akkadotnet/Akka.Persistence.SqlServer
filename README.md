@@ -156,12 +156,12 @@ RETURN CONVERT(bigint,
     ((((@hour * 3600) + CONVERT(bigint, @min) * 60) + CONVERT(bigint, @sec)) * 10000000) + (CONVERT(bigint, DATEPART(ms, @dt)) * CONVERT(bigint,10000));
 
 END;
-ALTER TABLE {your_journal_table_name} ADD COLUMN Timestamp_tmp BIGINT NULL;
+ALTER TABLE {your_journal_table_name} ADD Timestamp_tmp BIGINT NULL;
 UPDATE {your_journal_table_name} SET Timestamp_tmp = dbo.Ticks(Timestamp);
 ALTER TABLE {your_journal_table_name} DROP COLUMN Timestamp;
 ALTER TABLE {your_journal_table_name} ALTER COLUMN Timestamp_tmp BIGINT NOT NULL;
 EXEC sp_RENAME '{your_journal_table_name}.Timestamp_tmp' , 'Timestamp', 'COLUMN';
-ALTER TABLE {your_journal_table_name} ADD COLUMN Tags NVARCHAR(100) NULL;
+ALTER TABLE {your_journal_table_name} ADD Tags NVARCHAR(100) NULL;
 ```
 
 #### From 1.0.6 to 1.0.8
