@@ -29,6 +29,7 @@ namespace Akka.Persistence.SqlServer.Journal
                 timestampColumnName: "Timestamp",
                 isDeletedColumnName: "IsDeleted",
                 tagsColumnName: "Tags",
+                orderingColumnName: "Ordering",
                 timeout: config.GetTimeSpan("connection-timeout")),
                     Context.System.Serialization,
                     GetTimestampProvider(config.GetString("timestamp-provider")));
