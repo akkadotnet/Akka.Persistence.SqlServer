@@ -76,6 +76,7 @@ SQL Server persistence plugin defines a default table schema used for journal, s
 
 ```SQL
 CREATE TABLE {your_journal_table_name} (
+  Ordering BIGINT IDENTITY(1,1) PRIMARY KEY NOT NULL,
   PersistenceID NVARCHAR(255) NOT NULL,
   SequenceNr BIGINT NOT NULL,
   Timestamp BIGINT NOT NULL,
@@ -83,7 +84,7 @@ CREATE TABLE {your_journal_table_name} (
   Manifest NVARCHAR(500) NOT NULL,
   Payload VARBINARY(MAX) NOT NULL,
   Tags NVARCHAR(100) NULL
-  CONSTRAINT PK_{your_journal_table_name} PRIMARY KEY (PersistenceID, SequenceNr)
+  CONSTRAINT QU_{your_journal_table_name} UNIQUE (PersistenceID, SequenceNr)
 );
 
 CREATE TABLE {your_snapshot_table_name} (
@@ -115,6 +116,14 @@ class MyCustomSqlServerJournal: Akka.Persistence.SqlServer.Journal.SqlServerJour
 ```
 
 ### Migration
+
+#### From 1.1.0 to 1.1.2
+
+```sql
+ALTER TABLE {your_journal_table_name} DROP CONSTRAINT PK_{your_journal_table_name};
+ALTER TABLE {your_journal_table_name} ADD Ordering BIGINT IDENTITY(1,1) PRIMARY KEY NOT NULL;
+ALTER TABLE ADD CONSTRAINT QU_{your_journal_table_name} UNIQUE (PersistenceID, SequenceNr);
+```
 
 #### From 1.0.8 to 1.1.0
 ```SQL
@@ -156,12 +165,12 @@ RETURN CONVERT(bigint,
     ((((@hour * 3600) + CONVERT(bigint, @min) * 60) + CONVERT(bigint, @sec)) * 10000000) + (CONVERT(bigint, DATEPART(ms, @dt)) * CONVERT(bigint,10000));
 
 END;
-ALTER TABLE {your_journal_table_name} ADD COLUMN Timestamp_tmp BIGINT NULL;
+ALTER TABLE {your_journal_table_name} ADD Timestamp_tmp BIGINT NULL;
 UPDATE {your_journal_table_name} SET Timestamp_tmp = dbo.Ticks(Timestamp);
 ALTER TABLE {your_journal_table_name} DROP COLUMN Timestamp;
 ALTER TABLE {your_journal_table_name} ALTER COLUMN Timestamp_tmp BIGINT NOT NULL;
 EXEC sp_RENAME '{your_journal_table_name}.Timestamp_tmp' , 'Timestamp', 'COLUMN';
-ALTER TABLE {your_journal_table_name} ADD COLUMN Tags NVARCHAR(100) NULL;
+ALTER TABLE {your_journal_table_name} ADD Tags NVARCHAR(100) NULL;
 ```
 
 #### From 1.0.6 to 1.0.8
