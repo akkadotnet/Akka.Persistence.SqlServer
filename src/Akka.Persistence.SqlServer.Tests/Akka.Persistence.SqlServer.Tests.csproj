@@ -52,8 +52,9 @@
     <Reference Include="Akka">
       <HintPath>..\Packages\Akka.1.1.2\lib\net45\Akka.dll</HintPath>
     </Reference>
-    <Reference Include="Akka.Persistence">
-      <HintPath>..\Packages\Akka.Persistence.1.1.2.30-beta\lib\net45\Akka.Persistence.dll</HintPath>
+    <Reference Include="Akka.Persistence, Version=1.1.2.30, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\akka.net\src\contrib\persistence\Akka.Persistence.Sql.Common\bin\Debug\Akka.Persistence.dll</HintPath>
     </Reference>
     <Reference Include="Akka.Persistence.Query, Version=1.1.2.30, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Akka.Persistence.Query.1.1.2.30-beta\lib\net45\Akka.Persistence.Query.dll</HintPath>
@@ -63,12 +64,13 @@
       <HintPath>..\packages\Akka.Persistence.Query.Sql.1.1.2.30-beta\lib\net45\Akka.Persistence.Query.Sql.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Akka.Persistence.Sql.Common">
-      <HintPath>..\Packages\Akka.Persistence.Sql.Common.1.1.2.30-beta\lib\net45\Akka.Persistence.Sql.Common.dll</HintPath>
+    <Reference Include="Akka.Persistence.Sql.Common, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\akka.net\src\contrib\persistence\Akka.Persistence.Sql.Common\bin\Debug\Akka.Persistence.Sql.Common.dll</HintPath>
     </Reference>
     <Reference Include="Akka.Persistence.Sql.TestKit, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Akka.Persistence.Sql.TestKit.1.1.2.30-beta\lib\net45\Akka.Persistence.Sql.TestKit.dll</HintPath>
-      <Private>True</Private>
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\akka.net\src\contrib\persistence\Akka.Persistence.Sql.TestKit\bin\Debug\Akka.Persistence.Sql.TestKit.dll</HintPath>
     </Reference>
     <Reference Include="Akka.Persistence.TestKit">
       <HintPath>..\Packages\Akka.Persistence.TestKit.1.1.2.30-beta\lib\net45\Akka.Persistence.TestKit.dll</HintPath>
@@ -146,6 +148,10 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Batching\BatchingSqlServerJournalSpec.cs" />
+    <Compile Include="Batching\BatchingSqlServerAllPersistenceIdsSpec.cs" />
+    <Compile Include="Batching\BatchingSqlServerEventsByPersistenceIdSpec.cs" />
+    <Compile Include="Batching\BatchingSqlServerEventsByTagSpec.cs" />
     <Compile Include="DbUtils.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Query\SqlServerEventsByTagSpec.cs" />
@@ -185,6 +191,7 @@
       <Name>Akka.Persistence.SqlServer</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
