@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Configuration;
 using System.Data.Common;
 using System.Data.SqlClient;
@@ -62,38 +64,38 @@ namespace Akka.Persistence.SqlServer.Journal
         public BatchingSqlServerJournal(BatchingSqlServerJournalSetup setup) : base(setup)
         {
             var conventions = Setup.NamingConventions;
-            CreateJournalSql = $@"
-            IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = '{conventions.SchemaName}' AND TABLE_NAME = '{conventions.JournalEventsTableName}')
-            BEGIN
-                CREATE TABLE {conventions.FullJournalTableName} (
-                    {conventions.OrderingColumnName} BIGINT IDENTITY(1,1) PRIMARY KEY NOT NULL,
-	                {conventions.PersistenceIdColumnName} NVARCHAR(255) NOT NULL,
-	                {conventions.SequenceNrColumnName} BIGINT NOT NULL,
-                    {conventions.TimestampColumnName} BIGINT NOT NULL,
-                    {conventions.IsDeletedColumnName} BIT NOT NULL,
-                    {conventions.ManifestColumnName} NVARCHAR(500) NOT NULL,
-	                {conventions.PayloadColumnName} VARBINARY(MAX) NOT NULL,
-                    {conventions.TagsColumnName} NVARCHAR(100) NULL,
-                    CONSTRAINT UQ_{conventions.JournalEventsTableName} UNIQUE ({conventions.PersistenceIdColumnName}, {conventions.SequenceNrColumnName})
-                );
-                CREATE INDEX IX_{conventions.JournalEventsTableName}_{conventions.SequenceNrColumnName} ON {conventions.FullJournalTableName}({conventions.SequenceNrColumnName});
-                CREATE INDEX IX_{conventions.JournalEventsTableName}_{conventions.TimestampColumnName} ON {conventions.FullJournalTableName}({conventions.TimestampColumnName});
-            END
-            ";
-            CreateMetadataSql = $@"
-            IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = '{conventions.SchemaName}' AND TABLE_NAME = '{conventions.MetaTableName}')
-            BEGIN
-                CREATE TABLE {conventions.FullMetaTableName} (
-	                {conventions.PersistenceIdColumnName} NVARCHAR(255) NOT NULL,
-	                {conventions.SequenceNrColumnName} BIGINT NOT NULL,
-                    CONSTRAINT PK_{conventions.MetaTableName} PRIMARY KEY ({conventions.PersistenceIdColumnName}, {conventions.SequenceNrColumnName})
-                );
-            END
-            ";
+            Initializers = ImmutableDictionary.CreateRange(new []
+            {
+                new KeyValuePair<string, string>("CreateJournalSql", $@"
+                IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = '{conventions.SchemaName}' AND TABLE_NAME = '{conventions.JournalEventsTableName}')
+                BEGIN
+                    CREATE TABLE {conventions.FullJournalTableName} (
+                        {conventions.OrderingColumnName} BIGINT IDENTITY(1,1) PRIMARY KEY NOT NULL,
+	                    {conventions.PersistenceIdColumnName} NVARCHAR(255) NOT NULL,
+	                    {conventions.SequenceNrColumnName} BIGINT NOT NULL,
+                        {conventions.TimestampColumnName} BIGINT NOT NULL,
+                        {conventions.IsDeletedColumnName} BIT NOT NULL,
+                        {conventions.ManifestColumnName} NVARCHAR(500) NOT NULL,
+	                    {conventions.PayloadColumnName} VARBINARY(MAX) NOT NULL,
+                        {conventions.TagsColumnName} NVARCHAR(100) NULL,
+                        CONSTRAINT UQ_{conventions.JournalEventsTableName} UNIQUE ({conventions.PersistenceIdColumnName}, {conventions.SequenceNrColumnName})
+                    );
+                    CREATE INDEX IX_{conventions.JournalEventsTableName}_{conventions.SequenceNrColumnName} ON {conventions.FullJournalTableName}({conventions.SequenceNrColumnName});
+                    CREATE INDEX IX_{conventions.JournalEventsTableName}_{conventions.TimestampColumnName} ON {conventions.FullJournalTableName}({conventions.TimestampColumnName});
+                END"), 
+                new KeyValuePair<string, string>("CreateMetadataSql", $@"
+                IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = '{conventions.SchemaName}' AND TABLE_NAME = '{conventions.MetaTableName}')
+                BEGIN
+                    CREATE TABLE {conventions.FullMetaTableName} (
+	                    {conventions.PersistenceIdColumnName} NVARCHAR(255) NOT NULL,
+	                    {conventions.SequenceNrColumnName} BIGINT NOT NULL,
+                        CONSTRAINT PK_{conventions.MetaTableName} PRIMARY KEY ({conventions.PersistenceIdColumnName}, {conventions.SequenceNrColumnName})
+                    );
+                END"), 
+            });
         }
 
         protected override DbConnection CreateConnection() => new SqlConnection(Setup.ConnectionString);
-        protected override string CreateJournalSql { get; }
-        protected override string CreateMetadataSql { get; }
+        protected override ImmutableDictionary<string, string> Initializers { get; }
     }
 }
