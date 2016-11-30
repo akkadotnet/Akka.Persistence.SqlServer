@@ -30,9 +30,11 @@ namespace Akka.Persistence.SqlServer.Journal
                 connectionString: connectionString,
                 maxConcurrentOperations: config.GetInt("max-concurrent-operations", 64),
                 maxBatchSize: config.GetInt("max-batch-size", 100),
+                maxBufferSize: config.GetInt("max-buffer-size", 500000),
                 autoInitialize: config.GetBoolean("auto-initialize", false),
                 connectionTimeout: config.GetTimeSpan("connection-timeout", TimeSpan.FromSeconds(30)),
                 circuitBreakerSettings: CircuitBreakerSettings.Create(config.GetConfig("circuit-breaker")),
+                replayFilterSettings: ReplayFilterSettings.Create(config.GetConfig("replay-filter")),
                 namingConventions: new QueryConfiguration(
                     schemaName: config.GetString("schema-name", "dbo"),
                     journalEventsTableName: config.GetString("table-name", "EventJournal"),
@@ -48,14 +50,14 @@ namespace Akka.Persistence.SqlServer.Journal
                     timeout: config.GetTimeSpan("connection-timeout", TimeSpan.FromSeconds(30))));
         }
 
-        public BatchingSqlServerJournalSetup(string connectionString, int maxConcurrentOperations, int maxBatchSize, bool autoInitialize,
-            TimeSpan connectionTimeout, CircuitBreakerSettings circuitBreakerSettings, QueryConfiguration namingConventions)
-            : base(connectionString, maxConcurrentOperations, maxBatchSize, autoInitialize, connectionTimeout, circuitBreakerSettings, namingConventions)
+        public BatchingSqlServerJournalSetup(string connectionString, int maxConcurrentOperations, int maxBatchSize, int maxBufferSize, bool autoInitialize,
+            TimeSpan connectionTimeout, CircuitBreakerSettings circuitBreakerSettings, ReplayFilterSettings replayFilterSettings, QueryConfiguration namingConventions)
+            : base(connectionString, maxConcurrentOperations, maxBatchSize, maxBufferSize, autoInitialize, connectionTimeout, circuitBreakerSettings, replayFilterSettings, namingConventions)
         {
         }
     }
 
-    public class BatchingSqlServerJournal : BatchingSqlJournal<BatchingSqlServerJournalSetup>
+    public class BatchingSqlServerJournal : BatchingSqlJournal<SqlConnection, SqlCommand>
     {
         public BatchingSqlServerJournal(Config config) : this(BatchingSqlServerJournalSetup.Create(config))
         {
@@ -95,7 +97,7 @@ namespace Akka.Persistence.SqlServer.Journal
             });
         }
 
-        protected override DbConnection CreateConnection() => new SqlConnection(Setup.ConnectionString);
+        protected override SqlConnection CreateConnection(string connectionString) => new SqlConnection(connectionString);
         protected override ImmutableDictionary<string, string> Initializers { get; }
     }
 }
