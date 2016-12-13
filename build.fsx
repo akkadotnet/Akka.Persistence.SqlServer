@@ -9,6 +9,8 @@ open Fake
 open Fake.FileUtils
 open Fake.TaskRunnerHelper
 open Fake.ProcessHelper
+open Fake.EnvironmentHelper
+open Fake.ConfigurationHelper
 
 cd __SOURCE_DIRECTORY__
 
@@ -134,6 +136,35 @@ Target "RunTests" <| fun _ ->
     xUnit2
         (fun p -> { p with OutputDir = testOutput; ToolPath = xunitToolPath })
         xunitTestAssemblies
+
+Target "StartDbContainer" <| fun _ -> 
+    PowerShell.Create()
+        .AddScript(@"./docker_sql_express.ps1")
+        .Invoke()
+        |> Seq.last
+        |> printfn "SQL Express Docker container IP Address: %O"
+
+Target "PrepAppConfig" <| fun _ -> 
+    let ip = environVar "container_ip"
+    let appConfig = "src/Akka.Persistence.SqlServer.Tests/App.config"
+
+    log(appConfig)
+    log (ip)
+
+    let configFile = readConfig appConfig
+    let connStringNode = configFile.SelectSingleNode "//connectionStrings/add[@name='TestDb']"
+    let connString = connStringNode.Attributes.["connectionString"].Value
+
+    log ("Existing App.config connString: " + Environment.NewLine + "\t" + connString)
+
+    let newConnString = new DbConnectionStringBuilder();
+    newConnString.ConnectionString <- connString
+    newConnString.Item("data source") <- ip
+    
+    log ("New App.config connString: " + Environment.NewLine + "\t" + newConnString.ToString())
+
+    updateConnectionString "TestDb" (newConnString.ToString()) appConfig
+    CopyFile "src/Akka.Persistence.SqlServer.Tests/bin/Release/Akka.Persistence.SqlServer.Tests.dll.config" appConfig
 
 //--------------------------------------------------------------------------------
 // Nuget targets 
@@ -424,7 +455,7 @@ Target "HelpDocs" <| fun _ ->
 "Clean" ==> "AssemblyInfo" ==> "RestorePackages" ==> "UpdateDependencies" ==> "Build" ==> "CopyOutput" ==> "BuildRelease"
 
 // tests dependencies
-"CleanTests" ==> "RunTests"
+"CleanTests" ==> "StartDbContainer" ==> "PrepAppConfig" ==> "RunTests"
 
 // nuget dependencies
 "CleanNuget" ==> "CreateNuget"
