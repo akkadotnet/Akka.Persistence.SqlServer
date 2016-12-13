@@ -1,10 +1,13 @@
 ﻿#I @"src/packages/FAKE/tools"
 #r "FakeLib.dll"
 #r "System.Xml.Linq"
+#r "System.Managment.Automation"
 
 open System
 open System.IO
 open System.Text
+open System.Management.Automation
+open System.Data.Common
 open Fake
 open Fake.FileUtils
 open Fake.TaskRunnerHelper
