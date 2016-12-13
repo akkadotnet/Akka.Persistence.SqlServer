@@ -1,7 +1,7 @@
 ﻿#I @"src/packages/FAKE/tools"
 #r "FakeLib.dll"
 #r "System.Xml.Linq"
-#r "System.Managment.Automation"
+#r "System.Management.Automation"
 
 open System
 open System.IO
