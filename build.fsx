@@ -151,7 +151,7 @@ Target "PrepAppConfig" <| fun _ ->
     let ip = environVar "container_ip"
     let appConfig = "src/Akka.Persistence.SqlServer.Tests/App.config"
 
-    log(appConfig)
+    log (appConfig)
     log (ip)
 
     let configFile = readConfig appConfig
@@ -169,6 +169,11 @@ Target "PrepAppConfig" <| fun _ ->
     updateConnectionString "TestDb" (newConnString.ToString()) appConfig
     CopyFile "src/Akka.Persistence.SqlServer.Tests/bin/Release/Akka.Persistence.SqlServer.Tests.dll.config" appConfig
 
+FinalTarget "TearDownDbContainer" <| fun _ ->
+    match environVarOrNone "container_name" with
+    | Some x -> printfn "container_name is %s" x
+    | None -> ()
+    
 //--------------------------------------------------------------------------------
 // Nuget targets 
 //--------------------------------------------------------------------------------
@@ -470,3 +475,5 @@ Target "All" DoNothing
 "Nuget" ==> "All"
 
 RunTargetOrDefault "Help"
+
+ActivateFinalTarget "TearDownDbContainer"
