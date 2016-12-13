@@ -128,7 +128,7 @@ Target "CleanTests" <| fun _ ->
 //--------------------------------------------------------------------------------
 // Run tests
 
-open XUnit2Helper
+open Fake.Testing
 Target "RunTests" <| fun _ ->  
     let xunitTestAssemblies = !! "src/**/bin/Release/*.Tests.dll" 
 
