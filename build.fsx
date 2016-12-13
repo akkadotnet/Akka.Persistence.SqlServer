@@ -173,6 +173,8 @@ FinalTarget "TearDownDbContainer" <| fun _ ->
     match environVarOrNone "container_name" with
     | Some x -> printfn "container_name is %s" x
     | None -> log ("NO CONTAINER_NAME VARIABLE FOUND")
+
+ActivateFinalTarget "TearDownDbContainer"
     
 //--------------------------------------------------------------------------------
 // Nuget targets 
@@ -464,6 +466,7 @@ Target "HelpDocs" <| fun _ ->
 
 // tests dependencies
 "CleanTests" ==> "StartDbContainer" ==> "PrepAppConfig" ==> "RunTests"
+"TearDownDbContainer" ==> "RunTests"
 
 // nuget dependencies
 "CleanNuget" ==> "CreateNuget"
@@ -476,4 +479,3 @@ Target "All" DoNothing
 
 RunTargetOrDefault "Help"
 
-ActivateFinalTarget "TearDownDbContainer"
