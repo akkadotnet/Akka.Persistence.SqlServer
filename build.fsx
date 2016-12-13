@@ -137,7 +137,7 @@ Target "RunTests" <| fun _ ->
     let xunitToolPath = findToolInSubPath "xunit.console.exe" "src/packages/xunit.runner.console*/tools"
     printfn "Using XUnit runner: %s" xunitToolPath
     xUnit2
-        (fun p -> { p with OutputDir = testOutput; ToolPath = xunitToolPath })
+        (fun p -> { p with HtmlOutputPath = Some(testOutput @@ "xunit.html") })
         xunitTestAssemblies
 
 Target "StartDbContainer" <| fun _ -> 
