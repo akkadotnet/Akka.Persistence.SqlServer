@@ -172,7 +172,7 @@ Target "PrepAppConfig" <| fun _ ->
 FinalTarget "TearDownDbContainer" <| fun _ ->
     match environVarOrNone "container_name" with
     | Some x -> printfn "container_name is %s" x
-    | None -> log ("NO CONTAINER_NAME VARIABLE FOUND")
+    | None -> ()
 
 ActivateFinalTarget "TearDownDbContainer"
     
