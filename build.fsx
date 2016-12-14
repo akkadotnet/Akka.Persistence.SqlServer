@@ -153,9 +153,6 @@ Target "PrepAppConfig" <| fun _ ->
     let ip = environVar "container_ip"
     let appConfig = "src/Akka.Persistence.SqlServer.Tests/App.config"
 
-    log appConfig
-    log ip
-
     let configFile = readConfig appConfig
     let connStringNode = configFile.SelectSingleNode "//connectionStrings/add[@name='TestDb']"
     let connString = connStringNode.Attributes.["connectionString"].Value
