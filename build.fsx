@@ -171,7 +171,12 @@ Target "PrepAppConfig" <| fun _ ->
 
 FinalTarget "TearDownDbContainer" <| fun _ ->
     match environVarOrNone "container_name" with
-    | Some x -> printfn "container_name is %s" x
+    | Some x -> let cmd = sprintf "docker stop %s; docker rm %s" x x
+                log (cmd)
+//                PowerShell.Create()
+//                    .AddScript(cmd)
+//                    .Invoke()
+//                    |> ignore
     | None -> ()
 
 Target "ActivateFinalTargets"  <| fun _ ->
