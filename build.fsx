@@ -151,8 +151,8 @@ Target "PrepAppConfig" <| fun _ ->
     let ip = environVar "container_ip"
     let appConfig = "src/Akka.Persistence.SqlServer.Tests/App.config"
 
-    log (appConfig)
-    log (ip)
+    log appConfig
+    log ip
 
     let configFile = readConfig appConfig
     let connStringNode = configFile.SelectSingleNode "//connectionStrings/add[@name='TestDb']"
@@ -172,11 +172,11 @@ Target "PrepAppConfig" <| fun _ ->
 FinalTarget "TearDownDbContainer" <| fun _ ->
     match environVarOrNone "container_name" with
     | Some x -> let cmd = sprintf "docker stop %s; docker rm %s" x x
-                log (cmd)
-//                PowerShell.Create()
-//                    .AddScript(cmd)
-//                    .Invoke()
-//                    |> ignore
+                logf "Killing container: %s" x
+                PowerShell.Create()
+                    .AddScript(cmd)
+                    .Invoke()
+                    |> ignore
     | None -> ()
 
 Target "ActivateFinalTargets"  <| fun _ ->
