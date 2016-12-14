@@ -145,7 +145,7 @@ Target "StartDbContainer" <| fun _ ->
         .AddScript(@"./docker_sql_express.ps1")
         .Invoke()
         |> Seq.last
-        |> printfn "SQL Express Docker container IP Address: %O"
+        |> printfn "SQL Express Docker container created with IP address: %O"
 
 Target "PrepAppConfig" <| fun _ -> 
     let ip = environVar "container_ip"
@@ -379,7 +379,9 @@ Target "Help" <| fun _ ->
       " * Build      Builds"
       " * Nuget      Create and optionally publish nugets packages"
       " * RunTests   Runs tests"
+      " * RunTestsWithDocker Runs tests against a Docker container using the microsoft/sql-server-windows-express image"
       " * All        Builds, run tests, creates and optionally publish nuget packages"
+      " * AllWithDockerTests Builds, runs Docker container-based tests, creates and optionally publish nuget packages"
       ""
       " Other Targets"
       " * Help       Display this help" 
