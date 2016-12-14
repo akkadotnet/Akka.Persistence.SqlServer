@@ -174,7 +174,8 @@ FinalTarget "TearDownDbContainer" <| fun _ ->
     | Some x -> printfn "container_name is %s" x
     | None -> ()
 
-ActivateFinalTarget "TearDownDbContainer"
+Target "ActivateFinalTargets"  <| fun _ ->
+    ActivateFinalTarget "TearDownDbContainer"
     
 //--------------------------------------------------------------------------------
 // Nuget targets 
@@ -465,8 +466,8 @@ Target "HelpDocs" <| fun _ ->
 "Clean" ==> "AssemblyInfo" ==> "RestorePackages" ==> "UpdateDependencies" ==> "Build" ==> "CopyOutput" ==> "BuildRelease"
 
 // tests dependencies
-"CleanTests" ==> "StartDbContainer" ==> "PrepAppConfig" ==> "RunTests"
-"TearDownDbContainer" ==> "RunTests"
+"CleanTests" ==> "RunTests"
+"CleanTests" ==> "ActivateFinalTargets" ==> "StartDbContainer" ==> "PrepAppConfig" ==> "RunTestsWithDocker"
 
 // nuget dependencies
 "CleanNuget" ==> "CreateNuget"
@@ -476,6 +477,11 @@ Target "All" DoNothing
 "BuildRelease" ==> "All"
 "RunTests" ==> "All"
 "Nuget" ==> "All"
+
+Target "AllWithDockerTests" DoNothing
+"BuildRelease" ==> "AllWithDockerTests"
+"RunTestsWithDocker" ==> "AllWithDockerTests"
+"Nuget" ==> "AllWithDockerTests"
 
 RunTargetOrDefault "Help"
 
