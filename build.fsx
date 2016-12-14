@@ -144,8 +144,10 @@ Target "StartDbContainer" <| fun _ ->
     PowerShell.Create()
         .AddScript(@"./docker_sql_express.ps1")
         .Invoke()
-        |> Seq.last
-        |> printfn "SQL Express Docker container created with IP address: %O"
+        |> ignore
+    match environVarOrNone "container_name" with
+        | Some x -> logf "SQL Express Docker container created with IP address: %s" x
+        | None -> failwith "SQL Express Docker container was not started successfully... failing build"
 
 Target "PrepAppConfig" <| fun _ -> 
     let ip = environVar "container_ip"
