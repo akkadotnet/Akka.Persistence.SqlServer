@@ -14,4 +14,5 @@ IF ($(docker ps -aq -f label=deployer=akkadotnet).Length -gt 0) {
     docker stop $(docker ps -aq -f label=deployer=akkadotnet)
     docker rm $(docker ps -aq -f label=deployer=akkadotnet)
 }
+$env:container_name = "akka-$(New-Guid)"
 docker run -it --name $env:container_name -l deployer=akkadotnet -p 1433:1433 -e ACCEPT_EULA=Y microsoft/mssql-server-windows-express
