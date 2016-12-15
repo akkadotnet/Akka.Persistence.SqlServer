@@ -143,6 +143,7 @@ Target "RunTests" <| fun _ ->
 Target "StartDbContainer" <| fun _ -> 
     logfn "Starting SQL Express Docker container..."
     PowerShell.Create()
+        .AddScript(@"Set-ExecutionPolicy Unrestricted -Force")
         .AddScript(@"./docker_sql_express.ps1")
         .Invoke()
         |> Seq.iter (printfn "\t %O")
