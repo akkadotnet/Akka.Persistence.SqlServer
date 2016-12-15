@@ -141,12 +141,13 @@ Target "RunTests" <| fun _ ->
         xunitTestAssemblies
 
 Target "StartDbContainer" <| fun _ -> 
+    logfn "Starting SQL Express Docker container..."
     PowerShell.Create()
         .AddScript(@"./docker_sql_express.ps1")
         .Invoke()
-        |> ignore
+        |> Seq.iter (printfn "\t %O")
     match environVarOrNone "container_ip" with
-        | Some x -> logf "SQL Express Docker container created with IP address: %s" x
+        | Some x -> logfn "SQL Express Docker container created with IP address: %s" x
         | None -> failwith "SQL Express Docker container was not started successfully... failing build"
 
 Target "PrepAppConfig" <| fun _ -> 
