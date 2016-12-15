@@ -145,28 +145,31 @@ Target "StartDbContainer" <| fun _ ->
         .AddScript(@"./docker_sql_express.ps1")
         .Invoke()
         |> ignore
-    match environVarOrNone "container_name" with
+    match environVarOrNone "container_ip" with
         | Some x -> logf "SQL Express Docker container created with IP address: %s" x
         | None -> failwith "SQL Express Docker container was not started successfully... failing build"
 
 Target "PrepAppConfig" <| fun _ -> 
-    let ip = environVar "container_ip"
-    let appConfig = "src/Akka.Persistence.SqlServer.Tests/App.config"
+    let ip = environVarOrNone "container_ip"
+    match ip with
+    | Some ip ->
+        let appConfig = "src/Akka.Persistence.SqlServer.Tests/App.config"
+        let configFile = readConfig appConfig
+        let connStringNode = configFile.SelectSingleNode "//connectionStrings/add[@name='TestDb']"
+        let connString = connStringNode.Attributes.["connectionString"].Value
 
-    let configFile = readConfig appConfig
-    let connStringNode = configFile.SelectSingleNode "//connectionStrings/add[@name='TestDb']"
-    let connString = connStringNode.Attributes.["connectionString"].Value
+        log ("Existing App.config connString: " + Environment.NewLine + "\t" + connString)
 
-    log ("Existing App.config connString: " + Environment.NewLine + "\t" + connString)
-
-    let newConnString = new DbConnectionStringBuilder();
-    newConnString.ConnectionString <- connString
-    newConnString.Item("data source") <- ip
+        let newConnString = new DbConnectionStringBuilder();
+        newConnString.ConnectionString <- connString
+        newConnString.Item("data source") <- ip
     
-    log ("New App.config connString: " + Environment.NewLine + "\t" + newConnString.ToString())
+        log ("New App.config connString: " + Environment.NewLine + "\t" + newConnString.ToString())
 
-    updateConnectionString "TestDb" (newConnString.ToString()) appConfig
-    CopyFile "src/Akka.Persistence.SqlServer.Tests/bin/Release/Akka.Persistence.SqlServer.Tests.dll.config" appConfig
+        updateConnectionString "TestDb" (newConnString.ToString()) appConfig
+        CopyFile "src/Akka.Persistence.SqlServer.Tests/bin/Release/Akka.Persistence.SqlServer.Tests.dll.config" appConfig
+
+    | None -> failwith "SQL Express Docker container not started successfully $env:container_ip not found... failing build"
 
 FinalTarget "TearDownDbContainer" <| fun _ ->
     match environVarOrNone "container_name" with
