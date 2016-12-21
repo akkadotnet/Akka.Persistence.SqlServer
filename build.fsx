@@ -1,14 +1,19 @@
 ﻿#I @"src/packages/FAKE/tools"
 #r "FakeLib.dll"
 #r "System.Xml.Linq"
+#r "System.Management.Automation"
 
 open System
 open System.IO
 open System.Text
+open System.Management.Automation
+open System.Data.Common
 open Fake
 open Fake.FileUtils
 open Fake.TaskRunnerHelper
 open Fake.ProcessHelper
+open Fake.EnvironmentHelper
+open Fake.ConfigurationHelper
 
 cd __SOURCE_DIRECTORY__
 
@@ -123,7 +128,7 @@ Target "CleanTests" <| fun _ ->
 //--------------------------------------------------------------------------------
 // Run tests
 
-open XUnit2Helper
+open Fake.Testing
 Target "RunTests" <| fun _ ->  
     let xunitTestAssemblies = !! "src/**/bin/Release/*.Tests.dll" 
 
@@ -132,8 +137,58 @@ Target "RunTests" <| fun _ ->
     let xunitToolPath = findToolInSubPath "xunit.console.exe" "src/packages/xunit.runner.console*/tools"
     printfn "Using XUnit runner: %s" xunitToolPath
     xUnit2
-        (fun p -> { p with OutputDir = testOutput; ToolPath = xunitToolPath })
+        (fun p -> { p with HtmlOutputPath = Some(testOutput @@ "xunit.html") })
         xunitTestAssemblies
+
+Target "StartDbContainer" <| fun _ ->
+    let dockerImage = getBuildParamOrDefault "dockerImage" @"microsoft/mssql-server-windows-express"
+    logfn "Starting SQL Express Docker container using image: %s" dockerImage
+    let posh = PowerShell.Create().AddScript(sprintf @"./docker_sql_express.ps1 -dockerImage %s" dockerImage)
+    posh.Invoke() |> Seq.iter (logfn "%O")
+
+    match posh.HadErrors with
+    | true -> posh.Streams.Error |> Seq.iter (logfn "\t %O")
+              failwith "SQL Express Docker container startup encountered an error... failing build"
+    | false -> ()
+
+    match environVarOrNone "container_ip" with
+    | Some x -> logfn "SQL Express Docker container created with IP address: %s" x
+    | None -> failwith "SQL Express Docker container env:container_ip not set... failing build"
+
+Target "PrepAppConfig" <| fun _ -> 
+    let ip = environVarOrNone "container_ip"
+    match ip with
+    | Some ip ->
+        let appConfig = "src/Akka.Persistence.SqlServer.Tests/App.config"
+        let configFile = readConfig appConfig
+        let connStringNode = configFile.SelectSingleNode "//connectionStrings/add[@name='TestDb']"
+        let connString = connStringNode.Attributes.["connectionString"].Value
+
+        log ("Existing App.config connString: " + Environment.NewLine + "\t" + connString)
+
+        let newConnString = new DbConnectionStringBuilder();
+        newConnString.ConnectionString <- connString
+        newConnString.Item("data source") <- ip
+    
+        log ("New App.config connString: " + Environment.NewLine + "\t" + newConnString.ToString())
+
+        updateConnectionString "TestDb" (newConnString.ToString()) appConfig
+        CopyFile "src/Akka.Persistence.SqlServer.Tests/bin/Release/Akka.Persistence.SqlServer.Tests.dll.config" appConfig
+
+    | None -> failwith "SQL Express Docker container not started successfully $env:container_ip not found... failing build"
+
+FinalTarget "TearDownDbContainer" <| fun _ ->
+    match environVarOrNone "container_name" with
+    | Some x -> let cmd = sprintf "docker stop %s; docker rm %s" x x
+                logf "Killing container: %s" x
+                PowerShell.Create()
+                    .AddScript(cmd)
+                    .Invoke()
+                    |> ignore
+    | None -> ()
+
+Target "ActivateFinalTargets"  <| fun _ ->
+    ActivateFinalTarget "TearDownDbContainer"
 
 //--------------------------------------------------------------------------------
 // Nuget targets 
@@ -332,7 +387,9 @@ Target "Help" <| fun _ ->
       " * Build      Builds"
       " * Nuget      Create and optionally publish nugets packages"
       " * RunTests   Runs tests"
+      " * RunTestsWithDocker Runs tests against a Docker container using the microsoft/sql-server-windows-express image"
       " * All        Builds, run tests, creates and optionally publish nuget packages"
+      " * AllWithDockerTests Builds, runs Docker container-based tests, creates and optionally publish nuget packages"
       ""
       " Other Targets"
       " * Help       Display this help" 
@@ -426,6 +483,10 @@ Target "HelpDocs" <| fun _ ->
 // tests dependencies
 "CleanTests" ==> "RunTests"
 
+// tests with docker dependencies
+Target "RunTestsWithDocker" DoNothing
+"CleanTests" ==> "ActivateFinalTargets" ==> "StartDbContainer" ==> "PrepAppConfig" ==> "RunTests" ==> "RunTestsWithDocker"
+
 // nuget dependencies
 "CleanNuget" ==> "CreateNuget"
 "CleanNuget" ==> "BuildRelease" ==> "Nuget"
@@ -435,4 +496,10 @@ Target "All" DoNothing
 "RunTests" ==> "All"
 "Nuget" ==> "All"
 
+Target "AllWithDockerTests" DoNothing
+"BuildRelease" ==> "AllWithDockerTests"
+"RunTestsWithDocker" ==> "AllWithDockerTests"
+"Nuget" ==> "AllWithDockerTests"
+
 RunTargetOrDefault "Help"
+
