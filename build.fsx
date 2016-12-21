@@ -140,16 +140,20 @@ Target "RunTests" <| fun _ ->
         (fun p -> { p with HtmlOutputPath = Some(testOutput @@ "xunit.html") })
         xunitTestAssemblies
 
-Target "StartDbContainer" <| fun _ -> 
+Target "StartDbContainer" <| fun _ ->
     logfn "Starting SQL Express Docker container..."
-    PowerShell.Create()
-        .AddScript(@"Set-ExecutionPolicy Unrestricted -Force")
-        .AddScript(@"./docker_sql_express.ps1")
-        .Invoke()
-        |> Seq.iter (printfn "\t %O")
+
+    let posh = PowerShell.Create().AddScript(@"./docker_sql_express.ps1")
+    posh.Invoke() |> Seq.iter (logfn "%O")
+
+    match posh.HadErrors with
+    | true -> posh.Streams.Error |> Seq.iter (logfn "\t %O")
+              failwith "SQL Express Docker container startup encountered an error... failing build"
+    | false -> ()
+
     match environVarOrNone "container_ip" with
-        | Some x -> logfn "SQL Express Docker container created with IP address: %s" x
-        | None -> failwith "SQL Express Docker container was not started successfully... failing build"
+    | Some x -> logfn "SQL Express Docker container created with IP address: %s" x
+    | None -> failwith "SQL Express Docker container env:container_ip not set... failing build"
 
 Target "PrepAppConfig" <| fun _ -> 
     let ip = environVarOrNone "container_ip"
@@ -185,7 +189,7 @@ FinalTarget "TearDownDbContainer" <| fun _ ->
 
 Target "ActivateFinalTargets"  <| fun _ ->
     ActivateFinalTarget "TearDownDbContainer"
-    
+
 //--------------------------------------------------------------------------------
 // Nuget targets 
 //--------------------------------------------------------------------------------
