@@ -141,9 +141,9 @@ Target "RunTests" <| fun _ ->
         xunitTestAssemblies
 
 Target "StartDbContainer" <| fun _ ->
-    logfn "Starting SQL Express Docker container..."
-
-    let posh = PowerShell.Create().AddScript(@"./docker_sql_express.ps1")
+    let dockerImage = getBuildParamOrDefault "dockerImage" @"microsoft/mssql-server-windows-express"
+    logfn "Starting SQL Express Docker container using image: %s" dockerImage
+    let posh = PowerShell.Create().AddScript(sprintf @"./docker_sql_express.ps1 -dockerImage %s" dockerImage)
     posh.Invoke() |> Seq.iter (logfn "%O")
 
     match posh.HadErrors with
