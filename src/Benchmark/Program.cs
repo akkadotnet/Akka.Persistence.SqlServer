@@ -22,6 +22,7 @@ namespace Benchmark
                     plugin = ""akka.persistence.journal.sql-server""
                     sql-server {
                         class = ""Akka.Persistence.SqlServer.Journal.BatchingSqlServerJournal, Akka.Persistence.SqlServer""
+                        isolation-level = ""read-uncommitted""
                         plugin-dispatcher = ""akka.actor.default-dispatcher""
                         table-name = EventJournal
                         schema-name = dbo

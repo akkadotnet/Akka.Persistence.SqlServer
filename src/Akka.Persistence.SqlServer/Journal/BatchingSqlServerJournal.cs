@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Configuration;
-using System.Data.Common;
+using System.Data;
 using System.Data.SqlClient;
 using Akka.Configuration;
 using Akka.Persistence.Sql.Common.Journal;
@@ -11,31 +10,7 @@ namespace Akka.Persistence.SqlServer.Journal
 {
     public sealed class BatchingSqlServerJournalSetup : BatchingSqlJournalSetup
     {
-        public static BatchingSqlServerJournalSetup Create(Config config)
-        {
-            if (config == null) throw new ArgumentNullException(nameof(config), "Sql journal settings cannot be initialized, because required HOCON section couldn't been found");
-
-            var connectionString = config.GetString("connection-string");
-            if (string.IsNullOrWhiteSpace(connectionString))
-            {
-                connectionString = ConfigurationManager
-                    .ConnectionStrings[config.GetString("connection-string-name", "DefaultConnection")]
-                    .ConnectionString;
-            }
-
-            if (string.IsNullOrWhiteSpace(connectionString))
-                throw new ArgumentException("No connection string for Sql Event Journal was specified");
-
-            return new BatchingSqlServerJournalSetup(
-                connectionString: connectionString,
-                maxConcurrentOperations: config.GetInt("max-concurrent-operations", 64),
-                maxBatchSize: config.GetInt("max-batch-size", 100),
-                maxBufferSize: config.GetInt("max-buffer-size", 500000),
-                autoInitialize: config.GetBoolean("auto-initialize", false),
-                connectionTimeout: config.GetTimeSpan("connection-timeout", TimeSpan.FromSeconds(30)),
-                circuitBreakerSettings: CircuitBreakerSettings.Create(config.GetConfig("circuit-breaker")),
-                replayFilterSettings: ReplayFilterSettings.Create(config.GetConfig("replay-filter")),
-                namingConventions: new QueryConfiguration(
+        public BatchingSqlServerJournalSetup(Config config) : base(config, new QueryConfiguration(
                     schemaName: config.GetString("schema-name", "dbo"),
                     journalEventsTableName: config.GetString("table-name", "EventJournal"),
                     metaTableName: config.GetString("metadata-table-name", "Metadata"),
@@ -47,19 +22,20 @@ namespace Akka.Persistence.SqlServer.Journal
                     isDeletedColumnName: "IsDeleted",
                     tagsColumnName: "Tags",
                     orderingColumnName: "Ordering",
-                    timeout: config.GetTimeSpan("connection-timeout", TimeSpan.FromSeconds(30))));
+                    timeout: config.GetTimeSpan("connection-timeout", TimeSpan.FromSeconds(30))))
+        {
         }
 
         public BatchingSqlServerJournalSetup(string connectionString, int maxConcurrentOperations, int maxBatchSize, int maxBufferSize, bool autoInitialize,
-            TimeSpan connectionTimeout, CircuitBreakerSettings circuitBreakerSettings, ReplayFilterSettings replayFilterSettings, QueryConfiguration namingConventions)
-            : base(connectionString, maxConcurrentOperations, maxBatchSize, maxBufferSize, autoInitialize, connectionTimeout, circuitBreakerSettings, replayFilterSettings, namingConventions)
+            TimeSpan connectionTimeout, IsolationLevel isolationLevel, CircuitBreakerSettings circuitBreakerSettings, ReplayFilterSettings replayFilterSettings, QueryConfiguration namingConventions)
+            : base(connectionString, maxConcurrentOperations, maxBatchSize, maxBufferSize, autoInitialize, connectionTimeout, isolationLevel, circuitBreakerSettings, replayFilterSettings, namingConventions)
         {
         }
     }
 
     public class BatchingSqlServerJournal : BatchingSqlJournal<SqlConnection, SqlCommand>
     {
-        public BatchingSqlServerJournal(Config config) : this(BatchingSqlServerJournalSetup.Create(config))
+        public BatchingSqlServerJournal(Config config) : this(new BatchingSqlServerJournalSetup(config))
         {
         }
 
