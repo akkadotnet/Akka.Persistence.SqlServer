@@ -34,7 +34,7 @@ akka.persistence{
 
 			# should corresponding journal table be initialized automatically
 			auto-initialize = off
-			
+
 			# timestamp provider used for generation of journal entries timestamps
 			timestamp-provider = "Akka.Persistence.Sql.Common.Journal.DefaultTimestampProvider, Akka.Persistence.Sql.Common"
 
@@ -45,7 +45,7 @@ akka.persistence{
 
 	snapshot-store {
 		sql-server {
-		
+
 			# qualified type name of the SQL Server persistence journal actor
 			class = "Akka.Persistence.SqlServer.Snapshot.SqlServerSnapshotStore, Akka.Persistence.SqlServer"
 
@@ -76,7 +76,7 @@ SQL Server persistence plugin defines a default table schema used for journal, s
 
 ```SQL
 CREATE TABLE {your_journal_table_name} (
-  Ordering BIGINT IDENTITY(1,1) PRIMARY KEY NOT NULL,
+  Ordering BIGINT IDENTITY(1,1) NOT NULL,
   PersistenceID NVARCHAR(255) NOT NULL,
   SequenceNr BIGINT NOT NULL,
   Timestamp BIGINT NOT NULL,
@@ -84,6 +84,7 @@ CREATE TABLE {your_journal_table_name} (
   Manifest NVARCHAR(500) NOT NULL,
   Payload VARBINARY(MAX) NOT NULL,
   Tags NVARCHAR(100) NULL
+	CONSTRAINT PK_{your_journal_table_name} PRIMARY KEY (Ordering),
   CONSTRAINT QU_{your_journal_table_name} UNIQUE (PersistenceID, SequenceNr)
 );
 
@@ -121,8 +122,9 @@ class MyCustomSqlServerJournal: Akka.Persistence.SqlServer.Journal.SqlServerJour
 
 ```sql
 ALTER TABLE {your_journal_table_name} DROP CONSTRAINT PK_{your_journal_table_name};
-ALTER TABLE {your_journal_table_name} ADD Ordering BIGINT IDENTITY(1,1) PRIMARY KEY NOT NULL;
-ALTER TABLE ADD CONSTRAINT QU_{your_journal_table_name} UNIQUE (PersistenceID, SequenceNr);
+ALTER TABLE {your_journal_table_name} ADD Ordering BIGINT IDENTITY(1,1) NOT NULL;
+ALTER TABLE {your_journal_table_name} ADD CONSTRAINT PK_EventJournal PRIMARY KEY (Ordering);
+ALTER TABLE {your_journal_table_name} ADD CONSTRAINT QU_{your_journal_table_name} UNIQUE (PersistenceID, SequenceNr);
 ```
 
 #### From 1.0.8 to 1.1.0
@@ -133,7 +135,7 @@ CREATE FUNCTION [dbo].[Ticks] (@dt DATETIME)
 RETURNS BIGINT
 WITH SCHEMABINDING
 AS
-BEGIN 
+BEGIN
 DECLARE @year INT = DATEPART(yyyy, @dt)
 DECLARE @month INT = DATEPART(mm, @dt)
 DECLARE @day INT = DATEPART(dd, @dt)
@@ -160,7 +162,7 @@ DECLARE @days INT =
     IF  @year % 4 = 0 AND (@year % 100  != 0 OR (@year % 100 = 0 AND @year % 400 = 0)) AND @month > 2 BEGIN
         SET @days = @days + 1
     END
-RETURN CONVERT(bigint, 
+RETURN CONVERT(bigint,
     ((((((((@year - 1) * 365) + ((@year - 1) / 4)) - ((@year - 1) / 100)) + ((@year - 1) / 400)) + @days) + @day) - 1) * 864000000000) +
     ((((@hour * 3600) + CONVERT(bigint, @min) * 60) + CONVERT(bigint, @sec)) * 10000000) + (CONVERT(bigint, DATEPART(ms, @dt)) * CONVERT(bigint,10000));
 
