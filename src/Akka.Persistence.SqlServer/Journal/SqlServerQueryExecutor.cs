@@ -28,7 +28,7 @@ namespace Akka.Persistence.SqlServer.Journal
                     {configuration.ManifestColumnName} NVARCHAR(500) NOT NULL,
 	                  {configuration.PayloadColumnName} VARBINARY(MAX) NOT NULL,
                     {configuration.TagsColumnName} NVARCHAR(100) NULL,
-                    CONSTRAINT PK_{configuration.JournalEventsTableName} PRIMARY KEY (configuration.OrderingColumnName),
+                    CONSTRAINT PK_{configuration.JournalEventsTableName} PRIMARY KEY ({configuration.OrderingColumnName}),
                     CONSTRAINT UQ_{configuration.JournalEventsTableName} UNIQUE ({configuration.PersistenceIdColumnName}, {configuration.SequenceNrColumnName})
                 );
                 CREATE INDEX IX_{configuration.JournalEventsTableName}_{configuration.SequenceNrColumnName} ON {configuration.FullJournalTableName}({configuration.SequenceNrColumnName});
