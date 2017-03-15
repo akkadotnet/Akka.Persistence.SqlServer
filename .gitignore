@@ -156,6 +156,9 @@ publish/
 # If using the old MSBuild-Integrated Package Restore, uncomment this:
 !**/packages/repositories.config
 
+# NuGet.exe
+/src/.nuget/[Nn]u[Gg]et.exe
+
 # Windows Azure Build Output
 csx/
 *.build.csdef
