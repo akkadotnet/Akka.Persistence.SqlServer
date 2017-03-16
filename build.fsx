@@ -56,7 +56,7 @@ let testOutput = "TestResults"
 let nugetDir = binDir @@ "nuget"
 let workingDir = binDir @@ "build"
 let libDir = workingDir @@ @"lib\net45\"
-let nugetExe = FullName @"src\.nuget\NuGet.exe"
+let nugetExe = FullName @"src\.nuget\nuget.exe"
 let slnFile = "./src/Akka.Persistence.SqlServer.sln"
 
 open Fake.RestorePackageHelper
