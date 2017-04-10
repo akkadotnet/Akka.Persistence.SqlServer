@@ -159,7 +159,7 @@ Target "PrepAppConfig" <| fun _ ->
     let ip = environVarOrNone "container_ip"
     match ip with
     | Some ip ->
-        let appConfig = "src/Akka.Persistence.SqlServer.Tests/App.config"
+        let appConfig = "src/Akka.Persistence.SqlServer.Tests/bin/Release/Akka.Persistence.SqlServer.Tests.dll.config"
         let configFile = readConfig appConfig
         let connStringNode = configFile.SelectSingleNode "//connectionStrings/add[@name='TestDb']"
         let connString = connStringNode.Attributes.["connectionString"].Value
@@ -173,7 +173,6 @@ Target "PrepAppConfig" <| fun _ ->
         log ("New App.config connString: " + Environment.NewLine + "\t" + newConnString.ToString())
 
         updateConnectionString "TestDb" (newConnString.ToString()) appConfig
-        CopyFile "src/Akka.Persistence.SqlServer.Tests/bin/Release/Akka.Persistence.SqlServer.Tests.dll.config" appConfig
 
     | None -> failwith "SQL Express Docker container not started successfully $env:container_ip not found... failing build"
 
@@ -224,7 +223,7 @@ let updateNugetPackages _ =
   let getPackages project =
     match project with
     | "Akka.Persistence.SqlServer" -> ["Akka.Persistence";"Akka.Persistence.Sql.Common"]
-    | "Akka.Persistence.SqlServer.Tests" -> ["Akka.Persistence.TestKit";"Akka.Persistence.Sql.Common";]
+    | "Akka.Persistence.SqlServer.Tests" -> ["Akka.Persistence.TestKit";"Akka.Persistence.Sql.Common";"Akka.Persistence.Sql.TestKit"]
     | _ -> []
 
   for projectFile in !! "src/**/*.csproj" do
