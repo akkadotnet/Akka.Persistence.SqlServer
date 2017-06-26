@@ -16,6 +16,19 @@ namespace Akka.Persistence.SqlServer.Journal
         public SqlServerQueryExecutor(QueryConfiguration configuration, Akka.Serialization.Serialization serialization, ITimestampProvider timestampProvider)
             : base(configuration, serialization, timestampProvider)
         {
+            ByTagSql = $@"
+            SELECT TOP (@Take)
+            e.{Configuration.PersistenceIdColumnName} as PersistenceId, 
+            e.{Configuration.SequenceNrColumnName} as SequenceNr, 
+            e.{Configuration.TimestampColumnName} as Timestamp, 
+            e.{Configuration.IsDeletedColumnName} as IsDeleted, 
+            e.{Configuration.ManifestColumnName} as Manifest, 
+            e.{Configuration.PayloadColumnName} as Payload,
+            e.{Configuration.OrderingColumnName} as Ordering
+            FROM {Configuration.FullJournalTableName} e
+            WHERE e.{Configuration.OrderingColumnName} > @Ordering AND e.{Configuration.TagsColumnName} LIKE @Tag
+            ORDER BY {Configuration.OrderingColumnName} ASC
+            ";
             CreateEventsJournalSql = $@"
             IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = '{configuration.SchemaName}' AND TABLE_NAME = '{configuration.JournalEventsTableName}')
             BEGIN
@@ -49,6 +62,7 @@ namespace Akka.Persistence.SqlServer.Journal
 
         protected override DbCommand CreateCommand(DbConnection connection) => new SqlCommand { Connection = (SqlConnection)connection };
 
+        protected override string ByTagSql { get; }
         protected override string CreateEventsJournalSql { get; }
         protected override string CreateMetaTableSql { get; }
     }
