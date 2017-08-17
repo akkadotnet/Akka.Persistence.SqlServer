@@ -7,7 +7,7 @@
 
 using Akka.Actor;
 using Akka.Configuration;
-using Akka.Persistence.TestKit.Journal;
+using Akka.Persistence.TCK.Journal;
 using Akka.TestKit;
 using Xunit;
 using Xunit.Abstractions;

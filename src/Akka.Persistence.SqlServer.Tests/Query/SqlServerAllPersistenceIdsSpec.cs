@@ -8,6 +8,7 @@
 using Akka.Configuration;
 using Akka.Persistence.Query.Sql;
 using Akka.Persistence.Sql.TestKit;
+using Akka.Persistence.TCK.Query;
 using Akka.Util.Internal;
 using Xunit;
 using Xunit.Abstractions;
@@ -15,7 +16,7 @@ using Xunit.Abstractions;
 namespace Akka.Persistence.SqlServer.Tests.Query
 {
     [Collection("SqlServerSpec")]
-    public class SqlServerAllPersistenceIdsSpec : AllPersistenceIdsSpec
+    public class SqlServerAllPersistenceIdsSpec : PersistenceIdsSpec
     {
         public static Config Config => ConfigurationFactory.ParseString($@"
             akka.loglevel = INFO
@@ -32,7 +33,7 @@ namespace Akka.Persistence.SqlServer.Tests.Query
             }}")
             .WithFallback(SqlReadJournal.DefaultConfiguration());
 
-        public SqlServerAllPersistenceIdsSpec(ITestOutputHelper output) : base(Config, output)
+        public SqlServerAllPersistenceIdsSpec(ITestOutputHelper output) : base(Config, nameof(SqlServerAllPersistenceIdsSpec), output)
         {
             DbUtils.Initialize();
         }

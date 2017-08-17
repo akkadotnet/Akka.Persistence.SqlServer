@@ -19,6 +19,7 @@ namespace Akka.Persistence.SqlServer.Snapshot
         {
             var sqlConfig = config.WithFallback(Extension.DefaultSnapshotConfig);
             QueryExecutor = new SqlServerQueryExecutor(new QueryConfiguration(
+                
                 schemaName: config.GetString("schema-name"),
                 snapshotTableName: config.GetString("table-name"),
                 persistenceIdColumnName: "PersistenceId",
@@ -26,7 +27,9 @@ namespace Akka.Persistence.SqlServer.Snapshot
                 payloadColumnName: "Snapshot",
                 manifestColumnName: "Manifest",
                 timestampColumnName: "Timestamp",
-                timeout: sqlConfig.GetTimeSpan("connection-timeout")),
+                timeout: sqlConfig.GetTimeSpan("connection-timeout"),
+                defaultSerializer: config.GetString("serializer")),
+                
                 Context.System.Serialization);
         }
 

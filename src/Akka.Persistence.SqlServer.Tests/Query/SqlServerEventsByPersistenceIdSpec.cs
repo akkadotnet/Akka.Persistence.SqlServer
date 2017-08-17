@@ -7,8 +7,7 @@
 
 using Akka.Configuration;
 using Akka.Persistence.Query.Sql;
-using Akka.Persistence.Sql.TestKit;
-using Akka.Util.Internal;
+using Akka.Persistence.TCK.Query;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -32,7 +31,7 @@ namespace Akka.Persistence.SqlServer.Tests.Query
             }}")
             .WithFallback(SqlReadJournal.DefaultConfiguration());
 
-        public SqlServerEventsByPersistenceIdSpec(ITestOutputHelper output) : base(Config, output)
+        public SqlServerEventsByPersistenceIdSpec(ITestOutputHelper output) : base(Config, nameof(SqlServerEventsByPersistenceIdSpec), output)
         {
             DbUtils.Initialize();
         }
