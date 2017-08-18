@@ -19,7 +19,7 @@ namespace Akka.Persistence.SqlServer.Tests
         public static void Initialize()
         {
             Config = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory())
-                .AddXmlFile("app.config").Build();
+                .AddXmlFile("app.xml").Build();
             var connectionString = Config.GetConnectionString("TestDb");
             var connectionBuilder = new SqlConnectionStringBuilder(connectionString);
 
