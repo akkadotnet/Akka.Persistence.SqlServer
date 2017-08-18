@@ -189,7 +189,7 @@ Target "PrepAppConfig" <| fun _ ->
       
           log ("New App.config connString: " + Environment.NewLine + "\t" + newConnString.ToString())
 
-          updateConnectionString "TestDb" (newConnString.ToString()) appConfig
+          updateConnectionString "TestDb" (newConnString.ToString()) config
 
         appConfig |> Seq.iter(updateConfig)
 
