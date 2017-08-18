@@ -5,6 +5,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
+using System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Xml;
 using System.Data.SqlClient;
@@ -20,7 +21,8 @@ namespace Akka.Persistence.SqlServer.Tests
         {
             Config = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory())
                 .AddXmlFile("app.xml").Build();
-            var connectionString = Config.GetConnectionString("TestDb");
+            var connectionString = Config.GetSection("connectionStrings:add:TestDb")["connectionString"];
+            Console.WriteLine("Found connectionString {0}", connectionString);
             var connectionBuilder = new SqlConnectionStringBuilder(connectionString);
 
             //connect to postgres database to create a new database
