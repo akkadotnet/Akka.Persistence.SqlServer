@@ -174,20 +174,24 @@ Target "PrepAppConfig" <| fun _ ->
     let ip = environVarOrNone "container_ip"
     match ip with
     | Some ip ->
-        let appConfig = "src/Akka.Persistence.SqlServer.Tests/bin/Release/app.xml"
-        let configFile = readConfig appConfig
-        let connStringNode = configFile.SelectSingleNode "//connectionStrings/add[@name='TestDb']"
-        let connString = connStringNode.Attributes.["connectionString"].Value
+        let appConfig = !! "src/Akka.Persistence.SqlServer.Tests/bin/Release/**/app.xml"
 
-        log ("Existing App.config connString: " + Environment.NewLine + "\t" + connString)
+        let updateConfig config =          
+          let configFile = readConfig config
+          let connStringNode = configFile.SelectSingleNode "//connectionStrings/add[@name='TestDb']"
+          let connString = connStringNode.Attributes.["connectionString"].Value
 
-        let newConnString = new DbConnectionStringBuilder();
-        newConnString.ConnectionString <- connString
-        newConnString.Item("data source") <- ip
-    
-        log ("New App.config connString: " + Environment.NewLine + "\t" + newConnString.ToString())
+          log ("Existing App.config connString: " + Environment.NewLine + "\t" + connString)
 
-        updateConnectionString "TestDb" (newConnString.ToString()) appConfig
+          let newConnString = new DbConnectionStringBuilder();
+          newConnString.ConnectionString <- connString
+          newConnString.Item("data source") <- ip
+      
+          log ("New App.config connString: " + Environment.NewLine + "\t" + newConnString.ToString())
+
+          updateConnectionString "TestDb" (newConnString.ToString()) appConfig
+
+        appConfig |> Seq.iter(updateConfig)
 
     | None -> failwith "SQL Express Docker container not started successfully $env:container_ip not found... failing build"
 
