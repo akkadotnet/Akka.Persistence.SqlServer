@@ -6,6 +6,7 @@
 //-----------------------------------------------------------------------
 
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.Xml;
 using System.Data.SqlClient;
 using System.IO;
 
@@ -18,7 +19,7 @@ namespace Akka.Persistence.SqlServer.Tests
         public static void Initialize()
         {
             Config = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appSettings.json").Build();
+                .AddXmlFile("app.config").Build();
             var connectionString = Config.GetConnectionString("TestDb");
             var connectionBuilder = new SqlConnectionStringBuilder(connectionString);
 

@@ -89,59 +89,17 @@ Target "Clean" (fun _ ->
 Target "Build" (fun _ ->
     let additionalArgs = if versionSuffix.Length > 0 then [sprintf "/p:VersionSuffix=%s" versionSuffix] else []  
 
-    if (isWindows) then
-        let projects = !! "./**/*.csproj"
+    let projects = !! "./**/*.csproj"
 
-        let runSingleProject project =
-            DotNetCli.Build
-                (fun p -> 
-                    { p with
-                        Project = project
-                        Configuration = configuration 
-                        AdditionalArgs = additionalArgs })
-
-        projects |> Seq.iter (runSingleProject)
-    else
+    let runSingleProject project =
         DotNetCli.Build
             (fun p -> 
                 { p with
-                    Project = "./Hyperion/Hyperion.csproj"
-                    Framework = "netstandard1.6"
+                    Project = project
                     Configuration = configuration 
                     AdditionalArgs = additionalArgs })
 
-        DotNetCli.Build
-            (fun p -> 
-                { p with
-                    Project = "./Hyperion.Tests/Hyperion.Tests.csproj"
-                    Framework = "netcoreapp1.0"
-                    Configuration = configuration 
-                    AdditionalArgs = additionalArgs })
-)
-
-//--------------------------------------------------------------------------------
-// Copy the build output to bin directory
-//--------------------------------------------------------------------------------
-
-Target "CopyOutput" (fun _ ->
-    // .NET 4.5
-    if (isWindows) then
-        DotNetCli.Publish
-            (fun p -> 
-                { p with
-                    Project = "./Hyperion/Hyperion.csproj"
-                    Framework = "net45"
-                    Output = outputBinariesNet45
-                    Configuration = configuration })
-
-    // .NET Core
-    DotNetCli.Publish
-        (fun p -> 
-            { p with
-                Project = "./Hyperion/Hyperion.csproj"
-                Framework = "netstandard1.6"
-                Output = outputBinariesNetStandard
-                Configuration = configuration })
+    projects |> Seq.iter (runSingleProject)
 )
 
 Target "BuildRelease" DoNothing
@@ -216,7 +174,7 @@ Target "PrepAppConfig" <| fun _ ->
     let ip = environVarOrNone "container_ip"
     match ip with
     | Some ip ->
-        let appConfig = "src/Akka.Persistence.SqlServer.Tests/bin/Release/appSettings.json"
+        let appConfig = "src/Akka.Persistence.SqlServer.Tests/bin/Release/app.config"
         let configFile = readConfig appConfig
         let connStringNode = configFile.SelectSingleNode "//connectionStrings/add[@name='TestDb']"
         let connString = connStringNode.Attributes.["connectionString"].Value
@@ -406,7 +364,7 @@ Target "HelpDocs" <| fun _ ->
 //--------------------------------------------------------------------------------
 
 // build dependencies
-"Clean" ==> "RestorePackages" ==> "Build" ==> "CopyOutput" ==> "BuildRelease"
+"Clean" ==> "RestorePackages" ==> "Build" ==> "BuildRelease"
 
 // tests dependencies
 "CleanTests" ==> "RunTests"
