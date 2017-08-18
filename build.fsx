@@ -145,12 +145,11 @@ Target "RunTests" <| fun _ ->
     ensureDirectory outputTests
 
     let runSingleProject project =
-        let result = ExecProcess(fun info ->
-            info.FileName <- "dotnet"
-            info.WorkingDirectory <- (Directory.GetParent project).FullName
-            info.Arguments <- (sprintf "xunit -c Release -nobuild -parallel none -teamcity -xml %s_xunit.xml" (outputTests @@ fileNameWithoutExt project))) (TimeSpan.FromMinutes 30.)
-        
-        ResultHandling.failBuildIfXUnitReportedError TestRunnerErrorLevel.DontFailBuild result
+        DotNetCli.Test
+                (fun p -> 
+                    { p with
+                        Project = project
+                        Configuration = configuration })
 
     projects |> Seq.iter (log)
     projects |> Seq.iter (runSingleProject)
@@ -375,7 +374,7 @@ Target "HelpDocs" <| fun _ ->
 
 // tests with docker dependencies
 Target "RunTestsWithDocker" DoNothing
-"CleanTests" ==> "ActivateFinalTargets" ==> "StartDbContainer" ==> "PrepAppConfig" ==> "RunTests" ==> "RunTestsWithDocker"
+//"CleanTests" ==> "ActivateFinalTargets" ==> "StartDbContainer" ==> "PrepAppConfig" ==> "RunTests" ==> "RunTestsWithDocker"
 
 // nuget dependencies
 "BuildRelease" ==> "CreateNuget" ==> "Nuget"
