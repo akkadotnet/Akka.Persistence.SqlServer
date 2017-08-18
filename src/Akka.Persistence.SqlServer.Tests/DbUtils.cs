@@ -17,20 +17,22 @@ namespace Akka.Persistence.SqlServer.Tests
     {
         public static IConfigurationRoot Config { get; private set; }
 
+        public static string ConnectionString { get; private set; }
+
         public static void Initialize()
         {
             Config = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory())
                 .AddXmlFile("app.xml").Build();
-            var connectionString = Config.GetSection("connectionStrings:add:TestDb")["connectionString"];
-            Console.WriteLine("Found connectionString {0}", connectionString);
-            var connectionBuilder = new SqlConnectionStringBuilder(connectionString);
+            ConnectionString = Config.GetSection("connectionStrings:add:TestDb")["connectionString"];
+            Console.WriteLine("Found connectionString {0}", ConnectionString);
+            var connectionBuilder = new SqlConnectionStringBuilder(ConnectionString);
 
             //connect to postgres database to create a new database
             var databaseName = connectionBuilder.InitialCatalog;
             connectionBuilder.InitialCatalog = "master";
-            connectionString = connectionBuilder.ToString();
+            ConnectionString = connectionBuilder.ToString();
 
-            using (var conn = new SqlConnection(connectionString))
+            using (var conn = new SqlConnection(ConnectionString))
             {
                 conn.Open();
 
@@ -54,10 +56,9 @@ namespace Akka.Persistence.SqlServer.Tests
 
         public static void Clean()
         {
-            var connectionString = Config.GetConnectionString("TestDb");
-            var connectionBuilder = new SqlConnectionStringBuilder(connectionString);
+            var connectionBuilder = new SqlConnectionStringBuilder(ConnectionString);
             var databaseName = connectionBuilder.InitialCatalog;
-            using (var conn = new SqlConnection(connectionString))
+            using (var conn = new SqlConnection(ConnectionString))
             {
                 conn.Open();
                 DropTables(conn, databaseName);
