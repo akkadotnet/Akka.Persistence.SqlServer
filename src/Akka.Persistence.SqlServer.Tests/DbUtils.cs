@@ -5,17 +5,21 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System.Configuration;
+using Microsoft.Extensions.Configuration;
 using System.Data.SqlClient;
+using System.IO;
 
 namespace Akka.Persistence.SqlServer.Tests
 {
     public static class DbUtils
     {
+        public static IConfigurationRoot Config { get; private set; }
 
         public static void Initialize()
         {
-            var connectionString = ConfigurationManager.ConnectionStrings["TestDb"].ConnectionString;
+            Config = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appSettings.json").Build();
+            var connectionString = Config.GetConnectionString("TestDb");
             var connectionBuilder = new SqlConnectionStringBuilder(connectionString);
 
             //connect to postgres database to create a new database
@@ -47,7 +51,7 @@ namespace Akka.Persistence.SqlServer.Tests
 
         public static void Clean()
         {
-            var connectionString = ConfigurationManager.ConnectionStrings["TestDb"].ConnectionString;
+            var connectionString = Config.GetConnectionString("TestDb");
             var connectionBuilder = new SqlConnectionStringBuilder(connectionString);
             var databaseName = connectionBuilder.InitialCatalog;
             using (var conn = new SqlConnection(connectionString))
