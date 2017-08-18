@@ -374,7 +374,7 @@ Target "HelpDocs" <| fun _ ->
 
 // tests with docker dependencies
 Target "RunTestsWithDocker" DoNothing
-//"CleanTests" ==> "ActivateFinalTargets" ==> "StartDbContainer" ==> "PrepAppConfig" ==> "RunTests" ==> "RunTestsWithDocker"
+"CleanTests" ==> "ActivateFinalTargets" ==> "StartDbContainer" ==> "PrepAppConfig" ==> "RunTests" ==> "RunTestsWithDocker"
 
 // nuget dependencies
 "BuildRelease" ==> "CreateNuget" ==> "Nuget"
