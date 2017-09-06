@@ -154,23 +154,28 @@ Target "RunTests" <| fun _ ->
     projects |> Seq.iter (log)
     projects |> Seq.iter (runSingleProject)
 
+let userEnvironVar name = System.Environment.GetEnvironmentVariable(name, EnvironmentVariableTarget.User)
+let userEnvironVarOrNone name =
+    let var = userEnvironVar name
+    if String.IsNullOrEmpty var then None
+    else Some var
+
 Target "StartDbContainer" <| fun _ ->
     let dockerImage = getBuildParamOrDefault "dockerImage" @"microsoft/mssql-server-windows-express"
     logfn "Starting SQL Express Docker container using image: %s" dockerImage
-    let posh = PowerShell.Create().AddScript(sprintf @"./docker_sql_express.ps1 -dockerImage %s" dockerImage)
-    posh.Invoke() |> Seq.iter (logfn "%O")
 
-    match posh.HadErrors with
-    | true -> posh.Streams.Error |> Seq.iter (logfn "\t %O")
-              failwith "SQL Express Docker container startup encountered an error... failing build"
-    | false -> ()
+    let result = ExecProcess(fun info ->
+        info.FileName <- "Powershell.exe"
+        info.WorkingDirectory <- __SOURCE_DIRECTORY__
+        info.Arguments <- sprintf "-ExecutionPolicy Bypass -File docker_sql_express.ps1 -dockerImage %s" dockerImage) (System.TimeSpan.FromMinutes 1.0)
+    if result <> 0 then failwith "Unable to execute docker_sql_experess.ps1"
 
-    match environVarOrNone "container_ip" with
+    match userEnvironVarOrNone "container_ip" with
     | Some x -> logfn "SQL Express Docker container created with IP address: %s" x
     | None -> failwith "SQL Express Docker container env:container_ip not set... failing build"
 
 Target "PrepAppConfig" <| fun _ -> 
-    let ip = environVarOrNone "container_ip"
+    let ip = userEnvironVarOrNone "container_ip"
     match ip with
     | Some ip ->
         let appConfig = !! "src/Akka.Persistence.SqlServer.Tests/app.xml"
@@ -185,7 +190,7 @@ Target "PrepAppConfig" <| fun _ ->
 
           let newConnString = new DbConnectionStringBuilder();
           newConnString.ConnectionString <- connString
-          newConnString.Item("data source") <- ip
+          newConnString.Item("Data Source") <- ip
       
           log ("New App.config connString: " + Environment.NewLine + "\t" + newConnString.ToString())
 
@@ -196,7 +201,7 @@ Target "PrepAppConfig" <| fun _ ->
     | None -> failwith "SQL Express Docker container not started successfully $env:container_ip not found... failing build"
 
 FinalTarget "TearDownDbContainer" <| fun _ ->
-    match environVarOrNone "container_name" with
+    match userEnvironVarOrNone "container_name" with
     | Some x -> let cmd = sprintf "docker stop %s; docker rm %s" x x
                 logf "Killing container: %s" x
                 PowerShell.Create()
