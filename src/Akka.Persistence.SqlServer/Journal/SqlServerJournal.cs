@@ -30,6 +30,7 @@ namespace Akka.Persistence.SqlServer.Journal
                 isDeletedColumnName: "IsDeleted",
                 tagsColumnName: "Tags",
                 orderingColumnName: "Ordering",
+                serializerIdColumnName: "SerializerId",
                 timeout: config.GetTimeSpan("connection-timeout"),
                 defaultSerializer: config.GetString("serializer")),
                     Context.System.Serialization,

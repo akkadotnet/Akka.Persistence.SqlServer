@@ -27,6 +27,7 @@ namespace Akka.Persistence.SqlServer.Snapshot
                 payloadColumnName: "Snapshot",
                 manifestColumnName: "Manifest",
                 timestampColumnName: "Timestamp",
+                serializerIdColumnName: "SerializerId",
                 timeout: sqlConfig.GetTimeSpan("connection-timeout"),
                 defaultSerializer: config.GetString("serializer")),
                 

@@ -3,7 +3,7 @@
     <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
   <PropertyGroup>
-    <XunitVersion>2.3.0-beta4-*</XunitVersion>
+    <XunitVersion>2.3.0-beta5-*</XunitVersion>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
