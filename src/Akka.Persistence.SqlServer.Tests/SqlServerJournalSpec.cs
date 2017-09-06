@@ -21,6 +21,8 @@ namespace Akka.Persistence.SqlServer.Tests
 
         static SqlServerJournalSpec()
         {
+            //need to make sure db is created before the tests start
+            DbUtils.Initialize();
             var specString = @"
                     akka.persistence {
                         publish-plugin-commands = on
@@ -38,10 +40,6 @@ namespace Akka.Persistence.SqlServer.Tests
                     }";
 
             SpecConfig = ConfigurationFactory.ParseString(specString);
-
-
-            //need to make sure db is created before the tests start
-            DbUtils.Initialize();
         }
 
         public SqlServerJournalSpec(ITestOutputHelper output)

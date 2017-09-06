@@ -1,6 +1,6 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <configuration>
   <connectionStrings>
-    <add name="TestDb" connectionString="Data Source=localhost\SQLEXPRESS;Database=akka_persistence_tests;User Id=akkadotnet;Password=akkadotnet;" />
+    <add name="TestDb" connectionString="data source=172.20.208.188;database=akka_persistence_tests;user id=akkadotnet;password=akkadotnet" />
   </connectionStrings>
 </configuration>

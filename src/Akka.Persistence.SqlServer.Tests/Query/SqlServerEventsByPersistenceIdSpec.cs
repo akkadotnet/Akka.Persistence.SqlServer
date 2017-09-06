@@ -6,6 +6,7 @@
 //-----------------------------------------------------------------------
 
 using Akka.Configuration;
+using Akka.Persistence.Query;
 using Akka.Persistence.Query.Sql;
 using Akka.Persistence.TCK.Query;
 using Xunit;
@@ -16,24 +17,31 @@ namespace Akka.Persistence.SqlServer.Tests.Query
     [Collection("SqlServerSpec")]
     public class SqlServerEventsByPersistenceIdSpec : EventsByPersistenceIdSpec
     {
-        public static Config Config => ConfigurationFactory.ParseString($@"
-            akka.loglevel = INFO
-            akka.test.single-expect-default = 10s
-            akka.persistence.journal.plugin = ""akka.persistence.journal.sql-server""
-            akka.persistence.journal.sql-server {{
-                class = ""Akka.Persistence.SqlServer.Journal.SqlServerJournal, Akka.Persistence.SqlServer""
-                plugin-dispatcher = ""akka.actor.default-dispatcher""
-                table-name = EventJournal
-                schema-name = dbo
-                auto-initialize = on
-                connection-string = """ + DbUtils.ConnectionString + @"""
-                refresh-interval = 1s
-            }}")
-            .WithFallback(SqlReadJournal.DefaultConfiguration());
+        public static Config Config
+        {
+            get
+            {
+                DbUtils.Initialize();
+                return ConfigurationFactory.ParseString($@"
+                    akka.loglevel = INFO
+                    akka.test.single-expect-default = 10s
+                    akka.persistence.journal.plugin = ""akka.persistence.journal.sql-server""
+                    akka.persistence.journal.sql-server {{
+                        class = ""Akka.Persistence.SqlServer.Journal.SqlServerJournal, Akka.Persistence.SqlServer""
+                        plugin-dispatcher = ""akka.actor.default-dispatcher""
+                        table-name = EventJournal
+                        schema-name = dbo
+                        auto-initialize = on
+                        connection-string = """ + DbUtils.ConnectionString + @"""
+                        refresh-interval = 1s
+                    }}")
+                    .WithFallback(SqlReadJournal.DefaultConfiguration());
+            }
+        }
 
         public SqlServerEventsByPersistenceIdSpec(ITestOutputHelper output) : base(Config, nameof(SqlServerEventsByPersistenceIdSpec), output)
         {
-            DbUtils.Initialize();
+            ReadJournal = Sys.ReadJournalFor<SqlReadJournal>(SqlReadJournal.Identifier);
         }
 
         protected override void Dispose(bool disposing)

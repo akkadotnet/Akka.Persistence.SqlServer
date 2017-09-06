@@ -24,7 +24,6 @@ namespace Akka.Persistence.SqlServer.Tests
             Config = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory())
                 .AddXmlFile("app.xml").Build();
             ConnectionString = Config.GetSection("connectionStrings:add:TestDb")["connectionString"];
-            Console.WriteLine("Found connectionString {0}", ConnectionString);
             var connectionBuilder = new SqlConnectionStringBuilder(ConnectionString);
 
             //connect to postgres database to create a new database
@@ -51,6 +50,10 @@ namespace Akka.Persistence.SqlServer.Tests
                 }
 
                 DropTables(conn, databaseName);
+
+                // set this back to the journal/snapshot database
+                connectionBuilder.InitialCatalog = databaseName;
+                ConnectionString = connectionBuilder.ToString();
             }
         }
 
