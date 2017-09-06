@@ -167,7 +167,7 @@ Target "StartDbContainer" <| fun _ ->
     let result = ExecProcess(fun info ->
         info.FileName <- "Powershell.exe"
         info.WorkingDirectory <- __SOURCE_DIRECTORY__
-        info.Arguments <- sprintf "-ExecutionPolicy Bypass -File docker_sql_express.ps1 -dockerImage %s" dockerImage) (System.TimeSpan.FromMinutes 1.0)
+        info.Arguments <- sprintf "-ExecutionPolicy Bypass -File docker_sql_express.ps1 -dockerImage %s" dockerImage) (System.TimeSpan.FromMinutes 5.0)
     if result <> 0 then failwith "Unable to execute docker_sql_experess.ps1"
 
     match userEnvironVarOrNone "container_ip" with
