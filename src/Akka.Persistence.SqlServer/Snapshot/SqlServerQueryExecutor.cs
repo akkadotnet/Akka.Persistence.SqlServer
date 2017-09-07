@@ -22,7 +22,7 @@ namespace Akka.Persistence.SqlServer.Snapshot
 	                {configuration.PersistenceIdColumnName} NVARCHAR(255) NOT NULL,
 	                {configuration.SequenceNrColumnName} BIGINT NOT NULL,
                     {configuration.TimestampColumnName} DATETIME2 NOT NULL,
-                    {configuration.ManifestColumnName} NVARCHAR(500) NULL,
+                    {configuration.ManifestColumnName} NVARCHAR(500) NOT NULL,
 	                {configuration.PayloadColumnName} VARBINARY(MAX) NOT NULL,
                     {configuration.SerializerIdColumnName} INTEGER NULL
                     CONSTRAINT PK_{configuration.SnapshotTableName} PRIMARY KEY ({configuration.PersistenceIdColumnName}, {configuration.SequenceNrColumnName})
