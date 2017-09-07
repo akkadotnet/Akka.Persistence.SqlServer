@@ -178,7 +178,7 @@ Target "PrepAppConfig" <| fun _ ->
     let ip = userEnvironVarOrNone "container_ip"
     match ip with
     | Some ip ->
-        let appConfig = !! "src/Akka.Persistence.SqlServer.Tests/app.xml"
+        let appConfig = !! "src/Akka.Persistence.SqlServer.Tests/AppConfig.xml"
 
         let updateConfig config =          
           let configFile = readConfig config

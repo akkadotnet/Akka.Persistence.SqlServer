@@ -24,8 +24,8 @@ namespace Akka.Persistence.SqlServer.Journal
             e.{Configuration.IsDeletedColumnName} as IsDeleted, 
             e.{Configuration.ManifestColumnName} as Manifest, 
             e.{Configuration.PayloadColumnName} as Payload,
-            e.{Configuration.OrderingColumnName} as Ordering,
-            e.{Configuration.SerializerIdColumnName} as SerializerId
+            e.{Configuration.SerializerIdColumnName} as SerializerId,
+            e.{Configuration.OrderingColumnName} as Ordering
             FROM {Configuration.FullJournalTableName} e
             WHERE e.{Configuration.OrderingColumnName} > @Ordering AND e.{Configuration.TagsColumnName} LIKE @Tag
             ORDER BY {Configuration.OrderingColumnName} ASC

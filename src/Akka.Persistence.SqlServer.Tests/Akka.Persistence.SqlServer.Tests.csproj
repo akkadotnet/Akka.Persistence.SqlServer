@@ -14,10 +14,7 @@
       <GenerateDocumentationFile>true</GenerateDocumentationFile>
     </PropertyGroup>
     <ItemGroup>
-      <None Remove="app.xml" />
-    </ItemGroup>
-    <ItemGroup>
-      <Content Include="app.xml">
+      <Content Include="AppConfig.xml">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </Content>
     </ItemGroup>
