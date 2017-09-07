@@ -5,25 +5,33 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System.Configuration;
+using System;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.Xml;
 using System.Data.SqlClient;
+using System.IO;
 
 namespace Akka.Persistence.SqlServer.Tests
 {
     public static class DbUtils
     {
+        public static IConfigurationRoot Config { get; private set; }
+
+        public static string ConnectionString { get; private set; }
 
         public static void Initialize()
         {
-            var connectionString = ConfigurationManager.ConnectionStrings["TestDb"].ConnectionString;
-            var connectionBuilder = new SqlConnectionStringBuilder(connectionString);
+            Config = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory())
+                .AddXmlFile("AppConfig.xml").Build();
+            ConnectionString = Config.GetSection("connectionStrings:add:TestDb")["connectionString"];
+            var connectionBuilder = new SqlConnectionStringBuilder(ConnectionString);
 
             //connect to postgres database to create a new database
             var databaseName = connectionBuilder.InitialCatalog;
             connectionBuilder.InitialCatalog = "master";
-            connectionString = connectionBuilder.ToString();
+            ConnectionString = connectionBuilder.ToString();
 
-            using (var conn = new SqlConnection(connectionString))
+            using (var conn = new SqlConnection(ConnectionString))
             {
                 conn.Open();
 
@@ -42,15 +50,18 @@ namespace Akka.Persistence.SqlServer.Tests
                 }
 
                 DropTables(conn, databaseName);
+
+                // set this back to the journal/snapshot database
+                connectionBuilder.InitialCatalog = databaseName;
+                ConnectionString = connectionBuilder.ToString();
             }
         }
 
         public static void Clean()
         {
-            var connectionString = ConfigurationManager.ConnectionStrings["TestDb"].ConnectionString;
-            var connectionBuilder = new SqlConnectionStringBuilder(connectionString);
+            var connectionBuilder = new SqlConnectionStringBuilder(ConnectionString);
             var databaseName = connectionBuilder.InitialCatalog;
-            using (var conn = new SqlConnection(connectionString))
+            using (var conn = new SqlConnection(ConnectionString))
             {
                 conn.Open();
                 DropTables(conn, databaseName);
@@ -61,12 +72,11 @@ namespace Akka.Persistence.SqlServer.Tests
         {
             using (var cmd = new SqlCommand())
             {
-                cmd.CommandText = string.Format(@"
-                    USE {0};
+                cmd.CommandText = $@"
+                    USE {databaseName};
                     IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'EventJournal') BEGIN DROP TABLE dbo.EventJournal END;
                     IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'Metadata') BEGIN DROP TABLE dbo.Metadata END;
-                    IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'SnapshotStore') BEGIN DROP TABLE dbo.SnapshotStore END;",
-                databaseName);
+                    IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'SnapshotStore') BEGIN DROP TABLE dbo.SnapshotStore END;";
                 cmd.Connection = conn;
                 cmd.ExecuteNonQuery();
             }

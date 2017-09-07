@@ -24,6 +24,7 @@ namespace Akka.Persistence.SqlServer.Journal
             e.{Configuration.IsDeletedColumnName} as IsDeleted, 
             e.{Configuration.ManifestColumnName} as Manifest, 
             e.{Configuration.PayloadColumnName} as Payload,
+            e.{Configuration.SerializerIdColumnName} as SerializerId,
             e.{Configuration.OrderingColumnName} as Ordering
             FROM {Configuration.FullJournalTableName} e
             WHERE e.{Configuration.OrderingColumnName} > @Ordering AND e.{Configuration.TagsColumnName} LIKE @Tag
@@ -34,13 +35,14 @@ namespace Akka.Persistence.SqlServer.Journal
             BEGIN
                 CREATE TABLE {configuration.FullJournalTableName} (
                     {configuration.OrderingColumnName} BIGINT IDENTITY(1,1) NOT NULL,
-	                  {configuration.PersistenceIdColumnName} NVARCHAR(255) NOT NULL,
-	                  {configuration.SequenceNrColumnName} BIGINT NOT NULL,
+	                {configuration.PersistenceIdColumnName} NVARCHAR(255) NOT NULL,
+	                {configuration.SequenceNrColumnName} BIGINT NOT NULL,
                     {configuration.TimestampColumnName} BIGINT NOT NULL,
                     {configuration.IsDeletedColumnName} BIT NOT NULL,
-                    {configuration.ManifestColumnName} NVARCHAR(500) NOT NULL,
-	                  {configuration.PayloadColumnName} VARBINARY(MAX) NOT NULL,
+                    {configuration.ManifestColumnName} NVARCHAR(500) NULL,
+	                {configuration.PayloadColumnName} VARBINARY(MAX) NOT NULL,
                     {configuration.TagsColumnName} NVARCHAR(100) NULL,
+                    {configuration.SerializerIdColumnName} INTEGER NULL,
                     CONSTRAINT PK_{configuration.JournalEventsTableName} PRIMARY KEY ({configuration.OrderingColumnName}),
                     CONSTRAINT UQ_{configuration.JournalEventsTableName} UNIQUE ({configuration.PersistenceIdColumnName}, {configuration.SequenceNrColumnName})
                 );

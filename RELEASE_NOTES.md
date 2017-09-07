@@ -1,3 +1,6 @@
+#### 1.3.0 August 18 2017 ####
+Support for Akka.NET 1.3, .NET Standard 1.6, and the first stable RTM release of Akka.Persistence.
+
 #### 1.1.1 August 01 2016 ####
 Support for Akka.NET 1.1 and Akka.Persistence.Query
 

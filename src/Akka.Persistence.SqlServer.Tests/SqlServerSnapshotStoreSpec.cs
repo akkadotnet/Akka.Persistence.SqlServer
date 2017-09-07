@@ -5,10 +5,8 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System.Configuration;
 using Akka.Configuration;
-using Akka.Persistence.TestKit.Snapshot;
-using Akka.TestKit;
+using Akka.Persistence.TCK.Snapshot;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -21,6 +19,8 @@ namespace Akka.Persistence.SqlServer.Tests
 
         static SqlServerSnapshotStoreSpec()
         {
+            //need to make sure db is created before the tests start
+            DbUtils.Initialize();
             var specString = @"
                         akka.persistence {
                             publish-plugin-commands = on
@@ -32,16 +32,12 @@ namespace Akka.Persistence.SqlServer.Tests
                                     table-name = SnapshotStore
                                     schema-name = dbo
                                     auto-initialize = on
-                                    connection-string-name = ""TestDb""
+                                    connection-string = """ + DbUtils.ConnectionString + @"""
                                 }
                             }
                         }";
 
             SpecConfig = ConfigurationFactory.ParseString(specString);
-
-
-            //need to make sure db is created before the tests start
-            DbUtils.Initialize();
         }
 
         public SqlServerSnapshotStoreSpec(ITestOutputHelper output)
