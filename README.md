@@ -81,7 +81,7 @@ CREATE TABLE {your_journal_table_name} (
   SequenceNr BIGINT NOT NULL,
   Timestamp BIGINT NOT NULL,
   IsDeleted BIT NOT NULL,
-  Manifest NVARCHAR(500) NULL,
+  Manifest NVARCHAR(500) NOT NULL,
   Payload VARBINARY(MAX) NOT NULL,
   Tags NVARCHAR(100) NULL,
   SerializerId INTEGER NULL
@@ -93,7 +93,7 @@ CREATE TABLE {your_snapshot_table_name} (
   PersistenceID NVARCHAR(255) NOT NULL,
   SequenceNr BIGINT NOT NULL,
   Timestamp DATETIME2 NOT NULL,
-  Manifest NVARCHAR(500) NULL,
+  Manifest NVARCHAR(500) NOT NULL,
   Snapshot VARBINARY(MAX) NOT NULL,
   SerializerId INTEGER NULL
   CONSTRAINT PK_{your_snapshot_table_name} PRIMARY KEY (PersistenceID, SequenceNr)
