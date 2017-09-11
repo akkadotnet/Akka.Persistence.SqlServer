@@ -6,9 +6,9 @@
 //-----------------------------------------------------------------------
 
 using Akka.Configuration;
+using Akka.Persistence.Query;
 using Akka.Persistence.Query.Sql;
-using Akka.Persistence.Sql.TestKit;
-using Akka.Util.Internal;
+using Akka.Persistence.TCK.Query;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -17,30 +17,37 @@ namespace Akka.Persistence.SqlServer.Tests.Query
     [Collection("SqlServerSpec")]
     public class SqlServerEventsByTagSpec : EventsByTagSpec
     {
-        public static Config Config => ConfigurationFactory.ParseString($@"
-            akka.loglevel = INFO
-            akka.test.single-expect-default = 10s
-            akka.persistence.journal.plugin = ""akka.persistence.journal.sql-server""
-            akka.persistence.journal.sql-server {{
-                event-adapters {{
-                  color-tagger  = ""Akka.Persistence.Sql.TestKit.ColorTagger, Akka.Persistence.Sql.TestKit""
-                }}
-                event-adapter-bindings = {{
-                  ""System.String"" = color-tagger
-                }}
-                class = ""Akka.Persistence.SqlServer.Journal.SqlServerJournal, Akka.Persistence.SqlServer""
-                plugin-dispatcher = ""akka.actor.default-dispatcher""
-                table-name = EventJournal
-                schema-name = dbo
-                auto-initialize = on
-                connection-string-name = ""TestDb""
-                refresh-interval = 1s
-            }}")
-            .WithFallback(SqlReadJournal.DefaultConfiguration());
-
-        public SqlServerEventsByTagSpec(ITestOutputHelper output) : base(Config, output)
+        public static Config Config
         {
-            DbUtils.Initialize();
+            get
+            {
+                DbUtils.Initialize();
+                return ConfigurationFactory.ParseString($@"
+                    akka.loglevel = INFO
+                    akka.test.single-expect-default = 10s
+                    akka.persistence.journal.plugin = ""akka.persistence.journal.sql-server""
+                    akka.persistence.journal.sql-server {{
+                        event-adapters {{
+                          color-tagger  = ""Akka.Persistence.TCK.Query.ColorFruitTagger, Akka.Persistence.TCK""
+                        }}
+                        event-adapter-bindings = {{
+                          ""System.String"" = color-tagger
+                        }}
+                        class = ""Akka.Persistence.SqlServer.Journal.SqlServerJournal, Akka.Persistence.SqlServer""
+                        plugin-dispatcher = ""akka.actor.default-dispatcher""
+                        table-name = EventJournal
+                        schema-name = dbo
+                        auto-initialize = on
+                        connection-string = """ + DbUtils.ConnectionString + @"""
+                        refresh-interval = 1s
+                    }}")
+                    .WithFallback(SqlReadJournal.DefaultConfiguration());
+            }
+        }
+
+        public SqlServerEventsByTagSpec(ITestOutputHelper output) : base(Config, nameof(SqlServerEventsByTagSpec), output)
+        {
+            ReadJournal = Sys.ReadJournalFor<SqlReadJournal>(SqlReadJournal.Identifier);
         }
 
         protected override void Dispose(bool disposing)

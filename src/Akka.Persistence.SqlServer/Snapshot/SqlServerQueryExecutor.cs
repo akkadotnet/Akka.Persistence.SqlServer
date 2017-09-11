@@ -23,7 +23,8 @@ namespace Akka.Persistence.SqlServer.Snapshot
 	                {configuration.SequenceNrColumnName} BIGINT NOT NULL,
                     {configuration.TimestampColumnName} DATETIME2 NOT NULL,
                     {configuration.ManifestColumnName} NVARCHAR(500) NOT NULL,
-	                {configuration.PayloadColumnName} VARBINARY(MAX) NOT NULL
+	                {configuration.PayloadColumnName} VARBINARY(MAX) NOT NULL,
+                    {configuration.SerializerIdColumnName} INTEGER NULL
                     CONSTRAINT PK_{configuration.SnapshotTableName} PRIMARY KEY ({configuration.PersistenceIdColumnName}, {configuration.SequenceNrColumnName})
                 );
                 CREATE INDEX IX_{configuration.SnapshotTableName}_{configuration.SequenceNrColumnName} ON {configuration.FullSnapshotTableName}({configuration.SequenceNrColumnName});
@@ -43,7 +44,8 @@ namespace Akka.Persistence.SqlServer.Snapshot
                 {configuration.SequenceNrColumnName} = @SequenceNr, 
                 {configuration.TimestampColumnName} = @Timestamp, 
                 {configuration.ManifestColumnName} = @Manifest, 
-                {configuration.PayloadColumnName} = @Payload 
+                {configuration.PayloadColumnName} = @Payload,
+                {configuration.SerializerIdColumnName} = @SerializerId
             WHERE {configuration.SequenceNrColumnName} = @SequenceNr 
             AND {configuration.PersistenceIdColumnName} = @PersistenceId ELSE 
             INSERT INTO {configuration.FullSnapshotTableName} (
@@ -51,8 +53,9 @@ namespace Akka.Persistence.SqlServer.Snapshot
                 {configuration.SequenceNrColumnName}, 
                 {configuration.TimestampColumnName}, 
                 {configuration.ManifestColumnName}, 
-                {configuration.PayloadColumnName}) 
-            VALUES (@PersistenceId, @SequenceNr, @Timestamp, @Manifest, @Payload);";
+                {configuration.PayloadColumnName},
+                {configuration.SerializerIdColumnName}) 
+            VALUES (@PersistenceId, @SequenceNr, @Timestamp, @Manifest, @Payload, @SerializerId);";
         }
 
         protected override DbCommand CreateCommand(DbConnection connection) => new SqlCommand {Connection = (SqlConnection) connection};

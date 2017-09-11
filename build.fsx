@@ -1,16 +1,17 @@
-﻿#I @"src/packages/FAKE/tools"
+﻿#I @"tools/FAKE/tools"
 #r "FakeLib.dll"
-#r "System.Xml.Linq"
+#r "System.Management.Automation"
 
 open System
 open System.IO
 open System.Text
-open Fake
-open Fake.FileUtils
-open Fake.TaskRunnerHelper
-open Fake.ProcessHelper
 
-cd __SOURCE_DIRECTORY__
+open Fake
+open Fake.DotNetCli
+open Fake.DocFxHelper
+open System.Management.Automation
+open System.Data.Common
+open Fake.FileHelper
 
 //--------------------------------------------------------------------------------
 // Information about the project for Nuget and Assembly info files
@@ -19,305 +20,282 @@ cd __SOURCE_DIRECTORY__
 
 let product = "Akka.NET"
 let authors = [ "Akka.NET Team" ]
-let copyright = "Copyright © 2013-2015 Akka.NET Team"
+let copyright = "Copyright © 2013-2017 Akka.NET Team"
 let company = "Akka.NET Team"
 let description = "Akka.NET is a port of the popular Java/Scala framework Akka to .NET"
 let tags = ["akka";"actors";"actor";"model";"Akka";"concurrency"]
 let configuration = "Release"
+let isUnstableDocs = hasBuildParam "unstable"
 
-// Read release notes and version
+let buildNumber = environVarOrDefault "BUILD_NUMBER" "0"
+let preReleaseVersionSuffix = "beta" + (if (not (buildNumber = "0")) then (buildNumber) else "")
+let versionSuffix = 
+    match (getBuildParam "nugetprerelease") with
+    | "dev" -> preReleaseVersionSuffix
+    | _ -> ""
 
-let parsedRelease =
-    File.ReadLines "RELEASE_NOTES.md"
+let releaseNotes =
+    File.ReadLines "./RELEASE_NOTES.md"
     |> ReleaseNotesHelper.parseReleaseNotes
 
-let envBuildNumber = System.Environment.GetEnvironmentVariable("BUILD_NUMBER")
-let buildNumber = if String.IsNullOrWhiteSpace(envBuildNumber) then "0" else envBuildNumber
+printfn "Assembly version: %s\nNuget version; %s\n" releaseNotes.AssemblyVersion releaseNotes.NugetVersion
 
-let version = parsedRelease.AssemblyVersion + "." + buildNumber
-let preReleaseVersion = version + "-beta"
+Target "AssemblyInfo" (fun _ ->
+    XmlPokeInnerText "./src/Akka.Persistence.SqlServer/Akka.Persistence.SqlServer.csproj" "//Project/PropertyGroup/VersionPrefix" releaseNotes.AssemblyVersion    
+    XmlPokeInnerText "./src/Akka.Persistence.SqlServer/Akka.Persistence.SqlServer.csproj" "//Project/PropertyGroup/PackageReleaseNotes" (releaseNotes.Notes |> String.concat "\n")
+)
 
-let isUnstableDocs = hasBuildParam "unstable"
-let isPreRelease = hasBuildParam "nugetprerelease"
-let release = if isPreRelease then ReleaseNotesHelper.ReleaseNotes.New(version, version + "-beta", parsedRelease.Notes) else parsedRelease
-
-printfn "Assembly version: %s\nNuget version; %s\n" release.AssemblyVersion release.NugetVersion
 //--------------------------------------------------------------------------------
 // Directories
 
-let binDir = "bin"
-let testOutput = "TestResults"
-
-let nugetDir = binDir @@ "nuget"
-let workingDir = binDir @@ "build"
-let libDir = workingDir @@ @"lib\net45\"
-let nugetExe = FullName @"src\.nuget\NuGet.exe"
+let output = __SOURCE_DIRECTORY__  @@ "bin"
+let outputTests = output @@ "TestResults"
+let outputPerfTests = output @@ "perf"
+let outputBinaries = output @@ "binaries"
+let outputNuGet = output @@ "nuget"
+let outputBinariesNet45 = outputBinaries @@ "net45"
+let outputBinariesNetStandard = outputBinaries @@ "netstandard1.6"
 let slnFile = "./src/Akka.Persistence.SqlServer.sln"
 
-open Fake.RestorePackageHelper
-Target "RestorePackages" (fun _ -> 
-     slnFile
-     |> RestoreMSSolutionPackages (fun p ->
-         { p with
-             OutputPath = "./src/packages"
-             Retries = 4 })
- )
+Target "RestorePackages" (fun _ ->
+    let additionalArgs = if versionSuffix.Length > 0 then [sprintf "/p:VersionSuffix=%s" versionSuffix] else []  
+
+    DotNetCli.Restore
+        (fun p -> 
+            { p with
+                Project = slnFile
+                NoCache = false 
+                AdditionalArgs = additionalArgs })
+)
 
 //--------------------------------------------------------------------------------
 // Clean build results
-
-Target "Clean" <| fun _ ->
-    DeleteDir binDir
-
 //--------------------------------------------------------------------------------
-// Generate AssemblyInfo files with the version for release notes 
 
-open AssemblyInfoFile
-
-Target "AssemblyInfo" <| fun _ ->
-    CreateCSharpAssemblyInfoWithConfig "src/SharedAssemblyInfo.cs" [
-        Attribute.Company company
-        Attribute.Copyright copyright
-        Attribute.Trademark ""
-        Attribute.Version version
-        Attribute.FileVersion version ] <| AssemblyInfoFileConfig(false)
-
+Target "Clean" (fun _ ->
+    CleanDir output
+    CleanDir outputTests
+    CleanDir outputPerfTests
+    CleanDir outputNuGet
+    CleanDir "docs/_site"
+    CleanDirs !! "./**/bin"
+    CleanDirs !! "./**/obj"
+)
 
 //--------------------------------------------------------------------------------
 // Build the solution
-
-Target "Build" <| fun _ ->
-
-    !! slnFile
-    |> MSBuildRelease "" "Rebuild"
-    |> ignore
-
-
-//--------------------------------------------------------------------------------
-// Copy the build output to bin directory
 //--------------------------------------------------------------------------------
 
-Target "CopyOutput" <| fun _ ->
-    
-    let copyOutput project =
-        let src = "src" @@ project @@ @"bin/Release/"
-        let dst = binDir @@ project
-        CopyDir dst src allFiles
-    [ "Akka.Persistence.SqlServer"
-      ]
-    |> List.iter copyOutput
+Target "Build" (fun _ ->
+    let additionalArgs = if versionSuffix.Length > 0 then [sprintf "/p:VersionSuffix=%s" versionSuffix] else []  
+
+    let projects = !! "./**/*.csproj"
+
+    let runSingleProject project =
+        DotNetCli.Build
+            (fun p -> 
+                { p with
+                    Project = project
+                    Configuration = configuration 
+                    AdditionalArgs = additionalArgs })
+
+    projects |> Seq.iter (runSingleProject)
+)
 
 Target "BuildRelease" DoNothing
-
-
 
 //--------------------------------------------------------------------------------
 // Tests targets
 //--------------------------------------------------------------------------------
+module internal ResultHandling =
+    let (|OK|Failure|) = function
+        | 0 -> OK
+        | x -> Failure x
+
+    let buildErrorMessage = function
+        | OK -> None
+        | Failure errorCode ->
+            Some (sprintf "xUnit2 reported an error (Error Code %d)" errorCode)
+
+    let failBuildWithMessage = function
+        | DontFailBuild -> traceError
+        | _ -> (fun m -> raise(FailedTestsException m))
+
+    let failBuildIfXUnitReportedError errorLevel =
+        buildErrorMessage
+        >> Option.iter (failBuildWithMessage errorLevel)
 
 //--------------------------------------------------------------------------------
 // Clean test output
+//--------------------------------------------------------------------------------
 
 Target "CleanTests" <| fun _ ->
-    DeleteDir testOutput
+    CleanDir outputTests
+
 //--------------------------------------------------------------------------------
 // Run tests
+//--------------------------------------------------------------------------------
 
-open XUnit2Helper
-Target "RunTests" <| fun _ ->  
-    let xunitTestAssemblies = !! "src/**/bin/Release/*.Tests.dll" 
+Target "RunTests" <| fun _ ->
+    let projects = 
+        match (isWindows) with 
+        | true -> !! "./src/**/*.Tests.csproj"
+        | _ -> !! "./src/**/*.Tests.csproj" // if you need to filter specs for Linux vs. Windows, do it here
 
-    mkdir testOutput
+    ensureDirectory outputTests
 
-    let xunitToolPath = findToolInSubPath "xunit.console.exe" "src/packages/xunit.runner.console*/tools"
-    printfn "Using XUnit runner: %s" xunitToolPath
-    xUnit2
-        (fun p -> { p with OutputDir = testOutput; ToolPath = xunitToolPath })
-        xunitTestAssemblies
+    let runSingleProject project =
+        let result = ExecProcess(fun info ->
+            info.FileName <- "dotnet"
+            info.WorkingDirectory <- (Directory.GetParent project).FullName
+            info.Arguments <- (sprintf "xunit -f net452 -c Release -parallel none -xml %s_net452_xunit.xml" (outputTests @@ fileNameWithoutExt project))) (TimeSpan.FromMinutes 30.)
+        
+        ResultHandling.failBuildIfXUnitReportedError TestRunnerErrorLevel.DontFailBuild result
+
+        // dotnet process will be killed by ExecProcess (or throw if can't) '
+        // but per https://github.com/xunit/xunit/issues/1338 xunit.console may not
+        killProcess "xunit.console"
+        killProcess "dotnet"
+
+    projects |> Seq.iter (log)
+    projects |> Seq.iter (runSingleProject)
+
+Target "RunTestsNetCore" <| fun _ ->
+    let projects = 
+        match (isWindows) with 
+        | true -> !! "./src/**/*.Tests.csproj"
+        | _ -> !! "./src/**/*.Tests.csproj" // if you need to filter specs for Linux vs. Windows, do it here
+
+    ensureDirectory outputTests
+
+    let runSingleProject project =
+        let result = ExecProcess(fun info ->
+            info.FileName <- "dotnet"
+            info.WorkingDirectory <- (Directory.GetParent project).FullName
+            info.Arguments <- (sprintf "xunit -f netcoreapp1.1 -c Release -parallel none -xml %s_netcore_xunit.xml" (outputTests @@ fileNameWithoutExt project))) (TimeSpan.FromMinutes 30.)
+        
+        ResultHandling.failBuildIfXUnitReportedError TestRunnerErrorLevel.DontFailBuild result
+
+        // dotnet process will be killed by ExecProcess (or throw if can't) '
+        // but per https://github.com/xunit/xunit/issues/1338 xunit.console may not
+        killProcess "xunit.console"
+        killProcess "dotnet"
+
+    projects |> Seq.iter (log)
+    projects |> Seq.iter (runSingleProject)
+
+let userEnvironVar name = System.Environment.GetEnvironmentVariable(name, EnvironmentVariableTarget.User)
+let userEnvironVarOrNone name =
+    let var = userEnvironVar name
+    if String.IsNullOrEmpty var then None
+    else Some var
+
+Target "StartDbContainer" <| fun _ ->
+    let dockerImage = getBuildParamOrDefault "dockerImage" @"microsoft/mssql-server-windows-express"
+    logfn "Starting SQL Express Docker container using image: %s" dockerImage
+
+    let result = ExecProcess(fun info ->
+        info.FileName <- "Powershell.exe"
+        info.WorkingDirectory <- __SOURCE_DIRECTORY__
+        info.Arguments <- sprintf "-ExecutionPolicy Bypass -File docker_sql_express.ps1 -dockerImage %s" dockerImage) (System.TimeSpan.FromMinutes 5.0)
+    if result <> 0 then failwith "Unable to execute docker_sql_experess.ps1"
+
+    match userEnvironVarOrNone "container_ip" with
+    | Some x -> logfn "SQL Express Docker container created with IP address: %s" x
+    | None -> failwith "SQL Express Docker container env:container_ip not set... failing build"
+
+Target "PrepAppConfig" <| fun _ -> 
+    let ip = userEnvironVarOrNone "container_ip"
+    match ip with
+    | Some ip ->
+        let appConfig = !! "src/Akka.Persistence.SqlServer.Tests/AppConfig.xml"
+
+        let updateConfig config =          
+          let configFile = readConfig config
+          let connStringNode = configFile.SelectSingleNode "//connectionStrings/add[@name='TestDb']"
+          let connString = connStringNode.Attributes.["connectionString"].Value
+
+          log(config)
+          log ("Existing App.config connString: " + Environment.NewLine + "\t" + connString)
+
+          let newConnString = new DbConnectionStringBuilder();
+          newConnString.ConnectionString <- connString
+          newConnString.Item("Data Source") <- ip
+      
+          log ("New App.config connString: " + Environment.NewLine + "\t" + newConnString.ToString())
+
+          updateConnectionString "TestDb" (newConnString.ToString()) config
+
+        appConfig |> Seq.iter(updateConfig)
+
+    | None -> failwith "SQL Express Docker container not started successfully $env:container_ip not found... failing build"
+
+FinalTarget "TearDownDbContainer" <| fun _ ->
+    match userEnvironVarOrNone "container_name" with
+    | Some x -> let cmd = sprintf "docker stop %s; docker rm %s" x x
+                logf "Killing container: %s" x
+                PowerShell.Create()
+                    .AddScript(cmd)
+                    .Invoke()
+                    |> ignore
+    | None -> ()
+
+Target "ActivateFinalTargets"  <| fun _ ->
+    ActivateFinalTarget "TearDownDbContainer"
 
 //--------------------------------------------------------------------------------
 // Nuget targets 
 //--------------------------------------------------------------------------------
+Target "Nuget" DoNothing
 
-module Nuget = 
-    // add Akka dependency for other projects
-    let getAkkaDependency project =
-        match project with
-        | _ -> []
-
-     // used to add -pre suffix to pre-release packages
-    let getProjectVersion project =
-      match project with
-      | "Akka.Cluster" -> preReleaseVersion
-      | persistence when persistence.StartsWith("Akka.Persistence") -> preReleaseVersion
-      | _ -> release.NugetVersion
-
-open Nuget
-open NuGet.Update
-
-//--------------------------------------------------------------------------------
-// Upgrade nuget package versions for dev and production
-
-let updateNugetPackages _ =
-  printfn "Updating NuGet dependencies"
-
-  let getConfigFile preRelease =
-    match preRelease with
-    | true -> "src/.nuget/NuGet.Dev.Config" 
-    | false -> "src/.nuget/NuGet.Config" 
-
-  let getPackages project =
+let overrideVersionSuffix (project:string) =
     match project with
-    | "Akka.Persistence.SqlServer" -> ["Akka.Persistence";"Akka.Persistence.Sql.Common"]
-    | "Akka.Persistence.SqlServer.Tests" -> ["Akka.Persistence.TestKit";"Akka.Persistence.Sql.Common";]
-    | _ -> []
+    | _ -> versionSuffix // add additional matches to publish different versions for different projects in solution
 
-  for projectFile in !! "src/**/*.csproj" do
-    printfn "Updating packages for %s" projectFile
-    let project = Path.GetFileNameWithoutExtension projectFile
-    let projectDir = Path.GetDirectoryName projectFile
-    let config = projectDir @@ "packages.config"
+Target "CreateNuget" (fun _ ->    
+    let projects = !! "src/**/*.csproj" 
+                   -- "src/**/*Tests.csproj" // Don't publish unit tests
+                   -- "src/**/*Tests*.csproj"
 
-    NugetUpdate
-        (fun p ->
+    let runSingleProject project =
+        DotNetCli.Pack
+            (fun p -> 
                 { p with
-                    ConfigFile = Some (getConfigFile isPreRelease)
-                    Prerelease = true
-                    ToolPath = nugetExe
-                    RepositoryPath = "src/Packages"
-                    Ids = getPackages project
-                    }) config
+                    Project = project
+                    Configuration = configuration
+                    AdditionalArgs = ["--include-symbols"]
+                    VersionSuffix = overrideVersionSuffix project
+                    OutputPath = outputNuGet })
 
-Target "UpdateDependencies" <| fun _ ->
-    printfn "Invoking updateNugetPackages"
-    updateNugetPackages()
+    projects |> Seq.iter (runSingleProject)
+)
 
-//--------------------------------------------------------------------------------
-// Clean nuget directory
+Target "PublishNuget" (fun _ ->
+    let projects = !! "./bin/nuget/*.nupkg" -- "./bin/nuget/*.symbols.nupkg"
+    let apiKey = getBuildParamOrDefault "nugetkey" ""
+    let source = getBuildParamOrDefault "nugetpublishurl" ""
+    let symbolSource = getBuildParamOrDefault "symbolspublishurl" ""
+    let shouldPublishSymbolsPackages = not (symbolSource = "")
 
-Target "CleanNuget" <| fun _ ->
-    CleanDir nugetDir
+    if (not (source = "") && not (apiKey = "") && shouldPublishSymbolsPackages) then
+        let runSingleProject project =
+            DotNetCli.RunCommand
+                (fun p -> 
+                    { p with 
+                        TimeOut = TimeSpan.FromMinutes 10. })
+                (sprintf "nuget push %s --api-key %s --source %s --symbol-source %s" project apiKey source symbolSource)
 
-//--------------------------------------------------------------------------------
-// Pack nuget for all projects
-// Publish to nuget.org if nugetkey is specified
+        projects |> Seq.iter (runSingleProject)
+    else if (not (source = "") && not (apiKey = "") && not shouldPublishSymbolsPackages) then
+        let runSingleProject project =
+            DotNetCli.RunCommand
+                (fun p -> 
+                    { p with 
+                        TimeOut = TimeSpan.FromMinutes 10. })
+                (sprintf "nuget push %s --api-key %s --source %s" project apiKey source)
 
-let createNugetPackages _ =
-    let removeDir dir = 
-        let del _ = 
-            DeleteDir dir
-            not (directoryExists dir)
-        runWithRetries del 3 |> ignore
-
-    ensureDirectory nugetDir
-    for nuspec in !! "src/**/*.nuspec" do
-        printfn "Creating nuget packages for %s" nuspec
-        
-        CleanDir workingDir
-
-        let project = Path.GetFileNameWithoutExtension nuspec 
-        let projectDir = Path.GetDirectoryName nuspec
-        let projectFile = (!! (projectDir @@ project + ".*sproj")) |> Seq.head
-        let releaseDir = projectDir @@ @"bin\Release"
-        let packages = projectDir @@ "packages.config"
-        let packageDependencies = if (fileExists packages) then (getDependencies packages) else []
-        let dependencies = packageDependencies @ getAkkaDependency project
-        let releaseVersion = getProjectVersion project
-
-        let pack outputDir symbolPackage =
-            NuGetHelper.NuGet
-                (fun p ->
-                    { p with
-                        Description = description
-                        Authors = authors
-                        Copyright = copyright
-                        Project =  project
-                        Properties = ["Configuration", "Release"]
-                        ReleaseNotes = release.Notes |> String.concat "\n"
-                        Version = releaseVersion
-                        Tags = tags |> String.concat " "
-                        OutputPath = outputDir
-                        WorkingDir = workingDir
-                        SymbolPackage = symbolPackage
-                        Dependencies = dependencies })
-                nuspec
-
-        // Copy dll, pdb and xml to libdir = workingDir/lib/net45/
-        ensureDirectory libDir
-        !! (releaseDir @@ project + ".dll")
-        ++ (releaseDir @@ project + ".pdb")
-        ++ (releaseDir @@ project + ".xml")
-        ++ (releaseDir @@ project + ".ExternalAnnotations.xml")
-        |> CopyFiles libDir
-
-        // Copy all src-files (.cs and .fs files) to workingDir/src
-        let nugetSrcDir = workingDir @@ @"src/"
-        // CreateDir nugetSrcDir
-
-        let isCs = hasExt ".cs"
-        let isFs = hasExt ".fs"
-        let isAssemblyInfo f = (filename f).Contains("AssemblyInfo")
-        let isSrc f = (isCs f || isFs f) && not (isAssemblyInfo f) 
-        CopyDir nugetSrcDir projectDir isSrc
-        
-        //Remove workingDir/src/obj and workingDir/src/bin
-        removeDir (nugetSrcDir @@ "obj")
-        removeDir (nugetSrcDir @@ "bin")
-
-        // Create both normal nuget package and symbols nuget package. 
-        // Uses the files we copied to workingDir and outputs to nugetdir
-        pack nugetDir NugetSymbolPackage.Nuspec
-
-
-let publishNugetPackages _ = 
-    let rec publishPackage url accessKey trialsLeft packageFile =
-        let tracing = enableProcessTracing
-        enableProcessTracing <- false
-        let args p =
-            match p with
-            | (pack, key, "") -> sprintf "push \"%s\" %s" pack key
-            | (pack, key, url) -> sprintf "push \"%s\" %s -source %s" pack key url
-
-        tracefn "Pushing %s Attempts left: %d" (FullName packageFile) trialsLeft
-        try 
-            let result = ExecProcess (fun info -> 
-                    info.FileName <- nugetExe
-                    info.WorkingDirectory <- (Path.GetDirectoryName (FullName packageFile))
-                    info.Arguments <- args (packageFile, accessKey,url)) (System.TimeSpan.FromMinutes 1.0)
-            enableProcessTracing <- tracing
-            if result <> 0 then failwithf "Error during NuGet symbol push. %s %s" nugetExe (args (packageFile, accessKey,url))
-        with exn -> 
-            if (trialsLeft > 0) then (publishPackage url accessKey (trialsLeft-1) packageFile)
-            else raise exn
-    let shouldPushNugetPackages = hasBuildParam "nugetkey"
-    let shouldPushSymbolsPackages = (hasBuildParam "symbolspublishurl") && (hasBuildParam "symbolskey")
-    
-    if (shouldPushNugetPackages || shouldPushSymbolsPackages) then
-        printfn "Pushing nuget packages"
-        if shouldPushNugetPackages then
-            let normalPackages= 
-                !! (nugetDir @@ "*.nupkg") 
-                -- (nugetDir @@ "*.symbols.nupkg") |> Seq.sortBy(fun x -> x.ToLower())
-            for package in normalPackages do
-                publishPackage (getBuildParamOrDefault "nugetpublishurl" "") (getBuildParam "nugetkey") 3 package
-
-        if shouldPushSymbolsPackages then
-            let symbolPackages= !! (nugetDir @@ "*.symbols.nupkg") |> Seq.sortBy(fun x -> x.ToLower())
-            for package in symbolPackages do
-                publishPackage (getBuildParam "symbolspublishurl") (getBuildParam "symbolskey") 3 package
-
-
-Target "Nuget" <| fun _ -> 
-    createNugetPackages()
-    publishNugetPackages()
-
-Target "CreateNuget" <| fun _ -> 
-    createNugetPackages()
-
-Target "PublishNuget" <| fun _ -> 
-    publishNugetPackages()
-
-
+        projects |> Seq.iter (runSingleProject)
+)
 
 //--------------------------------------------------------------------------------
 // Help 
@@ -332,7 +310,9 @@ Target "Help" <| fun _ ->
       " * Build      Builds"
       " * Nuget      Create and optionally publish nugets packages"
       " * RunTests   Runs tests"
+      " * RunTestsWithDocker Runs tests against a Docker container using the microsoft/sql-server-windows-express image"
       " * All        Builds, run tests, creates and optionally publish nuget packages"
+      " * AllWithDockerTests Builds, runs Docker container-based tests, creates and optionally publish nuget packages"
       ""
       " Other Targets"
       " * Help       Display this help" 
@@ -421,18 +401,28 @@ Target "HelpDocs" <| fun _ ->
 //--------------------------------------------------------------------------------
 
 // build dependencies
-"Clean" ==> "AssemblyInfo" ==> "RestorePackages" ==> "UpdateDependencies" ==> "Build" ==> "CopyOutput" ==> "BuildRelease"
+"Clean" ==> "RestorePackages" ==> "AssemblyInfo" ==> "Build" ==> "BuildRelease"
 
 // tests dependencies
 "CleanTests" ==> "RunTests"
 
+// tests with docker dependencies
+Target "RunTestsWithDocker" DoNothing
+"CleanTests" ==> "ActivateFinalTargets" ==> "StartDbContainer" ==> "PrepAppConfig" ==> "RunTests" ==> "RunTestsNetCore" ==> "RunTestsWithDocker"
+
 // nuget dependencies
-"CleanNuget" ==> "CreateNuget"
-"CleanNuget" ==> "BuildRelease" ==> "Nuget"
+"BuildRelease" ==> "CreateNuget"
+"CreateNuget" ==> "PublishNuget" ==> "Nuget"
 
 Target "All" DoNothing
 "BuildRelease" ==> "All"
 "RunTests" ==> "All"
 "Nuget" ==> "All"
 
+Target "AllWithDockerTests" DoNothing
+"BuildRelease" ==> "AllWithDockerTests"
+"RunTestsWithDocker" ==> "AllWithDockerTests"
+"Nuget" ==> "AllWithDockerTests"
+
 RunTargetOrDefault "Help"
+
