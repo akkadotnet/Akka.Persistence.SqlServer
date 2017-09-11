@@ -25,28 +25,26 @@ let company = "Akka.NET Team"
 let description = "Akka.NET is a port of the popular Java/Scala framework Akka to .NET"
 let tags = ["akka";"actors";"actor";"model";"Akka";"concurrency"]
 let configuration = "Release"
-
-// Read release notes and version
-
-let parsedRelease =
-    File.ReadLines "RELEASE_NOTES.md"
-    |> ReleaseNotesHelper.parseReleaseNotes
-
-let envBuildNumber = System.Environment.GetEnvironmentVariable("BUILD_NUMBER")
-let buildNumber = if String.IsNullOrWhiteSpace(envBuildNumber) then "0" else envBuildNumber
-
-let version = parsedRelease.AssemblyVersion + "." + buildNumber
-let preReleaseVersion = version + "-beta"
-
 let isUnstableDocs = hasBuildParam "unstable"
-let isPreRelease = hasBuildParam "nugetprerelease"
-let release = if isPreRelease then ReleaseNotesHelper.ReleaseNotes.New(version, version + "-beta", parsedRelease.Notes) else parsedRelease
+
+let buildNumber = environVarOrDefault "BUILD_NUMBER" "0"
+let preReleaseVersionSuffix = "beta" + (if (not (buildNumber = "0")) then (buildNumber) else "")
 let versionSuffix = 
     match (getBuildParam "nugetprerelease") with
-    | "dev" -> (if (not (buildNumber = "0")) then (buildNumber) else "") + "-beta"
+    | "dev" -> preReleaseVersionSuffix
     | _ -> ""
 
-printfn "Assembly version: %s\nNuget version; %s\n" release.AssemblyVersion release.NugetVersion
+let releaseNotes =
+    File.ReadLines "./RELEASE_NOTES.md"
+    |> ReleaseNotesHelper.parseReleaseNotes
+
+printfn "Assembly version: %s\nNuget version; %s\n" releaseNotes.AssemblyVersion releaseNotes.NugetVersion
+
+Target "AssemblyInfo" (fun _ ->
+    XmlPokeInnerText "./src/Akka.Persistence.SqlServer/Akka.Persistence.SqlServer.csproj" "//Project/PropertyGroup/VersionPrefix" releaseNotes.AssemblyVersion    
+    XmlPokeInnerText "./src/Akka.Persistence.SqlServer/Akka.Persistence.SqlServer.csproj" "//Project/PropertyGroup/PackageReleaseNotes" (releaseNotes.Notes |> String.concat "\n")
+)
+
 //--------------------------------------------------------------------------------
 // Directories
 
@@ -72,6 +70,7 @@ Target "RestorePackages" (fun _ ->
 
 //--------------------------------------------------------------------------------
 // Clean build results
+//--------------------------------------------------------------------------------
 
 Target "Clean" (fun _ ->
     CleanDir output
@@ -85,6 +84,7 @@ Target "Clean" (fun _ ->
 
 //--------------------------------------------------------------------------------
 // Build the solution
+//--------------------------------------------------------------------------------
 
 Target "Build" (fun _ ->
     let additionalArgs = if versionSuffix.Length > 0 then [sprintf "/p:VersionSuffix=%s" versionSuffix] else []  
@@ -103,8 +103,6 @@ Target "Build" (fun _ ->
 )
 
 Target "BuildRelease" DoNothing
-
-
 
 //--------------------------------------------------------------------------------
 // Tests targets
@@ -129,11 +127,14 @@ module internal ResultHandling =
 
 //--------------------------------------------------------------------------------
 // Clean test output
+//--------------------------------------------------------------------------------
 
 Target "CleanTests" <| fun _ ->
     CleanDir outputTests
+
 //--------------------------------------------------------------------------------
 // Run tests
+//--------------------------------------------------------------------------------
 
 Target "RunTests" <| fun _ ->
     let projects = 
@@ -250,6 +251,7 @@ Target "Nuget" DoNothing
 let overrideVersionSuffix (project:string) =
     match project with
     | _ -> versionSuffix // add additional matches to publish different versions for different projects in solution
+
 Target "CreateNuget" (fun _ ->    
     let projects = !! "src/**/*.csproj" 
                    -- "src/**/*Tests.csproj" // Don't publish unit tests
@@ -294,9 +296,6 @@ Target "PublishNuget" (fun _ ->
 
         projects |> Seq.iter (runSingleProject)
 )
-
-
-
 
 //--------------------------------------------------------------------------------
 // Help 
@@ -402,7 +401,7 @@ Target "HelpDocs" <| fun _ ->
 //--------------------------------------------------------------------------------
 
 // build dependencies
-"Clean" ==> "RestorePackages" ==> "Build" ==> "BuildRelease"
+"Clean" ==> "RestorePackages" ==> "AssemblyInfo" ==> "Build" ==> "BuildRelease"
 
 // tests dependencies
 "CleanTests" ==> "RunTests"
@@ -412,7 +411,8 @@ Target "RunTestsWithDocker" DoNothing
 "CleanTests" ==> "ActivateFinalTargets" ==> "StartDbContainer" ==> "PrepAppConfig" ==> "RunTests" ==> "RunTestsNetCore" ==> "RunTestsWithDocker"
 
 // nuget dependencies
-"BuildRelease" ==> "CreateNuget" ==> "Nuget"
+"BuildRelease" ==> "CreateNuget"
+"CreateNuget" ==> "PublishNuget" ==> "Nuget"
 
 Target "All" DoNothing
 "BuildRelease" ==> "All"
