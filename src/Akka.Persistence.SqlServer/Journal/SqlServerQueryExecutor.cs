@@ -39,7 +39,7 @@ namespace Akka.Persistence.SqlServer.Journal
 	                {configuration.SequenceNrColumnName} BIGINT NOT NULL,
                     {configuration.TimestampColumnName} BIGINT NOT NULL,
                     {configuration.IsDeletedColumnName} BIT NOT NULL,
-                    {configuration.ManifestColumnName} NVARCHAR(500) NULL,
+                    {configuration.ManifestColumnName} NVARCHAR(500) NOT NULL,
 	                {configuration.PayloadColumnName} VARBINARY(MAX) NOT NULL,
                     {configuration.TagsColumnName} NVARCHAR(100) NULL,
                     {configuration.SerializerIdColumnName} INTEGER NULL,

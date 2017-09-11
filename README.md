@@ -70,6 +70,20 @@ akka.persistence{
 	}
 }
 ```
+
+### Batching journal
+
+Since version 1.1.3 an alternative, experimental type of the journal has been released, known as batching journal. It's optimized for concurrent writes made by multiple persistent actors, thanks to the ability of batching multiple SQL operations to be executed within the same database connection. In some of those situations we've noticed over an order of magnitude in event write speed.
+
+To use batching journal, simply change `akka.persistence.journal.sql-server.class` to *Akka.Persistence.SqlServer.Journal.BatchingSqlServerJournal, Akka.Persistence.SqlServer*.
+
+Additionally to the existing settings, batching journal introduces few more:
+
+- `isolation-level` to define isolation level for transactions used withing event reads/writes. Possible options: *unspecified* (default), *chaos*, *read-committed*, *read-uncommitted*, *repeatable-read*, *serializable* or *snapshot*.
+- `max-concurrent-operations` is used to limit the maximum number of database connections used by this journal. You can use them in situations when you want to partition the same ADO.NET pool between multiple components. Current default: *64*.
+- `max-batch-size` defines the maximum number of SQL operations, that are allowed to be executed using the same connection. When there are more operations, they will chunked into subsequent connections. Current default: *100*.
+- `max-buffer-size` defines maximum buffer capacity for the requests send to a journal. Once buffer gets overflown, a journal will call `OnBufferOverflow` method. By default it will reject all incoming requests until the buffer space gets freed. You can inherit from `BatchingSqlServerJournal` and override that method to provide a custom backpressure strategy. Current default: *500 000*.
+
 ### Table Schema
 
 SQL Server persistence plugin defines a default table schema used for journal, snapshot store and metadata table.
@@ -81,7 +95,7 @@ CREATE TABLE {your_journal_table_name} (
   SequenceNr BIGINT NOT NULL,
   Timestamp BIGINT NOT NULL,
   IsDeleted BIT NOT NULL,
-  Manifest NVARCHAR(500) NULL,
+  Manifest NVARCHAR(500) NOT NULL,
   Payload VARBINARY(MAX) NOT NULL,
   Tags NVARCHAR(100) NULL,
   SerializerId INTEGER NULL
@@ -93,7 +107,7 @@ CREATE TABLE {your_snapshot_table_name} (
   PersistenceID NVARCHAR(255) NOT NULL,
   SequenceNr BIGINT NOT NULL,
   Timestamp DATETIME2 NOT NULL,
-  Manifest NVARCHAR(500) NULL,
+  Manifest NVARCHAR(500) NOT NULL,
   Snapshot VARBINARY(MAX) NOT NULL,
   SerializerId INTEGER NULL
   CONSTRAINT PK_{your_snapshot_table_name} PRIMARY KEY (PersistenceID, SequenceNr)
