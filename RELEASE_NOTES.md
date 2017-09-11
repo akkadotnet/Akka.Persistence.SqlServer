@@ -1,5 +1,15 @@
-#### 1.3.0 August 18 2017 ####
+#### 1.3.1 September 11 2017 ####
+
 Support for Akka.NET 1.3, .NET Standard 1.6, and the first stable RTM release of Akka.Persistence.
+
+**Migration from 1.1.1.7-beta Up**
+
+The event journal and snapshot store schema has changed with this release.  In order to keep existing stores compatible with this release, you **must** add a column to both stores for `SerializerId` like so:
+
+```sql
+ALTER TABLE {your_journal_table_name} ADD COLUMN SerializerId INTEGER NULL
+ALTER TABLE {your_snapshot_table_name} ADD COLUMN SerializerId INTEGER NULL
+```
 
 #### 1.1.1 August 01 2016 ####
 Support for Akka.NET 1.1 and Akka.Persistence.Query
