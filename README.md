@@ -2,8 +2,6 @@
 
 Akka Persistence journal and snapshot store backed by SQL Server database.
 
-**WARNING: Akka.Persistence.SqlServer plugin is still in beta and it's mechanics described bellow may be still subject to change**.
-
 ### Configuration
 
 Both journal and snapshot store share the same configuration keys (however they resides in separate scopes, so they are definied distinctly for either journal or snapshot store):
