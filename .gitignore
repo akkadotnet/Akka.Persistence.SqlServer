@@ -22,6 +22,12 @@ us.stackdump
 *.user
 *.sln.docstates
 
+#FAKE
+tools/
+
+#VS
+.vs/
+
 #MonoDevelop
 *.userprefs
 

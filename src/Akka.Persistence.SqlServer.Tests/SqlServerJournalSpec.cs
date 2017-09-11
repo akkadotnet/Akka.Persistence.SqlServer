@@ -7,7 +7,7 @@
 
 using Akka.Actor;
 using Akka.Configuration;
-using Akka.Persistence.TestKit.Journal;
+using Akka.Persistence.TCK.Journal;
 using Akka.TestKit;
 using Xunit;
 using Xunit.Abstractions;
@@ -21,6 +21,8 @@ namespace Akka.Persistence.SqlServer.Tests
 
         static SqlServerJournalSpec()
         {
+            //need to make sure db is created before the tests start
+            DbUtils.Initialize();
             var specString = @"
                     akka.persistence {
                         publish-plugin-commands = on
@@ -32,16 +34,12 @@ namespace Akka.Persistence.SqlServer.Tests
                                 table-name = EventJournal
                                 schema-name = dbo
                                 auto-initialize = on
-                                connection-string-name = ""TestDb""
+                                connection-string = """+ DbUtils.ConnectionString +@"""
                             }
                         }
                     }";
 
             SpecConfig = ConfigurationFactory.ParseString(specString);
-
-
-            //need to make sure db is created before the tests start
-            DbUtils.Initialize();
         }
 
         public SqlServerJournalSpec(ITestOutputHelper output)
@@ -57,7 +55,7 @@ namespace Akka.Persistence.SqlServer.Tests
         }
 
         [Fact]
-        public void Journal_should_not_reset_HighestSequenceNr_after_journal_cleanup()
+        public void Journal_should_not_reset_HighestSequenceNr_after_journal_cleanup1()
         {
             TestProbe _receiverProbe = CreateTestProbe();
             Journal.Tell(new ReplayMessages(0, long.MaxValue, long.MaxValue, Pid, _receiverProbe.Ref));

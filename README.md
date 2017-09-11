@@ -34,7 +34,7 @@ akka.persistence{
 
 			# should corresponding journal table be initialized automatically
 			auto-initialize = off
-			
+
 			# timestamp provider used for generation of journal entries timestamps
 			timestamp-provider = "Akka.Persistence.Sql.Common.Journal.DefaultTimestampProvider, Akka.Persistence.Sql.Common"
 
@@ -45,7 +45,7 @@ akka.persistence{
 
 	snapshot-store {
 		sql-server {
-		
+
 			# qualified type name of the SQL Server persistence journal actor
 			class = "Akka.Persistence.SqlServer.Snapshot.SqlServerSnapshotStore, Akka.Persistence.SqlServer"
 
@@ -70,20 +70,36 @@ akka.persistence{
 	}
 }
 ```
+
+### Batching journal
+
+Since version 1.1.3 an alternative, experimental type of the journal has been released, known as batching journal. It's optimized for concurrent writes made by multiple persistent actors, thanks to the ability of batching multiple SQL operations to be executed within the same database connection. In some of those situations we've noticed over an order of magnitude in event write speed.
+
+To use batching journal, simply change `akka.persistence.journal.sql-server.class` to *Akka.Persistence.SqlServer.Journal.BatchingSqlServerJournal, Akka.Persistence.SqlServer*.
+
+Additionally to the existing settings, batching journal introduces few more:
+
+- `isolation-level` to define isolation level for transactions used withing event reads/writes. Possible options: *unspecified* (default), *chaos*, *read-committed*, *read-uncommitted*, *repeatable-read*, *serializable* or *snapshot*.
+- `max-concurrent-operations` is used to limit the maximum number of database connections used by this journal. You can use them in situations when you want to partition the same ADO.NET pool between multiple components. Current default: *64*.
+- `max-batch-size` defines the maximum number of SQL operations, that are allowed to be executed using the same connection. When there are more operations, they will chunked into subsequent connections. Current default: *100*.
+- `max-buffer-size` defines maximum buffer capacity for the requests send to a journal. Once buffer gets overflown, a journal will call `OnBufferOverflow` method. By default it will reject all incoming requests until the buffer space gets freed. You can inherit from `BatchingSqlServerJournal` and override that method to provide a custom backpressure strategy. Current default: *500 000*.
+
 ### Table Schema
 
 SQL Server persistence plugin defines a default table schema used for journal, snapshot store and metadata table.
 
 ```SQL
 CREATE TABLE {your_journal_table_name} (
-  Ordering BIGINT IDENTITY(1,1) PRIMARY KEY NOT NULL,
+  Ordering BIGINT IDENTITY(1,1) NOT NULL,
   PersistenceID NVARCHAR(255) NOT NULL,
   SequenceNr BIGINT NOT NULL,
   Timestamp BIGINT NOT NULL,
   IsDeleted BIT NOT NULL,
   Manifest NVARCHAR(500) NOT NULL,
   Payload VARBINARY(MAX) NOT NULL,
-  Tags NVARCHAR(100) NULL
+  Tags NVARCHAR(100) NULL,
+  SerializerId INTEGER NULL
+	CONSTRAINT PK_{your_journal_table_name} PRIMARY KEY (Ordering),
   CONSTRAINT QU_{your_journal_table_name} UNIQUE (PersistenceID, SequenceNr)
 );
 
@@ -92,7 +108,8 @@ CREATE TABLE {your_snapshot_table_name} (
   SequenceNr BIGINT NOT NULL,
   Timestamp DATETIME2 NOT NULL,
   Manifest NVARCHAR(500) NOT NULL,
-  Snapshot VARBINARY(MAX) NOT NULL
+  Snapshot VARBINARY(MAX) NOT NULL,
+  SerializerId INTEGER NULL
   CONSTRAINT PK_{your_snapshot_table_name} PRIMARY KEY (PersistenceID, SequenceNr)
 );
 
@@ -117,12 +134,20 @@ class MyCustomSqlServerJournal: Akka.Persistence.SqlServer.Journal.SqlServerJour
 
 ### Migration
 
+#### From 1.1.2 to 1.3.1
+
+```sql
+ALTER TABLE {your_journal_table_name} ADD COLUMN SerializerId INTEGER NULL
+ALTER TABLE {your_snapshot_table_name} ADD COLUMN SerializerId INTEGER NULL
+```
+
 #### From 1.1.0 to 1.1.2
 
 ```sql
 ALTER TABLE {your_journal_table_name} DROP CONSTRAINT PK_{your_journal_table_name};
-ALTER TABLE {your_journal_table_name} ADD Ordering BIGINT IDENTITY(1,1) PRIMARY KEY NOT NULL;
-ALTER TABLE ADD CONSTRAINT QU_{your_journal_table_name} UNIQUE (PersistenceID, SequenceNr);
+ALTER TABLE {your_journal_table_name} ADD Ordering BIGINT IDENTITY(1,1) NOT NULL;
+ALTER TABLE {your_journal_table_name} ADD CONSTRAINT PK_EventJournal PRIMARY KEY (Ordering);
+ALTER TABLE {your_journal_table_name} ADD CONSTRAINT QU_{your_journal_table_name} UNIQUE (PersistenceID, SequenceNr);
 ```
 
 #### From 1.0.8 to 1.1.0
@@ -133,7 +158,7 @@ CREATE FUNCTION [dbo].[Ticks] (@dt DATETIME)
 RETURNS BIGINT
 WITH SCHEMABINDING
 AS
-BEGIN 
+BEGIN
 DECLARE @year INT = DATEPART(yyyy, @dt)
 DECLARE @month INT = DATEPART(mm, @dt)
 DECLARE @day INT = DATEPART(dd, @dt)
@@ -160,7 +185,7 @@ DECLARE @days INT =
     IF  @year % 4 = 0 AND (@year % 100  != 0 OR (@year % 100 = 0 AND @year % 400 = 0)) AND @month > 2 BEGIN
         SET @days = @days + 1
     END
-RETURN CONVERT(bigint, 
+RETURN CONVERT(bigint,
     ((((((((@year - 1) * 365) + ((@year - 1) / 4)) - ((@year - 1) / 100)) + ((@year - 1) / 400)) + @days) + @day) - 1) * 864000000000) +
     ((((@hour * 3600) + CONVERT(bigint, @min) * 60) + CONVERT(bigint, @sec)) * 10000000) + (CONVERT(bigint, DATEPART(ms, @dt)) * CONVERT(bigint,10000));
 
