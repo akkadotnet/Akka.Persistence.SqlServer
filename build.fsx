@@ -135,8 +135,7 @@ Target "CleanTests" <| fun _ ->
 //--------------------------------------------------------------------------------
 // Run tests
 
-open Fake.Testing
-Target "RunTests" <| fun _ ->  
+Target "RunTests" <| fun _ ->
     let projects = 
         match (isWindows) with 
         | true -> !! "./src/**/*.Tests.csproj"
@@ -145,11 +144,41 @@ Target "RunTests" <| fun _ ->
     ensureDirectory outputTests
 
     let runSingleProject project =
-        DotNetCli.Test
-                (fun p -> 
-                    { p with
-                        Project = project
-                        Configuration = configuration })
+        let result = ExecProcess(fun info ->
+            info.FileName <- "dotnet"
+            info.WorkingDirectory <- (Directory.GetParent project).FullName
+            info.Arguments <- (sprintf "xunit -f net452 -c Release -parallel none -xml %s_net452_xunit.xml" (outputTests @@ fileNameWithoutExt project))) (TimeSpan.FromMinutes 30.)
+        
+        ResultHandling.failBuildIfXUnitReportedError TestRunnerErrorLevel.DontFailBuild result
+
+        // dotnet process will be killed by ExecProcess (or throw if can't) '
+        // but per https://github.com/xunit/xunit/issues/1338 xunit.console may not
+        killProcess "xunit.console"
+        killProcess "dotnet"
+
+    projects |> Seq.iter (log)
+    projects |> Seq.iter (runSingleProject)
+
+Target "RunTestsNetCore" <| fun _ ->
+    let projects = 
+        match (isWindows) with 
+        | true -> !! "./src/**/*.Tests.csproj"
+        | _ -> !! "./src/**/*.Tests.csproj" // if you need to filter specs for Linux vs. Windows, do it here
+
+    ensureDirectory outputTests
+
+    let runSingleProject project =
+        let result = ExecProcess(fun info ->
+            info.FileName <- "dotnet"
+            info.WorkingDirectory <- (Directory.GetParent project).FullName
+            info.Arguments <- (sprintf "xunit -f netcoreapp1.1 -c Release -parallel none -xml %s_netcore_xunit.xml" (outputTests @@ fileNameWithoutExt project))) (TimeSpan.FromMinutes 30.)
+        
+        ResultHandling.failBuildIfXUnitReportedError TestRunnerErrorLevel.DontFailBuild result
+
+        // dotnet process will be killed by ExecProcess (or throw if can't) '
+        // but per https://github.com/xunit/xunit/issues/1338 xunit.console may not
+        killProcess "xunit.console"
+        killProcess "dotnet"
 
     projects |> Seq.iter (log)
     projects |> Seq.iter (runSingleProject)
@@ -380,7 +409,7 @@ Target "HelpDocs" <| fun _ ->
 
 // tests with docker dependencies
 Target "RunTestsWithDocker" DoNothing
-"CleanTests" ==> "ActivateFinalTargets" ==> "StartDbContainer" ==> "PrepAppConfig" ==> "RunTests" ==> "RunTestsWithDocker"
+"CleanTests" ==> "ActivateFinalTargets" ==> "StartDbContainer" ==> "PrepAppConfig" ==> "RunTests" ==> "RunTestsNetCore" ==> "RunTestsWithDocker"
 
 // nuget dependencies
 "BuildRelease" ==> "CreateNuget" ==> "Nuget"
