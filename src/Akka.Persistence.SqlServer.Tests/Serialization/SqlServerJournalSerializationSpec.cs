@@ -10,6 +10,7 @@ using Xunit.Abstractions;
 
 namespace Akka.Persistence.SqlServer.Tests.Serialization
 {
+    [Collection("SqlServerSpec")]
     public class SqlServerJournalSerializationSpec : JournalSerializationSpec
     {
         private static readonly Config SpecConfig;

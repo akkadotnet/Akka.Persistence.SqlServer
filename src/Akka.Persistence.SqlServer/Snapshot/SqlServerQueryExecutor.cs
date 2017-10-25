@@ -56,11 +56,26 @@ namespace Akka.Persistence.SqlServer.Snapshot
                 {configuration.PayloadColumnName},
                 {configuration.SerializerIdColumnName}) 
             VALUES (@PersistenceId, @SequenceNr, @Timestamp, @Manifest, @Payload, @SerializerId);";
+
+            SelectSnapshotSql = $@"
+                SELECT TOP 1 {Configuration.PersistenceIdColumnName},
+                    {Configuration.SequenceNrColumnName}, 
+                    {Configuration.TimestampColumnName}, 
+                    {Configuration.ManifestColumnName}, 
+                    {Configuration.PayloadColumnName},
+                    {Configuration.SerializerIdColumnName}
+                FROM {Configuration.FullSnapshotTableName} 
+                WHERE {Configuration.PersistenceIdColumnName} = @PersistenceId 
+                    AND {Configuration.SequenceNrColumnName} <= @SequenceNr
+                    AND {Configuration.TimestampColumnName} <= @Timestamp
+                ORDER BY {Configuration.SequenceNrColumnName} DESC";
+
         }
 
         protected override DbCommand CreateCommand(DbConnection connection) => new SqlCommand {Connection = (SqlConnection) connection};
 
         protected override string CreateSnapshotTableSql { get; }
         protected override string InsertSnapshotSql { get; }
+        protected override string SelectSnapshotSql { get; }
     }
 }
