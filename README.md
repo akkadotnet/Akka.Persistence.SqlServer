@@ -2,8 +2,6 @@
 
 Akka Persistence journal and snapshot store backed by SQL Server database.
 
-**WARNING: Akka.Persistence.SqlServer plugin is still in beta and it's mechanics described bellow may be still subject to change**.
-
 ### Configuration
 
 Both journal and snapshot store share the same configuration keys (however they resides in separate scopes, so they are definied distinctly for either journal or snapshot store):
@@ -13,6 +11,7 @@ Remember that connection string must be provided separately to Journal and Snaps
 ```hocon
 akka.persistence{
 	journal {
+	        plugin = "akka.persistence.journal.sql-server"
 		sql-server {
 			# qualified type name of the SQL Server persistence journal actor
 			class = "Akka.Persistence.SqlServer.Journal.SqlServerJournal, Akka.Persistence.SqlServer"
@@ -44,6 +43,7 @@ akka.persistence{
 	}
 
 	snapshot-store {
+	        plugin = "akka.persistence.snapshot-store.sql-server"
 		sql-server {
 
 			# qualified type name of the SQL Server persistence journal actor
