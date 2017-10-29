@@ -1,3 +1,7 @@
+#### 1.3.2 October 29 2017 ####
+
+Updated to Akka.Persistence v1.3.2. Fixed bug in SnapshotStore query.
+
 #### 1.3.1 September 11 2017 ####
 
 Support for Akka.NET 1.3, .NET Standard 1.6, and the first stable RTM release of Akka.Persistence.
