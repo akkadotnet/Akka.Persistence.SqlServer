@@ -32,7 +32,8 @@ namespace Akka.Persistence.SqlServer.Journal
                 orderingColumnName: "Ordering",
                 serializerIdColumnName: "SerializerId",
                 timeout: config.GetTimeSpan("connection-timeout"),
-                defaultSerializer: config.GetString("serializer")),
+                defaultSerializer: config.GetString("serializer"),
+                useSequentialAccess: config.GetBoolean("sequential-access")),
                     Context.System.Serialization,
                     GetTimestampProvider(config.GetString("timestamp-provider")));
         }
