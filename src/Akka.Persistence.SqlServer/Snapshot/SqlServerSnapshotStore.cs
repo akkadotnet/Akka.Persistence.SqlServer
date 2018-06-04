@@ -29,7 +29,8 @@ namespace Akka.Persistence.SqlServer.Snapshot
                 timestampColumnName: "Timestamp",
                 serializerIdColumnName: "SerializerId",
                 timeout: sqlConfig.GetTimeSpan("connection-timeout"),
-                defaultSerializer: config.GetString("serializer")),
+                defaultSerializer: config.GetString("serializer"),
+                useSequentialAccess: config.GetBoolean("sequential-access")),
                 
                 Context.System.Serialization);
         }

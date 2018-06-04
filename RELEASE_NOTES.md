@@ -1,3 +1,11 @@
+#### 1.3.7 June 04 2018 ####
+Upgrades to Akka.Persistence 1.3.7, which includes some major changes for SQL-based SnapShot stores, which you can read more about here: https://github.com/akkadotnet/akka.net/issues/3422
+
+This should significantly improve the performance of SQL-based journals for loading large snapshots.
+
+Also, removes the dependency on the Akka.TestKit for this package.
+
+
 #### 1.3.2 October 29 2017 ####
 
 Updated to Akka.Persistence v1.3.2. Fixed bug in SnapshotStore query.
