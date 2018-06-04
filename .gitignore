@@ -27,6 +27,7 @@ tools/
 
 #VS
 .vs/
+.dotnet/
 
 #MonoDevelop
 *.userprefs
