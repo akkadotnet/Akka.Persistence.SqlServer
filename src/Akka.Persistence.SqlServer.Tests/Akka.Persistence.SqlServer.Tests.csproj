@@ -22,7 +22,7 @@
     <ItemGroup>
       <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.7.2" />
       <PackageReference Include="Akka.Persistence.Sql.Common" Version="1.3.12" />
-      <PackageReference Include="Akka.Persistence.Sql.TestKit" Version="1.3.12" />/>
+      <PackageReference Include="Akka.Persistence.Sql.TestKit" Version="1.3.12" />
       <PackageReference Include="Microsoft.Extensions.Configuration" Version="1.1.2" />
       <PackageReference Include="Microsoft.Extensions.Configuration.Xml" Version="1.1.2" />
       <PackageReference Include="xunit" Version="$(XunitVersion)" />
