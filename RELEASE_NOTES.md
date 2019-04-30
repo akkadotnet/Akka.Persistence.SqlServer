@@ -1,3 +1,7 @@
+#### 1.3.13 April 30 2019 ####
+* Upgrades to Akka.Persistence v1.3.13
+* Resolves https://github.com/akkadotnet/Akka.Persistence.SqlServer/issues/104 - major issue with BatchingSqlJournal.
+
 #### 1.3.7 June 04 2018 ####
 Upgrades to Akka.Persistence 1.3.7, which includes some major changes for SQL-based SnapShot stores, which you can read more about here: https://github.com/akkadotnet/akka.net/issues/3422
 
