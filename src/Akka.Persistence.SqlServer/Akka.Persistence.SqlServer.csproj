@@ -3,18 +3,19 @@
   <Import Project="..\common.props" />
   <PropertyGroup>
     <AssemblyTitle>Akka.Persistence.SqlServer</AssemblyTitle>
-    <Description>Akka Persistence journal and snapshot store backed by SQL Server database.</Description>
+    <Description>#### 1.3.13 April 30 2019 ####
+* Upgrades to Akka.Persistence v1.3.13
+* Resolves https://github.com/akkadotnet/Akka.Persistence.SqlServer/issues/104 - major issue with BatchingSqlJournal.</Description>
     <TargetFrameworks>net45;netstandard1.6</TargetFrameworks>
     <PackageTags>akka;actors;actor model;Akka;concurrency;SQL;SQL Server</PackageTags>
-    <Copyright>Copyright © 2013-2017 Akka.NET Team</Copyright>
+    <Copyright>Copyright © 2013-2019 Akka.NET Team</Copyright>
     <Authors>Akka.NET Team</Authors>
-    <VersionPrefix>1.3.12</VersionPrefix>
+    <VersionPrefix>1.3.13</VersionPrefix>
     <PackageIconUrl>http://getakka.net/images/akkalogo.png</PackageIconUrl>
     <PackageProjectUrl>https://github.com/akkadotnet/Akka.Persistence.SqlServer</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/akkadotnet/Akka.Persistence.SqlServer/blob/master/LICENSE</PackageLicenseUrl>
-    <PackageReleaseNotes>Upgrades to Akka.Persistence 1.3.12, which includes some major changes for SQL-based SnapShot stores, which you can read more about here: https://github.com/akkadotnet/akka.net/issues/3422
-This should significantly improve the performance of SQL-based journals for loading large snapshots.
-Also, removes the dependency on the Akka.TestKit for this package.</PackageReleaseNotes>
+    <PackageReleaseNotes>Upgrades to Akka.Persistence v1.3.13
+Resolves https://github.com/akkadotnet/Akka.Persistence.SqlServer/issues/104 - major issue with BatchingSqlJournal.</PackageReleaseNotes>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.6' ">1.6.1</NetStandardImplicitPackageVersion>
   </PropertyGroup>
