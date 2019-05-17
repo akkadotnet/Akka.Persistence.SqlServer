@@ -15,9 +15,9 @@ namespace Akka.Persistence.SqlServer.Snapshot
     public class SqlServerSnapshotStore : SqlSnapshotStore
     {
         protected readonly SqlServerPersistence Extension = SqlServerPersistence.Get(Context.System);
-        public SqlServerSnapshotStore(Config config) : base(config)
+        public SqlServerSnapshotStore(Config snapshotConfig) : base(snapshotConfig)
         {
-            var sqlConfig = config.WithFallback(Extension.DefaultSnapshotConfig);
+            var config = snapshotConfig.WithFallback(Extension.DefaultSnapshotConfig);
             QueryExecutor = new SqlServerQueryExecutor(new QueryConfiguration(
                 
                 schemaName: config.GetString("schema-name"),
@@ -28,7 +28,7 @@ namespace Akka.Persistence.SqlServer.Snapshot
                 manifestColumnName: "Manifest",
                 timestampColumnName: "Timestamp",
                 serializerIdColumnName: "SerializerId",
-                timeout: sqlConfig.GetTimeSpan("connection-timeout"),
+                timeout: config.GetTimeSpan("connection-timeout"),
                 defaultSerializer: config.GetString("serializer"),
                 useSequentialAccess: config.GetBoolean("sequential-access")),
                 
