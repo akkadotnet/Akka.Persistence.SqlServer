@@ -2,16 +2,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <Import Project="..\common.props" />
     <PropertyGroup>
-      <AssemblyTitle>Akka.Persistence.SqlServer.Tests</AssemblyTitle>
-      <TargetFrameworks>net452;netcoreapp1.1</TargetFrameworks>
-      <PackageTags>akka;actors;actor model;Akka;concurrency;SQL;SQL Server</PackageTags>
-      <Copyright>Copyright © 2013-2017 Akka.NET Team</Copyright>
-      <Authors>Akka.NET Team</Authors>
-      <VersionPrefix>1.3.12</VersionPrefix>
-      <PackageIconUrl>http://getakka.net/images/akkalogo.png</PackageIconUrl>
-      <PackageProjectUrl>https://github.com/akkadotnet/Akka.Persistence.SqlServer</PackageProjectUrl>
-      <PackageLicenseUrl>https://github.com/akkadotnet/Akka.Persistence.SqlServer/blob/master/LICENSE</PackageLicenseUrl>
-      <GenerateDocumentationFile>true</GenerateDocumentationFile>
+      <TargetFrameworks>$(NetFrameworkTestVersion);$(NetCoreTestVersion)</TargetFrameworks>
     </PropertyGroup>
     <ItemGroup>
       <Content Include="AppConfig.xml">
@@ -20,19 +11,14 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.7.2" />
-      <PackageReference Include="Akka.Persistence.Sql.Common" Version="1.3.13" />
-      <PackageReference Include="Akka.Persistence.Sql.TestKit" Version="1.3.13" />
+      <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(TestSdkVersion)" />
+      <PackageReference Include="Akka.Persistence.Sql.TestKit" Version="$(AkkaVersion)" />
       <PackageReference Include="Microsoft.Extensions.Configuration" Version="1.1.2" />
       <PackageReference Include="Microsoft.Extensions.Configuration.Xml" Version="1.1.2" />
       <PackageReference Include="xunit" Version="$(XunitVersion)" />
       <DotNetCliToolReference Include="dotnet-xunit" Version="$(XunitVersion)" />
       <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitVersion)" />
     </ItemGroup>
-
-    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-      <DefineConstants>$(DefineConstants);RELEASE</DefineConstants>
-    </PropertyGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\Akka.Persistence.SqlServer\Akka.Persistence.SqlServer.csproj" />

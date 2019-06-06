@@ -41,8 +41,8 @@ let releaseNotes =
 printfn "Assembly version: %s\nNuget version; %s\n" releaseNotes.AssemblyVersion releaseNotes.NugetVersion
 
 Target "AssemblyInfo" (fun _ ->
-    XmlPokeInnerText "./src/Akka.Persistence.SqlServer/Akka.Persistence.SqlServer.csproj" "//Project/PropertyGroup/VersionPrefix" releaseNotes.AssemblyVersion    
-    XmlPokeInnerText "./src/Akka.Persistence.SqlServer/Akka.Persistence.SqlServer.csproj" "//Project/PropertyGroup/PackageReleaseNotes" (releaseNotes.Notes |> String.concat "\n")
+    XmlPokeInnerText "./src/common.props" "//Project/PropertyGroup/VersionPrefix" releaseNotes.AssemblyVersion    
+    XmlPokeInnerText "./src/common.props" "//Project/PropertyGroup/PackageReleaseNotes" (releaseNotes.Notes |> String.concat "\n")
 )
 
 //--------------------------------------------------------------------------------
