@@ -28,14 +28,14 @@ namespace Akka.Persistence.SqlServer.Tests
         {
             get
             {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                {
-                    return "microsoft/mssql-server-windows-express";
-                }
-                else // Linux or OS X
-                {
+                //if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                //{
+                //    return "microsoft/mssql-server-windows-express";
+                //}
+                //else // Linux or OS X
+                //{
                     return "mcr.microsoft.com/mssql/server";
-                }
+                //}
             }
         }
 
@@ -109,7 +109,7 @@ namespace Akka.Persistence.SqlServer.Tests
                         }
                     },
                 },
-                Env = new string[] { "ACCEPT_EULA=Y" }
+                Env = new string[] { "ACCEPT_EULA=Y", "sa_password=MyP@assword!1" }
             });
 
             // start the container
@@ -121,13 +121,13 @@ namespace Akka.Persistence.SqlServer.Tests
             // Execute the commands needed to setup the container
             var execInput = new ContainerExecCreateParameters()
             {
-                AttachStderr = true,
-                AttachStdin = true,
-                AttachStdout = true,
-                Cmd = new[] { "sqlcmd -q \"CREATE LOGIN akkadotnet with password=\'akkadotnet\', CHECK_POLICY=OFF; ALTER SERVER ROLE dbcreator ADD MEMBER akkadotnet;" },
-                Detach = false,
-                Tty = true,
-                Privileged = true
+                AttachStderr = false,
+                AttachStdin = false,
+                AttachStdout = false,
+                Cmd = new[] { "/opt/mssql-tools/bin/sqlcmd", "-S","localhost","-U","sa","-P", "MyP@assword!1", "-q", "\"CREATE LOGIN akkadotnet with password='akkadotnet', CHECK_POLICY=OFF; ALTER SERVER ROLE dbcreator ADD MEMBER akkadotnet;\"" },
+                Detach = true,
+                Tty = false,
+                Privileged = false
             };
             var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
             var execRegistration = await Client.Containers.ExecCreateContainerAsync(SqlContainerName, execInput, cts.Token);
