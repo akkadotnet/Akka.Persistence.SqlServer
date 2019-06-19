@@ -28,14 +28,14 @@ namespace Akka.Persistence.SqlServer.Tests
         {
             get
             {
-                //if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                //{
-                //    return "microsoft/mssql-server-windows-express";
-                //}
-                //else // Linux or OS X
-                //{
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    return "microsoft/mssql-server-windows-express";
+                }
+                else // Linux or OS X
+                {
                     return "mcr.microsoft.com/mssql/server";
-                //}
+                }
             }
         }
 
