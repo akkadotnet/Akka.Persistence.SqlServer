@@ -109,46 +109,22 @@ namespace Akka.Persistence.SqlServer.Tests
                         }
                     },
                 },
-                Env = new string[] { "ACCEPT_EULA=Y", "sa_password=MyP@assword!1" }
+                Env = new string[] { "ACCEPT_EULA=Y", "SA_PASSWORD=l0lTh1sIsOpenSource" }
             });
 
             // start the container
             await Client.Containers.StartContainerAsync(SqlContainerName, new ContainerStartParameters());
 
             // Provide a 30 second startup delay
-            await Task.Delay(TimeSpan.FromSeconds(30));
+            await Task.Delay(TimeSpan.FromSeconds(10));
 
-            // Execute the commands needed to setup the container
-            var execInput = new ContainerExecCreateParameters()
-            {
-                AttachStderr = false,
-                AttachStdin = false,
-                AttachStdout = false,
-                Cmd = new[] { "/opt/mssql-tools/bin/sqlcmd", "-S","localhost","-U","sa","-P", "MyP@assword!1", "-q", "\"CREATE LOGIN akkadotnet with password='akkadotnet', CHECK_POLICY=OFF; ALTER SERVER ROLE dbcreator ADD MEMBER akkadotnet;\"" },
-                Detach = true,
-                Tty = false,
-                Privileged = false
-            };
-            var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-            var execRegistration = await Client.Containers.ExecCreateContainerAsync(SqlContainerName, execInput, cts.Token);
-            await Client.Containers.StartContainerExecAsync(execRegistration.ID, cts.Token);
-            var rsp = await Client.Containers.InspectContainerExecAsync(execRegistration.ID, cts.Token);
-
-            while (rsp.Running)
-            {
-                // wait to finish
-                rsp = await Client.Containers.InspectContainerExecAsync(execRegistration.ID, cts.Token);
-            }
             
-            if(rsp.ExitCode != 0)
-                throw new InvalidOperationException("Unable to create initial schema in SQL Server. Aborting test run.");
-
             var connectionString = new DbConnectionStringBuilder
             {
                 ConnectionString =
-                    "data source=.;database=akka_persistence_tests;user id=akkadotnet;password=akkadotnet"
+                    "data source=.;database=akka_persistence_tests;user id=sa;password=l0lTh1sIsOpenSource"
             };
-            connectionString["Data Source"] = $"localhost:{sqlServerHostPort}";
+            connectionString["Data Source"] = $"localhost,{sqlServerHostPort}";
 
             ConnectionString = connectionString.ToString();
         }
