@@ -116,7 +116,7 @@ namespace Akka.Persistence.SqlServer.Tests
             await Client.Containers.StartContainerAsync(SqlContainerName, new ContainerStartParameters());
 
             // Provide a 30 second startup delay
-            await Task.Delay(TimeSpan.FromSeconds(10));
+            await Task.Delay(TimeSpan.FromSeconds(30));
 
             
             var connectionString = new DbConnectionStringBuilder
