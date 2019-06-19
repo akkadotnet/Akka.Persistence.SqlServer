@@ -13,6 +13,12 @@ using Xunit;
 
 namespace Akka.Persistence.SqlServer.Tests
 {
+    [CollectionDefinition("SqlServerSpec")]
+    public sealed class SqlServerSpecsFixture : ICollectionFixture<SqlServerFixture>
+    {
+
+    }
+
     /// <summary>
     /// Fixture used to run SQL Server
     /// </summary>
@@ -24,14 +30,30 @@ namespace Akka.Persistence.SqlServer.Tests
             {
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    return "microsoft/mssql-server-windows-express:2017-latest";
+                    return "microsoft/mssql-server-windows-express";
                 }
                 else // Linux or OS X
                 {
-                    return "mcr.microsoft.com/mssql/server:2017-latest-ubuntu";
+                    return "mcr.microsoft.com/mssql/server";
                 }
             }
         }
+
+        protected string SqlServerImageTag
+        {
+            get
+            {
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    return "2017-latest";
+                }
+                else // Linux or OS X
+                {
+                    return "2017-latest-ubuntu";
+                }
+            }
+        }
+
         protected readonly string SqlContainerName = $"sqlserver-{Guid.NewGuid():N}";
         protected DockerClient Client;
 
@@ -55,7 +77,7 @@ namespace Akka.Persistence.SqlServer.Tests
             var images = await Client.Images.ListImagesAsync(new ImagesListParameters { MatchName = SqlServerImageName });
             if (images.Count == 0)
                 await Client.Images.CreateImageAsync(
-                    new ImagesCreateParameters { FromImage = SqlServerImageName}, null,
+                    new ImagesCreateParameters { FromImage = SqlServerImageName, Tag = "latest"}, null,
                     new Progress<JSONMessage>(message =>
                     {
                         Console.WriteLine(!string.IsNullOrEmpty(message.ErrorMessage)

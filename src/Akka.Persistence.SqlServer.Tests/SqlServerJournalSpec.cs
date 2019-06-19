@@ -15,10 +15,8 @@ using Xunit.Abstractions;
 namespace Akka.Persistence.SqlServer.Tests
 {
     [Collection("SqlServerSpec")]
-    public class SqlServerJournalSpec : JournalSpec, ICollectionFixture<SqlServerFixture>
+    public class SqlServerJournalSpec : JournalSpec
     {
-        private static readonly Config SpecConfig;
-
         private static Config InitConfig(SqlServerFixture fixture)
         {
             //need to make sure db is created before the tests start
