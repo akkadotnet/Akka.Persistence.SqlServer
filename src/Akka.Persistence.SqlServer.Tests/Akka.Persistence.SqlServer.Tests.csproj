@@ -17,7 +17,6 @@
       <PackageReference Include="Microsoft.Extensions.Configuration" Version="1.1.2" />
       <PackageReference Include="Microsoft.Extensions.Configuration.Xml" Version="1.1.2" />
       <PackageReference Include="xunit" Version="$(XunitVersion)" />
-      <DotNetCliToolReference Include="dotnet-xunit" Version="$(XunitVersion)" />
       <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitVersion)" />
     </ItemGroup>
 
