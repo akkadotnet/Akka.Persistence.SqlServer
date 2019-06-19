@@ -1,6 +1,5 @@
 <Project>
   <PropertyGroup>
-    
     <Copyright>Copyright © 2013-2019 Akka.NET Team</Copyright>
     <Authors>Akka.NET Team</Authors>
     <VersionPrefix>1.3.13</VersionPrefix>
@@ -9,10 +8,9 @@
     <PackageLicenseUrl>https://github.com/akkadotnet/Akka.Persistence.SqlServer/blob/master/LICENSE</PackageLicenseUrl>
     <PackageReleaseNotes>Upgrades to Akka.Persistence v1.3.13
 Resolves https://github.com/akkadotnet/Akka.Persistence.SqlServer/issues/104 - major issue with BatchingSqlJournal.</PackageReleaseNotes>
-     <VersionPrefix>1.3.13</VersionPrefix>
+    <VersionPrefix>1.3.13</VersionPrefix>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
-
   <PropertyGroup>
     <XunitVersion>2.3.1</XunitVersion>
     <AkkaVersion>1.3.13</AkkaVersion>
@@ -22,8 +20,6 @@ Resolves https://github.com/akkadotnet/Akka.Persistence.SqlServer/issues/104 - m
     <NetStandardLibVersion>netstandard2.0</NetStandardLibVersion>
     <NetFrameworkLibVersion>net452</NetFrameworkLibVersion>
   </PropertyGroup>
-
-
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <DefineConstants>$(DefineConstants);RELEASE</DefineConstants>
   </PropertyGroup>

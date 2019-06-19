@@ -29,12 +29,11 @@ Param(
     [string[]]$ScriptArgs
 )
 
-$FakeVersion = "4.63.0"
-$NBenchVersion = "1.0.1"
+$FakeVersion = "4.61.2"
 $DotNetChannel = "LTS";
 $DotNetVersion = "2.1.500";
 $DotNetInstallerUri = "https://raw.githubusercontent.com/dotnet/cli/v$DotNetVersion/scripts/obtain/dotnet-install.ps1";
-$NugetVersion = "4.3.0";
+$NugetVersion = "4.1.0";
 $NugetUrl = "https://dist.nuget.org/win-x86-commandline/v$NugetVersion/nuget.exe"
 $ProtobufVersion = "3.4.0"
 $DocfxVersion = "2.40.5"
@@ -113,6 +112,34 @@ if (!(Test-Path $FakeExePath)) {
     if ($LASTEXITCODE -ne 0) {
         Throw "An error occured while restoring Fake from NuGet."
     }
+}
+
+###########################################################################
+# Docfx
+###########################################################################
+
+# Make sure Docfx has been installed.
+$DocfxExePath = Join-Path $ToolPath "docfx.console/tools/docfx.exe"
+if (!(Test-Path $DocfxExePath)) {
+    Write-Host "Installing Docfx..."
+    Invoke-Expression "&`"$NugetPath`" install docfx.console -ExcludeVersion -Version $DocfxVersion -OutputDirectory `"$ToolPath`"" | Out-Null;
+    if ($LASTEXITCODE -ne 0) {
+        Throw "An error occured while restoring docfx.console from NuGet."
+    }
+}
+
+###########################################################################
+# SignTool
+###########################################################################
+
+# Make sure the SignClient has been installed
+if (Get-Command signclient -ErrorAction SilentlyContinue) {
+    Write-Host "Found SignClient. Skipping install."
+}
+else{
+    $SignClientFolder = Join-Path $ToolPath "signclient"
+    Write-Host "SignClient not found. Installing to ... $SignClientFolder"
+    dotnet tool install SignClient --version 1.0.82 --tool-path "$SignClientFolder"
 }
 
 ###########################################################################

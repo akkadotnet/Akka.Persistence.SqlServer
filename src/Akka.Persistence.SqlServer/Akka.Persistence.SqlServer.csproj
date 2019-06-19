@@ -3,9 +3,7 @@
   <Import Project="..\common.props" />
   <PropertyGroup>
     <AssemblyTitle>Akka.Persistence.SqlServer</AssemblyTitle>
-    <Description>#### 1.3.13 April 30 2019 ####
-* Upgrades to Akka.Persistence v1.3.13
-* Resolves https://github.com/akkadotnet/Akka.Persistence.SqlServer/issues/104 - major issue with BatchingSqlJournal.  
+    <Description>Akka.Persistence support for SQL Server.
     </Description>
     <TargetFrameworks>$(NetFrameworkLibVersion);$(NetStandardLibVersion)</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
