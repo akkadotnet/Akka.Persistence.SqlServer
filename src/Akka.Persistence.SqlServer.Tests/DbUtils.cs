@@ -19,12 +19,9 @@ namespace Akka.Persistence.SqlServer.Tests
 
         public static string ConnectionString { get; private set; }
 
-        public static void Initialize()
+        public static void Initialize(string connectionString)
         {
-            Config = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory())
-                .AddXmlFile("AppConfig.xml").Build();
-            ConnectionString = Config.GetSection("connectionStrings:add:TestDb")["connectionString"];
-            var connectionBuilder = new SqlConnectionStringBuilder(ConnectionString);
+            var connectionBuilder = new SqlConnectionStringBuilder(connectionString);
 
             //connect to postgres database to create a new database
             var databaseName = connectionBuilder.InitialCatalog;

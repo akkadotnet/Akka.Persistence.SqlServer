@@ -13,6 +13,7 @@
     <ItemGroup>
       <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(TestSdkVersion)" />
       <PackageReference Include="Akka.Persistence.Sql.TestKit" Version="$(AkkaVersion)" />
+      <PackageReference Include="Docker.DotNet" Version="3.125.2" />
       <PackageReference Include="Microsoft.Extensions.Configuration" Version="1.1.2" />
       <PackageReference Include="Microsoft.Extensions.Configuration.Xml" Version="1.1.2" />
       <PackageReference Include="xunit" Version="$(XunitVersion)" />
