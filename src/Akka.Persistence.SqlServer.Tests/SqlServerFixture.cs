@@ -1,10 +1,13 @@
-﻿using System;
+﻿// -----------------------------------------------------------------------
+// <copyright file="SqlServerFixture.cs" company="Akka.NET Project">
+//      Copyright (C) 2013 - 2019 .NET Foundation <https://github.com/akkadotnet/akka.net>
+// </copyright>
+// -----------------------------------------------------------------------
+
+using System;
 using System.Collections.Generic;
 using System.Data.Common;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Akka.Util;
 using Docker.DotNet;
@@ -16,48 +19,15 @@ namespace Akka.Persistence.SqlServer.Tests
     [CollectionDefinition("SqlServerSpec")]
     public sealed class SqlServerSpecsFixture : ICollectionFixture<SqlServerFixture>
     {
-
     }
 
     /// <summary>
-    /// Fixture used to run SQL Server
+    ///     Fixture used to run SQL Server
     /// </summary>
     public class SqlServerFixture : IAsyncLifetime
     {
-        protected string SqlServerImageName
-        {
-            get
-            {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                {
-                    return "microsoft/mssql-server-windows-express";
-                }
-                else // Linux or OS X
-                {
-                    return "mcr.microsoft.com/mssql/server";
-                }
-            }
-        }
-
-        protected string SqlServerImageTag
-        {
-            get
-            {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                {
-                    return "2017-latest";
-                }
-                else // Linux or OS X
-                {
-                    return "2017-latest-ubuntu";
-                }
-            }
-        }
-
         protected readonly string SqlContainerName = $"sqlserver-{Guid.NewGuid():N}";
         protected DockerClient Client;
-
-        public string ConnectionString { get; private set; }
 
         public SqlServerFixture()
         {
@@ -72,12 +42,34 @@ namespace Akka.Persistence.SqlServer.Tests
             Client = config.CreateClient();
         }
 
+        protected string SqlServerImageName
+        {
+            get
+            {
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    return "microsoft/mssql-server-windows-express";
+                return "mcr.microsoft.com/mssql/server";
+            }
+        }
+
+        protected string SqlServerImageTag
+        {
+            get
+            {
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                    return "2017-latest";
+                return "2017-latest-ubuntu";
+            }
+        }
+
+        public string ConnectionString { get; private set; }
+
         public async Task InitializeAsync()
         {
-            var images = await Client.Images.ListImagesAsync(new ImagesListParameters { MatchName = SqlServerImageName });
+            var images = await Client.Images.ListImagesAsync(new ImagesListParameters {MatchName = SqlServerImageName});
             if (images.Count == 0)
                 await Client.Images.CreateImageAsync(
-                    new ImagesCreateParameters { FromImage = SqlServerImageName, Tag = "latest"}, null,
+                    new ImagesCreateParameters {FromImage = SqlServerImageName, Tag = "latest"}, null,
                     new Progress<JSONMessage>(message =>
                     {
                         Console.WriteLine(!string.IsNullOrEmpty(message.ErrorMessage)
@@ -93,10 +85,10 @@ namespace Akka.Persistence.SqlServer.Tests
                 Image = SqlServerImageName,
                 Name = SqlContainerName,
                 Tty = true,
-                ExposedPorts = new Dictionary<string, EmptyStruct>()
+                ExposedPorts = new Dictionary<string, EmptyStruct>
                 {
-                    { "1433/tcp", new EmptyStruct(){}}
-                }, 
+                    {"1433/tcp", new EmptyStruct()}
+                },
                 HostConfig = new HostConfig
                 {
                     PortBindings = new Dictionary<string, IList<PortBinding>>
@@ -111,9 +103,9 @@ namespace Akka.Persistence.SqlServer.Tests
                                 }
                             }
                         }
-                    },
+                    }
                 },
-                Env = new string[] { "ACCEPT_EULA=Y", "SA_PASSWORD=l0lTh1sIsOpenSource" }
+                Env = new[] {"ACCEPT_EULA=Y", "SA_PASSWORD=l0lTh1sIsOpenSource"}
             });
 
             // start the container
@@ -122,7 +114,7 @@ namespace Akka.Persistence.SqlServer.Tests
             // Provide a 30 second startup delay
             await Task.Delay(TimeSpan.FromSeconds(30));
 
-            
+
             var connectionString = new DbConnectionStringBuilder
             {
                 ConnectionString =
@@ -139,7 +131,7 @@ namespace Akka.Persistence.SqlServer.Tests
             {
                 await Client.Containers.StopContainerAsync(SqlContainerName, new ContainerStopParameters());
                 await Client.Containers.RemoveContainerAsync(SqlContainerName,
-                    new ContainerRemoveParameters { Force = true });
+                    new ContainerRemoveParameters {Force = true});
                 Client.Dispose();
             }
         }
