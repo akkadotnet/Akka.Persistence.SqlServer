@@ -93,6 +93,10 @@ namespace Akka.Persistence.SqlServer.Tests
                 Image = SqlServerImageName,
                 Name = SqlContainerName,
                 Tty = true,
+                ExposedPorts = new Dictionary<string, EmptyStruct>()
+                {
+                    { "1433/tcp", new EmptyStruct(){}}
+                }, 
                 HostConfig = new HostConfig
                 {
                     PortBindings = new Dictionary<string, IList<PortBinding>>
