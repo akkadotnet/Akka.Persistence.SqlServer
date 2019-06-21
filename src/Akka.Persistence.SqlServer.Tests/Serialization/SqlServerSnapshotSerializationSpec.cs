@@ -1,8 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// -----------------------------------------------------------------------
+// <copyright file="SqlServerSnapshotSerializationSpec.cs" company="Akka.NET Project">
+//      Copyright (C) 2013 - 2019 .NET Foundation <https://github.com/akkadotnet/akka.net>
+// </copyright>
+// -----------------------------------------------------------------------
+
 using Akka.Configuration;
 using Akka.Persistence.TCK.Serialization;
 using Xunit;
@@ -13,6 +14,11 @@ namespace Akka.Persistence.SqlServer.Tests.Serialization
     [Collection("SqlServerSpec")]
     public class SqlServerSnapshotSerializationSpec : SnapshotStoreSerializationSpec
     {
+        public SqlServerSnapshotSerializationSpec(ITestOutputHelper output, SqlServerFixture fixture) : base(
+            InitConfig(fixture), "SqlServerSnapshotSerializationSpec", output)
+        {
+        }
+
         private static Config InitConfig(SqlServerFixture fixture)
         {
             DbUtils.Initialize(fixture.ConnectionString);
@@ -31,10 +37,6 @@ namespace Akka.Persistence.SqlServer.Tests.Serialization
                     }
                 }";
             return ConfigurationFactory.ParseString(specString);
-        }
-
-        public SqlServerSnapshotSerializationSpec(ITestOutputHelper output, SqlServerFixture fixture) : base(InitConfig(fixture), "SqlServerSnapshotSerializationSpec", output)
-        {
         }
 
         protected override void Dispose(bool disposing)
