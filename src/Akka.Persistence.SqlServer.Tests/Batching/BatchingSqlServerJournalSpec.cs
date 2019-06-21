@@ -1,14 +1,11 @@
-﻿//-----------------------------------------------------------------------
+﻿// -----------------------------------------------------------------------
 // <copyright file="BatchingSqlServerJournalSpec.cs" company="Akka.NET Project">
-//     Copyright (C) 2009-2016 Typesafe Inc. <http://www.typesafe.com>
-//     Copyright (C) 2013-2016 Akka.NET project <https://github.com/akkadotnet/akka.net>
+//      Copyright (C) 2013 - 2019 .NET Foundation <https://github.com/akkadotnet/akka.net>
 // </copyright>
-//-----------------------------------------------------------------------
+// -----------------------------------------------------------------------
 
-using Akka.Actor;
 using Akka.Configuration;
 using Akka.Persistence.TCK.Journal;
-using Akka.TestKit;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -17,6 +14,12 @@ namespace Akka.Persistence.SqlServer.Tests.Batching
     [Collection("SqlServerSpec")]
     public class BatchingSqlServerJournalSpec : JournalSpec
     {
+        public BatchingSqlServerJournalSpec(ITestOutputHelper output, SqlServerFixture fixture)
+            : base(InitConfig(fixture), nameof(BatchingSqlServerJournalSpec), output)
+        {
+            Initialize();
+        }
+
         private static Config InitConfig(SqlServerFixture fixture)
         {
             DbUtils.Initialize(fixture.ConnectionString);
@@ -37,12 +40,6 @@ namespace Akka.Persistence.SqlServer.Tests.Batching
                     }";
 
             return ConfigurationFactory.ParseString(specString);
-        }
-
-        public BatchingSqlServerJournalSpec(ITestOutputHelper output, SqlServerFixture fixture)
-            : base(InitConfig(fixture), nameof(BatchingSqlServerJournalSpec), output)
-        {
-            Initialize();
         }
 
         protected override void Dispose(bool disposing)

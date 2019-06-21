@@ -1,5 +1,9 @@
-﻿using System.Reflection;
-using System.Runtime.CompilerServices;
+﻿// -----------------------------------------------------------------------
+// <copyright file="AssemblyInfo.cs" company="Akka.NET Project">
+//      Copyright (C) 2013 - 2019 .NET Foundation <https://github.com/akkadotnet/akka.net>
+// </copyright>
+// -----------------------------------------------------------------------
+
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following 

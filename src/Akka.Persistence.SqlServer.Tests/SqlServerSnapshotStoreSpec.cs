@@ -1,9 +1,8 @@
-﻿//-----------------------------------------------------------------------
+﻿// -----------------------------------------------------------------------
 // <copyright file="SqlServerSnapshotStoreSpec.cs" company="Akka.NET Project">
-//     Copyright (C) 2009-2016 Typesafe Inc. <http://www.typesafe.com>
-//     Copyright (C) 2013-2016 Akka.NET project <https://github.com/akkadotnet/akka.net>
+//      Copyright (C) 2013 - 2019 .NET Foundation <https://github.com/akkadotnet/akka.net>
 // </copyright>
-//-----------------------------------------------------------------------
+// -----------------------------------------------------------------------
 
 using Akka.Configuration;
 using Akka.Persistence.TCK.Snapshot;
@@ -15,6 +14,12 @@ namespace Akka.Persistence.SqlServer.Tests
     [Collection("SqlServerSpec")]
     public class SqlServerSnapshotStoreSpec : SnapshotStoreSpec
     {
+        public SqlServerSnapshotStoreSpec(ITestOutputHelper output, SqlServerFixture fixture)
+            : base(InitConfig(fixture), "SqlServerSnapshotStoreSpec", output)
+        {
+            Initialize();
+        }
+
         private static Config InitConfig(SqlServerFixture fixture)
         {
             //need to make sure db is created before the tests start
@@ -36,12 +41,6 @@ namespace Akka.Persistence.SqlServer.Tests
                         }";
 
             return ConfigurationFactory.ParseString(specString);
-        }
-
-        public SqlServerSnapshotStoreSpec(ITestOutputHelper output, SqlServerFixture fixture)
-            : base(InitConfig(fixture), "SqlServerSnapshotStoreSpec", output)
-        {
-            Initialize();
         }
 
         protected override void Dispose(bool disposing)
