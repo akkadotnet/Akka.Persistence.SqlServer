@@ -1,0 +1,8 @@
+ <Project>
+  <!-- disable AppDomains for Mono only -->
+  <ItemGroup Condition="'$(TargetFramework)' == '$(NetFrameworkTestVersion)' And '$(OS)' != 'Windows_NT'">
+    <Content Include="..\xunit.runner.json" Link="xunit.runner.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+</Project>

@@ -1,6 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
     <Import Project="..\common.props" />
+    <Import Project="..\skipAppDomainsMono.props" />
     <PropertyGroup>
       <TargetFrameworks>$(NetFrameworkTestVersion);$(NetCoreTestVersion)</TargetFrameworks>
     </PropertyGroup>
