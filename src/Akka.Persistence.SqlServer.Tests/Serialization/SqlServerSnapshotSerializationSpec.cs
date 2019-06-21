@@ -5,17 +5,17 @@ using System.Text;
 using System.Threading.Tasks;
 using Akka.Configuration;
 using Akka.Persistence.TCK.Serialization;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace Akka.Persistence.SqlServer.Tests.Serialization
 {
+    [Collection("SqlServerSpec")]
     public class SqlServerSnapshotSerializationSpec : SnapshotStoreSerializationSpec
     {
-        private static readonly Config SpecConfig;
-
-        static SqlServerSnapshotSerializationSpec()
+        private static Config InitConfig(SqlServerFixture fixture)
         {
-            DbUtils.Initialize();
+            DbUtils.Initialize(fixture.ConnectionString);
             var specString = @"
                 akka.persistence {
                     publish-plugin-commands = on
@@ -30,10 +30,10 @@ namespace Akka.Persistence.SqlServer.Tests.Serialization
                         }
                     }
                 }";
-            SpecConfig = ConfigurationFactory.ParseString(specString);
+            return ConfigurationFactory.ParseString(specString);
         }
 
-        public SqlServerSnapshotSerializationSpec(ITestOutputHelper output) : base(SpecConfig, "SqlServerSnapshotSerializationSpec", output)
+        public SqlServerSnapshotSerializationSpec(ITestOutputHelper output, SqlServerFixture fixture) : base(InitConfig(fixture), "SqlServerSnapshotSerializationSpec", output)
         {
         }
 

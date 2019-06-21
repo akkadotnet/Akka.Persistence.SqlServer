@@ -18,11 +18,9 @@ namespace Akka.Persistence.SqlServer.Tests.Batching
     [Collection("SqlServerSpec")]
     public class BatchingSqlServerEventsByPersistenceIdSpec : EventsByPersistenceIdSpec
     {
-        private static readonly Config SpecConfig;
-
-        static BatchingSqlServerEventsByPersistenceIdSpec()
+        private static Config InitConfig(SqlServerFixture fixture)
         {
-            DbUtils.Initialize();
+            DbUtils.Initialize(fixture.ConnectionString);
 
             var conf = ConfigurationFactory.ParseString($@"
             akka.loglevel = DEBUG
@@ -38,11 +36,11 @@ namespace Akka.Persistence.SqlServer.Tests.Batching
                 refresh-interval = 1s
             }}");
 
-            SpecConfig = conf.WithFallback(SqlReadJournal.DefaultConfiguration());
+            return conf.WithFallback(SqlReadJournal.DefaultConfiguration());
         }
 
-        public BatchingSqlServerEventsByPersistenceIdSpec(ITestOutputHelper output)
-            : base(SpecConfig, nameof(BatchingSqlServerEventsByPersistenceIdSpec), output)
+        public BatchingSqlServerEventsByPersistenceIdSpec(ITestOutputHelper output, SqlServerFixture fixture)
+            : base(InitConfig(fixture), nameof(BatchingSqlServerEventsByPersistenceIdSpec), output)
         {
             ReadJournal = Sys.ReadJournalFor<SqlReadJournal>(SqlReadJournal.Identifier);
         }

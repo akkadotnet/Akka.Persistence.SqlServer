@@ -15,12 +15,10 @@ namespace Akka.Persistence.SqlServer.Tests
     [Collection("SqlServerSpec")]
     public class SqlServerSnapshotStoreSpec : SnapshotStoreSpec
     {
-        private static readonly Config SpecConfig;
-
-        static SqlServerSnapshotStoreSpec()
+        private static Config InitConfig(SqlServerFixture fixture)
         {
             //need to make sure db is created before the tests start
-            DbUtils.Initialize();
+            DbUtils.Initialize(fixture.ConnectionString);
             var specString = @"
                         akka.persistence {
                             publish-plugin-commands = on
@@ -37,11 +35,11 @@ namespace Akka.Persistence.SqlServer.Tests
                             }
                         }";
 
-            SpecConfig = ConfigurationFactory.ParseString(specString);
+            return ConfigurationFactory.ParseString(specString);
         }
 
-        public SqlServerSnapshotStoreSpec(ITestOutputHelper output)
-            : base(SpecConfig, "SqlServerSnapshotStoreSpec", output)
+        public SqlServerSnapshotStoreSpec(ITestOutputHelper output, SqlServerFixture fixture)
+            : base(InitConfig(fixture), "SqlServerSnapshotStoreSpec", output)
         {
             Initialize();
         }

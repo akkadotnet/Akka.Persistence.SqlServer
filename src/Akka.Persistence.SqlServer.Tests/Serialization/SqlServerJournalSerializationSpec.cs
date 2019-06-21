@@ -13,11 +13,9 @@ namespace Akka.Persistence.SqlServer.Tests.Serialization
     [Collection("SqlServerSpec")]
     public class SqlServerJournalSerializationSpec : JournalSerializationSpec
     {
-        private static readonly Config SpecConfig;
-
-        static SqlServerJournalSerializationSpec()
+        private static Config InitConfig(SqlServerFixture fixture)
         {
-            DbUtils.Initialize();
+            DbUtils.Initialize(fixture.ConnectionString);
             var specString = @"
                 akka.persistence {
                     publish-plugin-commands = on
@@ -41,10 +39,11 @@ namespace Akka.Persistence.SqlServer.Tests.Serialization
                     }
                 }";
 
-            SpecConfig = ConfigurationFactory.ParseString(specString);
+            return ConfigurationFactory.ParseString(specString);
         }
 
-        public SqlServerJournalSerializationSpec(ITestOutputHelper output) : base(SpecConfig, "SqlServerJournalSerializationSpec", output)
+        public SqlServerJournalSerializationSpec(ITestOutputHelper output, SqlServerFixture fixture) 
+            : base(InitConfig(fixture), "SqlServerJournalSerializationSpec", output)
         {            
         }
 
