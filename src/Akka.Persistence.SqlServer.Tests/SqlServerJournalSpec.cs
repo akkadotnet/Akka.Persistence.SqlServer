@@ -17,12 +17,10 @@ namespace Akka.Persistence.SqlServer.Tests
     [Collection("SqlServerSpec")]
     public class SqlServerJournalSpec : JournalSpec
     {
-        private static readonly Config SpecConfig;
-
-        static SqlServerJournalSpec()
+        private static Config InitConfig(SqlServerFixture fixture)
         {
             //need to make sure db is created before the tests start
-            DbUtils.Initialize();
+            DbUtils.Initialize(fixture.ConnectionString);
             var specString = @"
                     akka.persistence {
                         publish-plugin-commands = on
@@ -39,11 +37,11 @@ namespace Akka.Persistence.SqlServer.Tests
                         }
                     }";
 
-            SpecConfig = ConfigurationFactory.ParseString(specString);
+            return ConfigurationFactory.ParseString(specString);
         }
 
-        public SqlServerJournalSpec(ITestOutputHelper output)
-            : base(SpecConfig, "SqlServerJournalSpec", output)
+        public SqlServerJournalSpec(ITestOutputHelper output, SqlServerFixture fixture)
+            : base(InitConfig(fixture), "SqlServerJournalSpec", output)
         {
             Initialize();
         }

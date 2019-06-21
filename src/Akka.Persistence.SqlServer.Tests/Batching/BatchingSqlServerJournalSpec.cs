@@ -17,11 +17,9 @@ namespace Akka.Persistence.SqlServer.Tests.Batching
     [Collection("SqlServerSpec")]
     public class BatchingSqlServerJournalSpec : JournalSpec
     {
-        private static readonly Config SpecConfig;
-
-        static BatchingSqlServerJournalSpec()
+        private static Config InitConfig(SqlServerFixture fixture)
         {
-            DbUtils.Initialize();
+            DbUtils.Initialize(fixture.ConnectionString);
             var specString = @"
                     akka.persistence {
                         publish-plugin-commands = on
@@ -38,11 +36,11 @@ namespace Akka.Persistence.SqlServer.Tests.Batching
                         }
                     }";
 
-            SpecConfig = ConfigurationFactory.ParseString(specString);
+            return ConfigurationFactory.ParseString(specString);
         }
 
-        public BatchingSqlServerJournalSpec(ITestOutputHelper output)
-            : base(SpecConfig, nameof(BatchingSqlServerJournalSpec), output)
+        public BatchingSqlServerJournalSpec(ITestOutputHelper output, SqlServerFixture fixture)
+            : base(InitConfig(fixture), nameof(BatchingSqlServerJournalSpec), output)
         {
             Initialize();
         }

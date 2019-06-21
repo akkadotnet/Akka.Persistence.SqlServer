@@ -17,12 +17,10 @@ namespace Akka.Persistence.SqlServer.Tests.Query
     [Collection("SqlServerSpec")]
     public class SqlServerEventsByPersistenceIdSpec : EventsByPersistenceIdSpec
     {
-        public static Config Config
+        public static Config InitConfig(SqlServerFixture fixture)
         {
-            get
-            {
-                DbUtils.Initialize();
-                return ConfigurationFactory.ParseString($@"
+            DbUtils.Initialize(fixture.ConnectionString);
+            return ConfigurationFactory.ParseString($@"
                     akka.loglevel = INFO
                     akka.test.single-expect-default = 10s
                     akka.persistence.journal.plugin = ""akka.persistence.journal.sql-server""
@@ -35,11 +33,10 @@ namespace Akka.Persistence.SqlServer.Tests.Query
                         connection-string = """ + DbUtils.ConnectionString + @"""
                         refresh-interval = 1s
                     }}")
-                    .WithFallback(SqlReadJournal.DefaultConfiguration());
-            }
+                .WithFallback(SqlReadJournal.DefaultConfiguration());
         }
 
-        public SqlServerEventsByPersistenceIdSpec(ITestOutputHelper output) : base(Config, nameof(SqlServerEventsByPersistenceIdSpec), output)
+        public SqlServerEventsByPersistenceIdSpec(ITestOutputHelper output, SqlServerFixture fixture) : base(InitConfig(fixture), nameof(SqlServerEventsByPersistenceIdSpec), output)
         {
             ReadJournal = Sys.ReadJournalFor<SqlReadJournal>(SqlReadJournal.Identifier);
         }
