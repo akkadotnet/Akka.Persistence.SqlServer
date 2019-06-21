@@ -15,21 +15,22 @@ namespace Akka.Persistence.SqlServer.Snapshot
     {
         protected readonly SqlServerPersistence Extension = SqlServerPersistence.Get(Context.System);
 
-        public SqlServerSnapshotStore(Config config) : base(config)
+        public SqlServerSnapshotStore(Config snapshotConfig) : base(snapshotConfig)
         {
-            var sqlConfig = config.WithFallback(Extension.DefaultSnapshotConfig);
+            var config = snapshotConfig.WithFallback(Extension.DefaultSnapshotConfig);
             QueryExecutor = new SqlServerQueryExecutor(new QueryConfiguration(
-                    config.GetString("schema-name"),
-                    config.GetString("table-name"),
-                    "PersistenceId",
-                    "SequenceNr",
-                    "Snapshot",
-                    "Manifest",
-                    "Timestamp",
-                    "SerializerId",
-                    sqlConfig.GetTimeSpan("connection-timeout"),
-                    config.GetString("serializer"),
-                    config.GetBoolean("sequential-access")),
+ 
+                schemaName: config.GetString("schema-name"),
+                snapshotTableName: config.GetString("table-name"),
+                persistenceIdColumnName: "PersistenceId",
+                sequenceNrColumnName: "SequenceNr",
+                payloadColumnName: "Snapshot",
+                manifestColumnName: "Manifest",
+                timestampColumnName: "Timestamp",
+                serializerIdColumnName: "SerializerId",
+                timeout: config.GetTimeSpan("connection-timeout"),
+                defaultSerializer: config.GetString("serializer"),
+                useSequentialAccess: config.GetBoolean("sequential-access")),
                 Context.System.Serialization);
         }
 
