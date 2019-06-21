@@ -1,15 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
     <Import Project="..\common.props" />
-    <Import Project="..\skipAppDomainsMono.props" />
-    <PropertyGroup>
+    <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
       <TargetFrameworks>$(NetFrameworkTestVersion);$(NetCoreTestVersion)</TargetFrameworks>
     </PropertyGroup>
-    <ItemGroup>
-      <Content Include="AppConfig.xml">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </Content>
-    </ItemGroup>
+
+    <!-- disable .NET Framework (Mono) on Linux-->
+    <PropertyGroup Condition="'$(OS)' != 'Windows_NT'">
+      <TargetFrameworks>$(NetCoreTestVersion)</TargetFrameworks>
+    </PropertyGroup>
 
     <ItemGroup>
       <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(TestSdkVersion)" />
