@@ -1,3 +1,6 @@
+#### 1.4.0 June 21 2019 ####
+* First beta of Akka.Persistence.SqlServer 1.4.0 - should resolve a number of issues with Akka.Cluster.Sharding recovery and BatchingSqlJournal deadlocks.
+
 #### 1.3.13 April 30 2019 ####
 * Upgrades to Akka.Persistence v1.3.13
 * Resolves https://github.com/akkadotnet/Akka.Persistence.SqlServer/issues/104 - major issue with BatchingSqlJournal.
