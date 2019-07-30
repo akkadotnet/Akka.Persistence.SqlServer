@@ -1,14 +1,12 @@
-﻿//-----------------------------------------------------------------------
+﻿// -----------------------------------------------------------------------
 // <copyright file="BatchingSqlServerEventsByPersistenceIdSpec.cs" company="Akka.NET Project">
-//     Copyright (C) 2009-2016 Typesafe Inc. <http://www.typesafe.com>
-//     Copyright (C) 2013-2016 Akka.NET project <https://github.com/akkadotnet/akka.net>
+//      Copyright (C) 2013 - 2019 .NET Foundation <https://github.com/akkadotnet/akka.net>
 // </copyright>
-//-----------------------------------------------------------------------
+// -----------------------------------------------------------------------
 
 using Akka.Configuration;
 using Akka.Persistence.Query;
 using Akka.Persistence.Query.Sql;
-using Akka.Persistence.Sql.TestKit;
 using Akka.Persistence.TCK.Query;
 using Xunit;
 using Xunit.Abstractions;
@@ -18,11 +16,15 @@ namespace Akka.Persistence.SqlServer.Tests.Batching
     [Collection("SqlServerSpec")]
     public class BatchingSqlServerEventsByPersistenceIdSpec : EventsByPersistenceIdSpec
     {
-        private static readonly Config SpecConfig;
-
-        static BatchingSqlServerEventsByPersistenceIdSpec()
+        public BatchingSqlServerEventsByPersistenceIdSpec(ITestOutputHelper output, SqlServerFixture fixture)
+            : base(InitConfig(fixture), nameof(BatchingSqlServerEventsByPersistenceIdSpec), output)
         {
-            DbUtils.Initialize();
+            ReadJournal = Sys.ReadJournalFor<SqlReadJournal>(SqlReadJournal.Identifier);
+        }
+
+        private static Config InitConfig(SqlServerFixture fixture)
+        {
+            DbUtils.Initialize(fixture.ConnectionString);
 
             var conf = ConfigurationFactory.ParseString($@"
             akka.loglevel = DEBUG
@@ -38,13 +40,7 @@ namespace Akka.Persistence.SqlServer.Tests.Batching
                 refresh-interval = 1s
             }}");
 
-            SpecConfig = conf.WithFallback(SqlReadJournal.DefaultConfiguration());
-        }
-
-        public BatchingSqlServerEventsByPersistenceIdSpec(ITestOutputHelper output)
-            : base(SpecConfig, nameof(BatchingSqlServerEventsByPersistenceIdSpec), output)
-        {
-            ReadJournal = Sys.ReadJournalFor<SqlReadJournal>(SqlReadJournal.Identifier);
+            return conf.WithFallback(SqlReadJournal.DefaultConfiguration());
         }
 
         protected override void Dispose(bool disposing)

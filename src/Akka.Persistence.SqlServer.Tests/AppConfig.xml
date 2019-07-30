@@ -1,7 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<configuration>
-  <connectionStrings>
-    <add name="TestDb" connectionString="data source=.;database=akka_persistence_tests;user id=akkadotnet;password=akkadotnet" />
-    <!--<add name="TestDb" connectionString="data source=.;database=akka_persistence_tests;Trusted_Connection=True" />-->
-  </connectionStrings>
-</configuration>

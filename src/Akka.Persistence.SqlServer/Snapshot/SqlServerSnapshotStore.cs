@@ -1,9 +1,8 @@
-﻿//-----------------------------------------------------------------------
+﻿// -----------------------------------------------------------------------
 // <copyright file="SqlServerSnapshotStore.cs" company="Akka.NET Project">
-//     Copyright (C) 2009-2016 Lightbend Inc. <http://www.lightbend.com>
-//     Copyright (C) 2013-2016 Akka.NET project <https://github.com/akkadotnet/akka.net>
+//      Copyright (C) 2013 - 2019 .NET Foundation <https://github.com/akkadotnet/akka.net>
 // </copyright>
-//-----------------------------------------------------------------------
+// -----------------------------------------------------------------------
 
 using System.Data.Common;
 using System.Data.SqlClient;
@@ -15,11 +14,12 @@ namespace Akka.Persistence.SqlServer.Snapshot
     public class SqlServerSnapshotStore : SqlSnapshotStore
     {
         protected readonly SqlServerPersistence Extension = SqlServerPersistence.Get(Context.System);
-        public SqlServerSnapshotStore(Config config) : base(config)
+
+        public SqlServerSnapshotStore(Config snapshotConfig) : base(snapshotConfig)
         {
-            var sqlConfig = config.WithFallback(Extension.DefaultSnapshotConfig);
+            var config = snapshotConfig.WithFallback(Extension.DefaultSnapshotConfig);
             QueryExecutor = new SqlServerQueryExecutor(new QueryConfiguration(
-                
+ 
                 schemaName: config.GetString("schema-name"),
                 snapshotTableName: config.GetString("table-name"),
                 persistenceIdColumnName: "PersistenceId",
@@ -28,15 +28,17 @@ namespace Akka.Persistence.SqlServer.Snapshot
                 manifestColumnName: "Manifest",
                 timestampColumnName: "Timestamp",
                 serializerIdColumnName: "SerializerId",
-                timeout: sqlConfig.GetTimeSpan("connection-timeout"),
+                timeout: config.GetTimeSpan("connection-timeout"),
                 defaultSerializer: config.GetString("serializer"),
                 useSequentialAccess: config.GetBoolean("sequential-access")),
-                
                 Context.System.Serialization);
         }
 
-        protected override DbConnection CreateDbConnection(string connectionString) => new SqlConnection(connectionString);
-
         public override ISnapshotQueryExecutor QueryExecutor { get; }
+
+        protected override DbConnection CreateDbConnection(string connectionString)
+        {
+            return new SqlConnection(connectionString);
+        }
     }
 }

@@ -1,14 +1,11 @@
-﻿//-----------------------------------------------------------------------
+﻿// -----------------------------------------------------------------------
 // <copyright file="BatchingSqlServerJournalSpec.cs" company="Akka.NET Project">
-//     Copyright (C) 2009-2016 Typesafe Inc. <http://www.typesafe.com>
-//     Copyright (C) 2013-2016 Akka.NET project <https://github.com/akkadotnet/akka.net>
+//      Copyright (C) 2013 - 2019 .NET Foundation <https://github.com/akkadotnet/akka.net>
 // </copyright>
-//-----------------------------------------------------------------------
+// -----------------------------------------------------------------------
 
-using Akka.Actor;
 using Akka.Configuration;
 using Akka.Persistence.TCK.Journal;
-using Akka.TestKit;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -17,11 +14,15 @@ namespace Akka.Persistence.SqlServer.Tests.Batching
     [Collection("SqlServerSpec")]
     public class BatchingSqlServerJournalSpec : JournalSpec
     {
-        private static readonly Config SpecConfig;
-
-        static BatchingSqlServerJournalSpec()
+        public BatchingSqlServerJournalSpec(ITestOutputHelper output, SqlServerFixture fixture)
+            : base(InitConfig(fixture), nameof(BatchingSqlServerJournalSpec), output)
         {
-            DbUtils.Initialize();
+            Initialize();
+        }
+
+        private static Config InitConfig(SqlServerFixture fixture)
+        {
+            DbUtils.Initialize(fixture.ConnectionString);
             var specString = @"
                     akka.persistence {
                         publish-plugin-commands = on
@@ -38,14 +39,11 @@ namespace Akka.Persistence.SqlServer.Tests.Batching
                         }
                     }";
 
-            SpecConfig = ConfigurationFactory.ParseString(specString);
+            return ConfigurationFactory.ParseString(specString);
         }
 
-        public BatchingSqlServerJournalSpec(ITestOutputHelper output)
-            : base(SpecConfig, nameof(BatchingSqlServerJournalSpec), output)
-        {
-            Initialize();
-        }
+        // TODO: hack. Replace when https://github.com/akkadotnet/akka.net/issues/3811
+        protected override bool SupportsSerialization => false;
 
         protected override void Dispose(bool disposing)
         {

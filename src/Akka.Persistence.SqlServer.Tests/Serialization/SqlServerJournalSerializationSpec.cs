@@ -1,8 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// -----------------------------------------------------------------------
+// <copyright file="SqlServerJournalSerializationSpec.cs" company="Akka.NET Project">
+//      Copyright (C) 2013 - 2019 .NET Foundation <https://github.com/akkadotnet/akka.net>
+// </copyright>
+// -----------------------------------------------------------------------
+
 using Akka.Configuration;
 using Akka.Persistence.TCK.Serialization;
 using Xunit;
@@ -13,11 +14,14 @@ namespace Akka.Persistence.SqlServer.Tests.Serialization
     [Collection("SqlServerSpec")]
     public class SqlServerJournalSerializationSpec : JournalSerializationSpec
     {
-        private static readonly Config SpecConfig;
-
-        static SqlServerJournalSerializationSpec()
+        public SqlServerJournalSerializationSpec(ITestOutputHelper output, SqlServerFixture fixture)
+            : base(InitConfig(fixture), "SqlServerJournalSerializationSpec", output)
         {
-            DbUtils.Initialize();
+        }
+
+        private static Config InitConfig(SqlServerFixture fixture)
+        {
+            DbUtils.Initialize(fixture.ConnectionString);
             var specString = @"
                 akka.persistence {
                     publish-plugin-commands = on
@@ -41,11 +45,7 @@ namespace Akka.Persistence.SqlServer.Tests.Serialization
                     }
                 }";
 
-            SpecConfig = ConfigurationFactory.ParseString(specString);
-        }
-
-        public SqlServerJournalSerializationSpec(ITestOutputHelper output) : base(SpecConfig, "SqlServerJournalSerializationSpec", output)
-        {            
+            return ConfigurationFactory.ParseString(specString);
         }
 
         protected override void Dispose(bool disposing)

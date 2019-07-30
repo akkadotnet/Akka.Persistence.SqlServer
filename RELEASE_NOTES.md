@@ -1,3 +1,7 @@
+#### 1.3.14 July 30 2019 ####
+* Upgrades to Akka.Persistence v1.3.14 - resolves major issues with Akka.Cluster.Sharding serialization.
+* [BatchingSqlJournal now preserves Sender in PersistCallback](https://github.com/akkadotnet/akka.net/pull/3779)
+
 #### 1.3.13 April 30 2019 ####
 * Upgrades to Akka.Persistence v1.3.13
 * Resolves https://github.com/akkadotnet/Akka.Persistence.SqlServer/issues/104 - major issue with BatchingSqlJournal.

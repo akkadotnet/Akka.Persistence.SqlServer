@@ -1,9 +1,8 @@
-﻿//-----------------------------------------------------------------------
+﻿// -----------------------------------------------------------------------
 // <copyright file="SqlServerSettingsSpec.cs" company="Akka.NET Project">
-//     Copyright (C) 2009-2016 Typesafe Inc. <http://www.typesafe.com>
-//     Copyright (C) 2013-2016 Akka.NET project <https://github.com/akkadotnet/akka.net>
+//      Copyright (C) 2013 - 2019 .NET Foundation <https://github.com/akkadotnet/akka.net>
 // </copyright>
-//-----------------------------------------------------------------------
+// -----------------------------------------------------------------------
 
 using Akka.Dispatch;
 using FluentAssertions;
@@ -20,7 +19,8 @@ namespace Akka.Persistence.SqlServer.Tests
             var config = Sys.Settings.Config.GetConfig("akka.persistence.journal.sql-server");
 
             config.Should().NotBeNull();
-            config.GetString("class").Should().Be("Akka.Persistence.SqlServer.Journal.SqlServerJournal, Akka.Persistence.SqlServer");
+            config.GetString("class").Should()
+                .Be("Akka.Persistence.SqlServer.Journal.SqlServerJournal, Akka.Persistence.SqlServer");
             config.GetString("plugin-dispatcher").Should().Be(Dispatchers.DefaultDispatcherId);
             config.GetString("connection-string").Should().BeEmpty();
             config.GetString("connection-string-name").Should().BeNullOrEmpty();
@@ -29,7 +29,8 @@ namespace Akka.Persistence.SqlServer.Tests
             config.GetString("table-name").Should().Be("EventJournal");
             config.GetString("metadata-table-name").Should().Be("Metadata");
             config.GetBoolean("auto-initialize").Should().BeFalse();
-            config.GetString("timestamp-provider").Should().Be("Akka.Persistence.Sql.Common.Journal.DefaultTimestampProvider, Akka.Persistence.Sql.Common");
+            config.GetString("timestamp-provider").Should()
+                .Be("Akka.Persistence.Sql.Common.Journal.DefaultTimestampProvider, Akka.Persistence.Sql.Common");
         }
 
         [Fact]
@@ -39,7 +40,8 @@ namespace Akka.Persistence.SqlServer.Tests
             var config = Sys.Settings.Config.GetConfig("akka.persistence.snapshot-store.sql-server");
 
             config.Should().NotBeNull();
-            config.GetString("class").Should().Be("Akka.Persistence.SqlServer.Snapshot.SqlServerSnapshotStore, Akka.Persistence.SqlServer");
+            config.GetString("class").Should()
+                .Be("Akka.Persistence.SqlServer.Snapshot.SqlServerSnapshotStore, Akka.Persistence.SqlServer");
             config.GetString("plugin-dispatcher").Should().Be(Dispatchers.DefaultDispatcherId);
             config.GetString("connection-string").Should().BeEmpty();
             config.GetString("connection-string-name").Should().BeNullOrEmpty();

@@ -1,21 +1,27 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// -----------------------------------------------------------------------
+// <copyright file="SqlServerSnapshotSerializationSpec.cs" company="Akka.NET Project">
+//      Copyright (C) 2013 - 2019 .NET Foundation <https://github.com/akkadotnet/akka.net>
+// </copyright>
+// -----------------------------------------------------------------------
+
 using Akka.Configuration;
 using Akka.Persistence.TCK.Serialization;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace Akka.Persistence.SqlServer.Tests.Serialization
 {
+    [Collection("SqlServerSpec")]
     public class SqlServerSnapshotSerializationSpec : SnapshotStoreSerializationSpec
     {
-        private static readonly Config SpecConfig;
-
-        static SqlServerSnapshotSerializationSpec()
+        public SqlServerSnapshotSerializationSpec(ITestOutputHelper output, SqlServerFixture fixture) : base(
+            InitConfig(fixture), "SqlServerSnapshotSerializationSpec", output)
         {
-            DbUtils.Initialize();
+        }
+
+        private static Config InitConfig(SqlServerFixture fixture)
+        {
+            DbUtils.Initialize(fixture.ConnectionString);
             var specString = @"
                 akka.persistence {
                     publish-plugin-commands = on
@@ -30,11 +36,7 @@ namespace Akka.Persistence.SqlServer.Tests.Serialization
                         }
                     }
                 }";
-            SpecConfig = ConfigurationFactory.ParseString(specString);
-        }
-
-        public SqlServerSnapshotSerializationSpec(ITestOutputHelper output) : base(SpecConfig, "SqlServerSnapshotSerializationSpec", output)
-        {
+            return ConfigurationFactory.ParseString(specString);
         }
 
         protected override void Dispose(bool disposing)
