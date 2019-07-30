@@ -2,12 +2,12 @@
   <PropertyGroup>
     <Copyright>Copyright © 2013-2019 Akka.NET Team</Copyright>
     <Authors>Akka.NET Team</Authors>
-    <VersionPrefix>1.3.13</VersionPrefix>
+    <VersionPrefix>1.3.14</VersionPrefix>
     <PackageIconUrl>http://getakka.net/images/akkalogo.png</PackageIconUrl>
     <PackageProjectUrl>https://github.com/akkadotnet/Akka.Persistence.SqlServer</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/akkadotnet/Akka.Persistence.SqlServer/blob/master/LICENSE</PackageLicenseUrl>
-    <PackageReleaseNotes>Upgrades to Akka.Persistence v1.3.13
-Resolves https://github.com/akkadotnet/Akka.Persistence.SqlServer/issues/104 - major issue with BatchingSqlJournal.</PackageReleaseNotes>
+    <PackageReleaseNotes>Upgrades to Akka.Persistence v1.3.14 - resolves major issues with Akka.Cluster.Sharding serialization.
+[BatchingSqlJournal now preserves Sender in PersistCallback](https://github.com/akkadotnet/akka.net/pull/3779)</PackageReleaseNotes>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
   <PropertyGroup>
