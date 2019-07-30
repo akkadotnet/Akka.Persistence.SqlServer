@@ -17,7 +17,7 @@ Resolves https://github.com/akkadotnet/Akka.Persistence.SqlServer/issues/104 - m
     <NetCoreTestVersion>netcoreapp2.1</NetCoreTestVersion>
     <NetFrameworkTestVersion>net461</NetFrameworkTestVersion>
     <NetStandardLibVersion>netstandard1.6</NetStandardLibVersion>
-    <NetFrameworkLibVersion>net450</NetFrameworkLibVersion>
+    <NetFrameworkLibVersion>net45</NetFrameworkLibVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <DefineConstants>$(DefineConstants);RELEASE</DefineConstants>
