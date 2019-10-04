@@ -1,15 +1,14 @@
-﻿using System.Reflection;
-using System.Runtime.CompilerServices;
+﻿// -----------------------------------------------------------------------
+// <copyright file="AssemblyInfo.cs" company="Akka.NET Project">
+//      Copyright (C) 2013 - 2019 .NET Foundation <https://github.com/akkadotnet/akka.net>
+// </copyright>
+// -----------------------------------------------------------------------
+
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Akka.Persistence.SqlServer.Tests")]
-[assembly: AssemblyDescription("")]
-[assembly: AssemblyConfiguration("")]
-[assembly: AssemblyProduct("Akka.Persistence.SqlServer.Tests")]
-[assembly: AssemblyCulture("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible 
 // to COM components.  If you need to access a type in this assembly from 

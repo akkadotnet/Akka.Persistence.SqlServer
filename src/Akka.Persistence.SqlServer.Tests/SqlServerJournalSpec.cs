@@ -1,14 +1,12 @@
-﻿//-----------------------------------------------------------------------
+﻿// -----------------------------------------------------------------------
 // <copyright file="SqlServerJournalSpec.cs" company="Akka.NET Project">
-//     Copyright (C) 2009-2016 Typesafe Inc. <http://www.typesafe.com>
-//     Copyright (C) 2013-2016 Akka.NET project <https://github.com/akkadotnet/akka.net>
+//      Copyright (C) 2013 - 2019 .NET Foundation <https://github.com/akkadotnet/akka.net>
 // </copyright>
-//-----------------------------------------------------------------------
+// -----------------------------------------------------------------------
 
 using Akka.Actor;
 using Akka.Configuration;
-using Akka.Persistence.TestKit.Journal;
-using Akka.TestKit;
+using Akka.Persistence.TCK.Journal;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -17,10 +15,16 @@ namespace Akka.Persistence.SqlServer.Tests
     [Collection("SqlServerSpec")]
     public class SqlServerJournalSpec : JournalSpec
     {
-        private static readonly Config SpecConfig;
-
-        static SqlServerJournalSpec()
+        public SqlServerJournalSpec(ITestOutputHelper output, SqlServerFixture fixture)
+            : base(InitConfig(fixture), "SqlServerJournalSpec", output)
         {
+            Initialize();
+        }
+
+        private static Config InitConfig(SqlServerFixture fixture)
+        {
+            //need to make sure db is created before the tests start
+            DbUtils.Initialize(fixture.ConnectionString);
             var specString = @"
                     akka.persistence {
                         publish-plugin-commands = on
@@ -32,23 +36,16 @@ namespace Akka.Persistence.SqlServer.Tests
                                 table-name = EventJournal
                                 schema-name = dbo
                                 auto-initialize = on
-                                connection-string-name = ""TestDb""
+                                connection-string = """ + DbUtils.ConnectionString + @"""
                             }
                         }
                     }";
 
-            SpecConfig = ConfigurationFactory.ParseString(specString);
-
-
-            //need to make sure db is created before the tests start
-            DbUtils.Initialize();
+            return ConfigurationFactory.ParseString(specString);
         }
 
-        public SqlServerJournalSpec(ITestOutputHelper output)
-            : base(SpecConfig, "SqlServerJournalSpec", output)
-        {
-            Initialize();
-        }
+        // TODO: hack. Replace when https://github.com/akkadotnet/akka.net/issues/3811
+        protected override bool SupportsSerialization => false;
 
         protected override void Dispose(bool disposing)
         {
@@ -57,11 +54,11 @@ namespace Akka.Persistence.SqlServer.Tests
         }
 
         [Fact]
-        public void Journal_should_not_reset_HighestSequenceNr_after_journal_cleanup()
+        public void Journal_should_not_reset_HighestSequenceNr_after_journal_cleanup1()
         {
-            TestProbe _receiverProbe = CreateTestProbe();
+            var _receiverProbe = CreateTestProbe();
             Journal.Tell(new ReplayMessages(0, long.MaxValue, long.MaxValue, Pid, _receiverProbe.Ref));
-            for (int i = 1; i <= 5; i++) _receiverProbe.ExpectMsg<ReplayedMessage>(m => IsReplayedMessage(m, i));
+            for (var i = 1; i <= 5; i++) _receiverProbe.ExpectMsg<ReplayedMessage>(m => IsReplayedMessage(m, i));
             _receiverProbe.ExpectMsg<RecoverySuccess>(m => m.HighestSequenceNr == 5L);
 
             Journal.Tell(new DeleteMessagesTo(Pid, long.MaxValue, _receiverProbe.Ref));

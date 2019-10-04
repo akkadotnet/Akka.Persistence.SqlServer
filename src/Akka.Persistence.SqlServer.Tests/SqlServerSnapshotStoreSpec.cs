@@ -1,14 +1,11 @@
-﻿//-----------------------------------------------------------------------
+﻿// -----------------------------------------------------------------------
 // <copyright file="SqlServerSnapshotStoreSpec.cs" company="Akka.NET Project">
-//     Copyright (C) 2009-2016 Typesafe Inc. <http://www.typesafe.com>
-//     Copyright (C) 2013-2016 Akka.NET project <https://github.com/akkadotnet/akka.net>
+//      Copyright (C) 2013 - 2019 .NET Foundation <https://github.com/akkadotnet/akka.net>
 // </copyright>
-//-----------------------------------------------------------------------
+// -----------------------------------------------------------------------
 
-using System.Configuration;
 using Akka.Configuration;
-using Akka.Persistence.TestKit.Snapshot;
-using Akka.TestKit;
+using Akka.Persistence.TCK.Snapshot;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -17,10 +14,16 @@ namespace Akka.Persistence.SqlServer.Tests
     [Collection("SqlServerSpec")]
     public class SqlServerSnapshotStoreSpec : SnapshotStoreSpec
     {
-        private static readonly Config SpecConfig;
-
-        static SqlServerSnapshotStoreSpec()
+        public SqlServerSnapshotStoreSpec(ITestOutputHelper output, SqlServerFixture fixture)
+            : base(InitConfig(fixture), "SqlServerSnapshotStoreSpec", output)
         {
+            Initialize();
+        }
+
+        private static Config InitConfig(SqlServerFixture fixture)
+        {
+            //need to make sure db is created before the tests start
+            DbUtils.Initialize(fixture.ConnectionString);
             var specString = @"
                         akka.persistence {
                             publish-plugin-commands = on
@@ -32,22 +35,12 @@ namespace Akka.Persistence.SqlServer.Tests
                                     table-name = SnapshotStore
                                     schema-name = dbo
                                     auto-initialize = on
-                                    connection-string-name = ""TestDb""
+                                    connection-string = """ + DbUtils.ConnectionString + @"""
                                 }
                             }
                         }";
 
-            SpecConfig = ConfigurationFactory.ParseString(specString);
-
-
-            //need to make sure db is created before the tests start
-            DbUtils.Initialize();
-        }
-
-        public SqlServerSnapshotStoreSpec(ITestOutputHelper output)
-            : base(SpecConfig, "SqlServerSnapshotStoreSpec", output)
-        {
-            Initialize();
+            return ConfigurationFactory.ParseString(specString);
         }
 
         protected override void Dispose(bool disposing)
