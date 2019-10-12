@@ -99,7 +99,7 @@ CREATE TABLE {your_journal_table_name} (
   Payload VARBINARY(MAX) NOT NULL,
   Tags NVARCHAR(100) NULL,
   SerializerId INTEGER NULL
-	CONSTRAINT PK_{your_journal_table_name} PRIMARY KEY (Ordering),
+  CONSTRAINT PK_{your_journal_table_name} PRIMARY KEY (Ordering),
   CONSTRAINT QU_{your_journal_table_name} UNIQUE (PersistenceID, SequenceNr)
 );
 
