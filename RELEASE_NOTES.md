@@ -1,3 +1,9 @@
+#### 1.3.17 January 20 2020 ####
+* Upgrades to Akka.Persistence v1.3.17.
+* Upgrades to latest SqlClient.
+* [Resolved: Generated SQL creates a large number of cached query plans in SQL Server](https://github.com/akkadotnet/akka.net/issues/4141)
+
+
 #### 1.3.14 July 30 2019 ####
 * Upgrades to Akka.Persistence v1.3.14 - resolves major issues with Akka.Cluster.Sharding serialization.
 * [BatchingSqlJournal now preserves Sender in PersistCallback](https://github.com/akkadotnet/akka.net/pull/3779)
