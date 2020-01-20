@@ -17,6 +17,8 @@ namespace Akka.Persistence.SqlServer.Journal
             : base(configuration, serialization, timestampProvider)
         {
             ByTagSql = $@"
+            DECLARE @Tag_sized NVARCHAR(100);
+            SET @Tag_sized = @Tag;
             SELECT TOP (@Take)
             e.{Configuration.PersistenceIdColumnName} as PersistenceId, 
             e.{Configuration.SequenceNrColumnName} as SequenceNr, 
@@ -27,7 +29,7 @@ namespace Akka.Persistence.SqlServer.Journal
             e.{Configuration.SerializerIdColumnName} as SerializerId,
             e.{Configuration.OrderingColumnName} as Ordering
             FROM {Configuration.FullJournalTableName} e
-            WHERE e.{Configuration.OrderingColumnName} > @Ordering AND e.{Configuration.TagsColumnName} LIKE @Tag
+            WHERE e.{Configuration.OrderingColumnName} > @Ordering AND e.{Configuration.TagsColumnName} LIKE @Tag_sized
             ORDER BY {Configuration.OrderingColumnName} ASC
             ";
             CreateEventsJournalSql = $@"
