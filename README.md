@@ -99,7 +99,7 @@ CREATE TABLE {your_journal_table_name} (
   Payload VARBINARY(MAX) NOT NULL,
   Tags NVARCHAR(100) NULL,
   SerializerId INTEGER NULL
-	CONSTRAINT PK_{your_journal_table_name} PRIMARY KEY (Ordering),
+  CONSTRAINT PK_{your_journal_table_name} PRIMARY KEY (Ordering),
   CONSTRAINT QU_{your_journal_table_name} UNIQUE (PersistenceID, SequenceNr)
 );
 
@@ -145,6 +145,7 @@ ALTER TABLE {your_snapshot_table_name} ADD COLUMN SerializerId INTEGER NULL
 
 ```sql
 ALTER TABLE {your_journal_table_name} DROP CONSTRAINT PK_{your_journal_table_name};
+ALTER TABLE {your_journal_table_name} ADD Ordering BIGINT IDENTITY(1,1) PRIMARY KEY NOT NULL;
 ALTER TABLE {your_journal_table_name} ADD Ordering BIGINT IDENTITY(1,1) NOT NULL;
 ALTER TABLE {your_journal_table_name} ADD CONSTRAINT PK_EventJournal PRIMARY KEY (Ordering);
 ALTER TABLE {your_journal_table_name} ADD CONSTRAINT QU_{your_journal_table_name} UNIQUE (PersistenceID, SequenceNr);
@@ -192,9 +193,11 @@ RETURN CONVERT(bigint,
 END;
 ALTER TABLE {your_journal_table_name} ADD Timestamp_tmp BIGINT NULL;
 UPDATE {your_journal_table_name} SET Timestamp_tmp = dbo.Ticks(Timestamp);
+DROP INDEX [IX_EventJournal_Timestamp] ON {your_journal_table_name};
 ALTER TABLE {your_journal_table_name} DROP COLUMN Timestamp;
 ALTER TABLE {your_journal_table_name} ALTER COLUMN Timestamp_tmp BIGINT NOT NULL;
 EXEC sp_RENAME '{your_journal_table_name}.Timestamp_tmp' , 'Timestamp', 'COLUMN';
+CREATE NONCLUSTERED INDEX [IX_EventJournal_Timestamp] ON {your_journal_table_name}([Timestamp] ASC);
 ALTER TABLE {your_journal_table_name} ADD Tags NVARCHAR(100) NULL;
 ```
 

@@ -53,6 +53,8 @@ namespace Akka.Persistence.SqlServer.Journal
             var c = Setup.NamingConventions;
 
             ByTagSql = ByTagSql = $@"
+             DECLARE @Tag_sized NVARCHAR(100);
+             SET @Tag_sized = @Tag;
              SELECT TOP (@Take)
              e.{c.PersistenceIdColumnName} as PersistenceId, 
              e.{c.SequenceNrColumnName} as SequenceNr, 
@@ -63,7 +65,7 @@ namespace Akka.Persistence.SqlServer.Journal
              e.{c.SerializerIdColumnName} as SerializerId,
              e.{c.OrderingColumnName} as Ordering
              FROM {c.FullJournalTableName} e
-             WHERE e.{c.OrderingColumnName} > @Ordering AND e.{c.TagsColumnName} LIKE @Tag
+             WHERE e.{c.OrderingColumnName} > @Ordering AND e.{c.TagsColumnName} LIKE @Tag_sized
              ORDER BY {c.OrderingColumnName} ASC
              ";
         }

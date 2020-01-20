@@ -41,21 +41,27 @@ namespace Akka.Persistence.SqlServer.Snapshot
             ";
 
             InsertSnapshotSql = $@"
+            DECLARE @Manifest_sized NVARCHAR(500);
+            DECLARE @Payload_sized VARBINARY(MAX);
+            DECLARE @PersistenceId_sized NVARCHAR(255);
+            SET @Manifest_sized = @Manifest;
+            SET @Payload_sized = @Payload;
+            SET @PersistenceId_sized = @PersistenceId;
             IF (
                 SELECT COUNT(*) 
                 FROM {configuration.FullSnapshotTableName}
                 WHERE {configuration.SequenceNrColumnName} = @SequenceNr 
-                AND {configuration.PersistenceIdColumnName} = @PersistenceId) > 0 
+                AND {configuration.PersistenceIdColumnName} = @PersistenceId_sized) > 0 
             UPDATE {configuration.FullSnapshotTableName} 
             SET 
-                {configuration.PersistenceIdColumnName} = @PersistenceId, 
+                {configuration.PersistenceIdColumnName} = @PersistenceId_sized, 
                 {configuration.SequenceNrColumnName} = @SequenceNr, 
                 {configuration.TimestampColumnName} = @Timestamp, 
-                {configuration.ManifestColumnName} = @Manifest, 
-                {configuration.PayloadColumnName} = @Payload,
+                {configuration.ManifestColumnName} = @Manifest_sized,
+                {configuration.PayloadColumnName} = @Payload_sized,
                 {configuration.SerializerIdColumnName} = @SerializerId
             WHERE {configuration.SequenceNrColumnName} = @SequenceNr 
-            AND {configuration.PersistenceIdColumnName} = @PersistenceId ELSE 
+            AND {configuration.PersistenceIdColumnName} = @PersistenceId_sized ELSE 
             INSERT INTO {configuration.FullSnapshotTableName} (
                 {configuration.PersistenceIdColumnName}, 
                 {configuration.SequenceNrColumnName}, 
@@ -63,9 +69,11 @@ namespace Akka.Persistence.SqlServer.Snapshot
                 {configuration.ManifestColumnName}, 
                 {configuration.PayloadColumnName},
                 {configuration.SerializerIdColumnName}) 
-            VALUES (@PersistenceId, @SequenceNr, @Timestamp, @Manifest, @Payload, @SerializerId);";
+            VALUES (@PersistenceId_sized, @SequenceNr, @Timestamp, @Manifest_sized, @Payload_sized, @SerializerId);";
 
             SelectSnapshotSql = $@"
+                DECLARE @PersistenceId_sized NVARCHAR(255);
+                SET @PersistenceId_sized = @PersistenceId;
                 SELECT TOP 1 {Configuration.PersistenceIdColumnName},
                     {Configuration.SequenceNrColumnName}, 
                     {Configuration.TimestampColumnName}, 
@@ -73,7 +81,7 @@ namespace Akka.Persistence.SqlServer.Snapshot
                     {Configuration.PayloadColumnName},
                     {Configuration.SerializerIdColumnName}
                 FROM {Configuration.FullSnapshotTableName} 
-                WHERE {Configuration.PersistenceIdColumnName} = @PersistenceId 
+                WHERE {Configuration.PersistenceIdColumnName} = @PersistenceId_sized
                     AND {Configuration.SequenceNrColumnName} <= @SequenceNr
                     AND {Configuration.TimestampColumnName} <= @Timestamp
                 ORDER BY {Configuration.SequenceNrColumnName} DESC";
