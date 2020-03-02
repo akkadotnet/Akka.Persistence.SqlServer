@@ -6,6 +6,7 @@
 
 using Akka.Configuration;
 using Akka.Persistence.TCK.Serialization;
+using Hocon;
 using Xunit;
 using Xunit.Abstractions;
 

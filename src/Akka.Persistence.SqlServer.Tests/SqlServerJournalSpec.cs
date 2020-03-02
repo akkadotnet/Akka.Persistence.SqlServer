@@ -7,6 +7,7 @@
 using Akka.Actor;
 using Akka.Configuration;
 using Akka.Persistence.TCK.Journal;
+using Hocon;
 using Xunit;
 using Xunit.Abstractions;
 

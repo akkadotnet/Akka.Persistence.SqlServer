@@ -8,6 +8,7 @@ using Akka.Configuration;
 using Akka.Persistence.Query;
 using Akka.Persistence.Query.Sql;
 using Akka.Persistence.TCK.Query;
+using Hocon;
 using Xunit;
 using Xunit.Abstractions;
 
