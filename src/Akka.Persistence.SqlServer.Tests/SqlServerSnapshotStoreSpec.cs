@@ -8,6 +8,7 @@ using Akka.Configuration;
 using Akka.Persistence.TCK.Snapshot;
 using Xunit;
 using Xunit.Abstractions;
+using Hocon;
 
 namespace Akka.Persistence.SqlServer.Tests
 {

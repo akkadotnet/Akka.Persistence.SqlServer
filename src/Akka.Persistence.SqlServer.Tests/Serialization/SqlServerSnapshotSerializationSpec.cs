@@ -8,6 +8,7 @@ using Akka.Configuration;
 using Akka.Persistence.TCK.Serialization;
 using Xunit;
 using Xunit.Abstractions;
+using Hocon;
 
 namespace Akka.Persistence.SqlServer.Tests.Serialization
 {
