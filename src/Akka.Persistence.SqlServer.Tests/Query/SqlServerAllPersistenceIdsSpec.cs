@@ -36,7 +36,7 @@ namespace Akka.Persistence.SqlServer.Tests.Query
                         table-name = EventJournal
                         schema-name = dbo
                         auto-initialize = on
-                        connection-string = """ + DbUtils.ConnectionString + @"""
+                        connection-string = ""{DbUtils.ConnectionString}""
                         refresh-interval = 1s
                     }}")
                 .WithFallback(SqlReadJournal.DefaultConfiguration());

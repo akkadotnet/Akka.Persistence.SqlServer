@@ -26,21 +26,21 @@ namespace Akka.Persistence.SqlServer.Tests
         {
             //need to make sure db is created before the tests start
             DbUtils.Initialize(fixture.ConnectionString);
-            var specString = @"
-                    akka.persistence {
+            var specString = $@"
+                    akka.persistence {{
                         publish-plugin-commands = on
-                        journal {
+                        journal {{
                             plugin = ""akka.persistence.journal.sql-server""
-                            sql-server {
+                            sql-server {{
                                 class = ""Akka.Persistence.SqlServer.Journal.SqlServerJournal, Akka.Persistence.SqlServer""
                                 plugin-dispatcher = ""akka.actor.default-dispatcher""
                                 table-name = EventJournal
                                 schema-name = dbo
                                 auto-initialize = on
-                                connection-string = """ + DbUtils.ConnectionString + @"""
-                            }
-                        }
-                    }";
+                                connection-string = ""{DbUtils.ConnectionString}""
+                            }}
+                        }}
+                    }}";
 
             return ConfigurationFactory.ParseString(specString);
         }
