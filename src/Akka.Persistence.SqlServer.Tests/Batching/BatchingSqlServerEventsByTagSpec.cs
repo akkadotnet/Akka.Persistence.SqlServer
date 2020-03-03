@@ -10,6 +10,7 @@ using Akka.Persistence.Query.Sql;
 using Akka.Persistence.TCK.Query;
 using Xunit;
 using Xunit.Abstractions;
+using Hocon;
 
 namespace Akka.Persistence.SqlServer.Tests.Batching
 {
@@ -42,7 +43,7 @@ namespace Akka.Persistence.SqlServer.Tests.Batching
                         table-name = EventJournal
                         schema-name = dbo
                         auto-initialize = on
-                        connection-string = """ + DbUtils.ConnectionString + @"""
+                        connection-string = ""{DbUtils.ConnectionString}""
                         refresh-interval = 1s
                     }}");
 

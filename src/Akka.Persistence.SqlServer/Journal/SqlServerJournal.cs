@@ -8,6 +8,7 @@ using System.Data.Common;
 using System.Data.SqlClient;
 using Akka.Configuration;
 using Akka.Persistence.Sql.Common.Journal;
+using Hocon;
 
 namespace Akka.Persistence.SqlServer.Journal
 {
@@ -19,9 +20,9 @@ namespace Akka.Persistence.SqlServer.Journal
         {
             var config = journalConfig.WithFallback(Extension.DefaultJournalConfig);
             QueryExecutor = new SqlServerQueryExecutor(new QueryConfiguration(
-                    config.GetString("schema-name"),
-                    config.GetString("table-name"),
-                    config.GetString("metadata-table-name"),
+                    config.GetString("schema-name", null),
+                    config.GetString("table-name", null),
+                    config.GetString("metadata-table-name", null),
                     "PersistenceId",
                     "SequenceNr",
                     "Payload",
@@ -31,9 +32,9 @@ namespace Akka.Persistence.SqlServer.Journal
                     "Tags",
                     "Ordering",
                     "SerializerId",
-                    config.GetTimeSpan("connection-timeout"),
-                    config.GetString("serializer"),
-                    config.GetBoolean("sequential-access")),
+                    config.GetTimeSpan("connection-timeout", null),
+                    config.GetString("serializer", null),
+                    config.GetBoolean("sequential-access", false)),
                 Context.System.Serialization,
                 GetTimestampProvider(config.GetString("timestamp-provider")));
         }

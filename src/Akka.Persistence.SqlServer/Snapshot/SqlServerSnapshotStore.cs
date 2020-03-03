@@ -8,6 +8,7 @@ using System.Data.Common;
 using System.Data.SqlClient;
 using Akka.Configuration;
 using Akka.Persistence.Sql.Common.Snapshot;
+using Hocon;
 
 namespace Akka.Persistence.SqlServer.Snapshot
 {
@@ -20,17 +21,17 @@ namespace Akka.Persistence.SqlServer.Snapshot
             var config = snapshotConfig.WithFallback(Extension.DefaultSnapshotConfig);
             QueryExecutor = new SqlServerQueryExecutor(new QueryConfiguration(
  
-                schemaName: config.GetString("schema-name"),
-                snapshotTableName: config.GetString("table-name"),
+                schemaName: config.GetString("schema-name", null),
+                snapshotTableName: config.GetString("table-name", null),
                 persistenceIdColumnName: "PersistenceId",
                 sequenceNrColumnName: "SequenceNr",
                 payloadColumnName: "Snapshot",
                 manifestColumnName: "Manifest",
                 timestampColumnName: "Timestamp",
                 serializerIdColumnName: "SerializerId",
-                timeout: config.GetTimeSpan("connection-timeout"),
-                defaultSerializer: config.GetString("serializer"),
-                useSequentialAccess: config.GetBoolean("sequential-access")),
+                timeout: config.GetTimeSpan("connection-timeout", null),
+                defaultSerializer: config.GetString("serializer", null),
+                useSequentialAccess: config.GetBoolean("sequential-access", false)),
                 Context.System.Serialization);
         }
 
