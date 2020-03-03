@@ -2,13 +2,11 @@
   <PropertyGroup>
     <Copyright>Copyright © 2013-2020 Akka.NET Team</Copyright>
     <Authors>Akka.NET Team</Authors>
-    <VersionPrefix>1.3.17</VersionPrefix>
+    <VersionPrefix>1.4.1</VersionPrefix>
     <PackageIconUrl>http://getakka.net/images/akkalogo.png</PackageIconUrl>
     <PackageProjectUrl>https://github.com/akkadotnet/Akka.Persistence.SqlServer</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/akkadotnet/Akka.Persistence.SqlServer/blob/master/LICENSE</PackageLicenseUrl>
-    <PackageReleaseNotes>Upgrades to Akka.Persistence v1.3.17.
-Upgrades to latest SqlClient.
-[Resolved: Generated SQL creates a large number of cached query plans in SQL Server](https://github.com/akkadotnet/akka.net/issues/4141)</PackageReleaseNotes>
+    <PackageReleaseNotes>Upgrades to Akka.NET v1.4.1-rc1</PackageReleaseNotes>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
   <PropertyGroup>
@@ -22,7 +20,7 @@ Upgrades to latest SqlClient.
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <DefineConstants>$(DefineConstants);RELEASE</DefineConstants>
   </PropertyGroup>
-   <PropertyGroup>
+  <PropertyGroup>
     <!-- Optional: Publish the repository URL in the built .nupkg (in the NuSpec <Repository> element) -->
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <!-- Optional: Embed source files that are not tracked by the source control manager in the PDB -->
