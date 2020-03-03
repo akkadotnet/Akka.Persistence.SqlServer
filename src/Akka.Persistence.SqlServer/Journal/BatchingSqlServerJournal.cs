@@ -11,6 +11,7 @@ using System.Data;
 using System.Data.SqlClient;
 using Akka.Configuration;
 using Akka.Persistence.Sql.Common.Journal;
+using Hocon;
 
 namespace Akka.Persistence.SqlServer.Journal
 {
@@ -30,8 +31,8 @@ namespace Akka.Persistence.SqlServer.Journal
             "Ordering",
             "SerializerId",
             config.GetTimeSpan("connection-timeout", TimeSpan.FromSeconds(30)),
-            config.GetString("serializer"),
-            config.GetBoolean("sequential-access")))
+            config.GetString("serializer", null),
+            config.GetBoolean("sequential-access", false)))
         {
         }
 

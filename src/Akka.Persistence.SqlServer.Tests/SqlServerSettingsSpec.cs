@@ -7,6 +7,7 @@
 using Akka.Dispatch;
 using FluentAssertions;
 using Xunit;
+using Hocon;
 
 namespace Akka.Persistence.SqlServer.Tests
 {
@@ -23,7 +24,7 @@ namespace Akka.Persistence.SqlServer.Tests
                 .Be("Akka.Persistence.SqlServer.Journal.SqlServerJournal, Akka.Persistence.SqlServer");
             config.GetString("plugin-dispatcher").Should().Be(Dispatchers.DefaultDispatcherId);
             config.GetString("connection-string").Should().BeEmpty();
-            config.GetString("connection-string-name").Should().BeNullOrEmpty();
+            config.GetString("connection-string-name", null).Should().BeNullOrEmpty();
             config.GetTimeSpan("connection-timeout").Should().Be(30.Seconds());
             config.GetString("schema-name").Should().Be("dbo");
             config.GetString("table-name").Should().Be("EventJournal");
@@ -44,7 +45,7 @@ namespace Akka.Persistence.SqlServer.Tests
                 .Be("Akka.Persistence.SqlServer.Snapshot.SqlServerSnapshotStore, Akka.Persistence.SqlServer");
             config.GetString("plugin-dispatcher").Should().Be(Dispatchers.DefaultDispatcherId);
             config.GetString("connection-string").Should().BeEmpty();
-            config.GetString("connection-string-name").Should().BeNullOrEmpty();
+            config.GetString("connection-string-name", null).Should().BeNullOrEmpty();
             config.GetTimeSpan("connection-timeout").Should().Be(30.Seconds());
             config.GetString("schema-name").Should().Be("dbo");
             config.GetString("table-name").Should().Be("SnapshotStore");
