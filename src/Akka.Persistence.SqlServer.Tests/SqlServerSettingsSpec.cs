@@ -7,7 +7,6 @@
 using Akka.Dispatch;
 using FluentAssertions;
 using Xunit;
-using Hocon;
 
 namespace Akka.Persistence.SqlServer.Tests
 {

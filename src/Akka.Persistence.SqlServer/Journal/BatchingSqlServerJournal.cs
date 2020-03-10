@@ -11,7 +11,6 @@ using System.Data;
 using System.Data.SqlClient;
 using Akka.Configuration;
 using Akka.Persistence.Sql.Common.Journal;
-using Hocon;
 
 namespace Akka.Persistence.SqlServer.Journal
 {

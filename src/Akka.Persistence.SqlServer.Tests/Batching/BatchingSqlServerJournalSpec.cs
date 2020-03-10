@@ -8,7 +8,6 @@ using Akka.Configuration;
 using Akka.Persistence.TCK.Journal;
 using Xunit;
 using Xunit.Abstractions;
-using Hocon;
 
 namespace Akka.Persistence.SqlServer.Tests.Batching
 {
