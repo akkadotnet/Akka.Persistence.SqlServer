@@ -1,2 +1,2 @@
-#### 1.4.1-rc1 March 02 2020 ####
-* Upgrades to Akka.NET v1.4.1-rc1
+#### 1.4.1-rc2 March 10 2020 ####
+* Upgrades to Akka.NET v1.4.2-rc1
