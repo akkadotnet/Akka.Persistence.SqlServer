@@ -8,7 +8,6 @@ using System.Data.Common;
 using System.Data.SqlClient;
 using Akka.Configuration;
 using Akka.Persistence.Sql.Common.Snapshot;
-using Hocon;
 
 namespace Akka.Persistence.SqlServer.Snapshot
 {

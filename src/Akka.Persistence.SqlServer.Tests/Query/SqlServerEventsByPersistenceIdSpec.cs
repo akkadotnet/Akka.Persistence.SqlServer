@@ -10,7 +10,6 @@ using Akka.Persistence.Query.Sql;
 using Akka.Persistence.TCK.Query;
 using Xunit;
 using Xunit.Abstractions;
-using Hocon;
 
 namespace Akka.Persistence.SqlServer.Tests.Query
 {
