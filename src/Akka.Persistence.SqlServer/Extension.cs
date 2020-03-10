@@ -7,7 +7,6 @@
 using Akka.Actor;
 using Akka.Configuration;
 using Akka.Persistence.Sql.Common;
-using Hocon;
 
 namespace Akka.Persistence.SqlServer
 {
