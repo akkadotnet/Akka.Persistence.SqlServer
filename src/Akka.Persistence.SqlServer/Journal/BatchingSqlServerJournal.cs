@@ -72,6 +72,21 @@ namespace Akka.Persistence.SqlServer.Journal
 
         public BatchingSqlServerJournal(BatchingSqlServerJournalSetup setup) : base(setup)
         {
+            var connectionTimeoutSeconds =
+                new SqlConnectionStringBuilder(
+                    setup.ConnectionString).ConnectTimeout;
+            var commandTimeout = setup.ConnectionTimeout;
+            var circuitBreakerTimeout = setup.CircuitBreakerSettings.CallTimeout;
+            var totalTimeout = commandTimeout.Add(
+                TimeSpan.FromSeconds(connectionTimeoutSeconds));
+            if (totalTimeout >=
+                circuitBreakerTimeout)
+            {
+                Log.Warning(
+                    "Configured Total of Connection timeout ({0} seconds) and Command timeout ({1} seconds) is less than or equal to Circuit breaker timeout ({2} seconds). This may cause unintended write failures",
+                    connectionTimeoutSeconds, commandTimeout.TotalSeconds,
+                    circuitBreakerTimeout.TotalSeconds);
+            }
             var c = Setup.NamingConventions;
             Initializers = ImmutableDictionary.CreateRange(new Dictionary<string, string>
             {
@@ -116,6 +131,7 @@ namespace Akka.Persistence.SqlServer.Journal
                     );
                 END"
             });
+            
         }
 
         protected override string ByTagSql { get; }
