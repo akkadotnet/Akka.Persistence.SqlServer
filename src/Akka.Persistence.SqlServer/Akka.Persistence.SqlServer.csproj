@@ -19,7 +19,7 @@
 
   <ItemGroup Condition="'$(TargetFramework)' == '$(NetStandardLibVersion)'">
     <PackageReference Include="System.Data.SqlClient">
-      <Version>4.8.1</Version>
+      <Version>4.8.2</Version>
     </PackageReference>
   </ItemGroup>
 </Project>

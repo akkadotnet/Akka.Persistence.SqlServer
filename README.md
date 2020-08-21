@@ -8,6 +8,8 @@ Both journal and snapshot store share the same configuration keys (however they 
 
 Remember that connection string must be provided separately to Journal and Snapshot Store.
 
+Please also note that unless circuit breaker settings are configured, the defaults from Akka.Persistence will be used. If these defaults are less than the Database connection timeout (default or provided in connection string) and provided command timeout, Warnings will be logged upon initialization of the Journal or Snapshot Store.
+
 ```hocon
 akka.persistence{
 	journal {
@@ -39,6 +41,10 @@ akka.persistence{
 
 			# metadata table
 			metadata-table-name = Metadata
+			
+			# Recommended: change default circuit breaker settings
+			# By uncommenting below and using Connection Timeout + Command Timeout
+			# circuit-breaker.call-timeout=30s
 		}
 	}
 
@@ -66,6 +72,10 @@ akka.persistence{
 
 			# should corresponding journal table be initialized automatically
 			auto-initialize = off
+			
+			# Recommended: change default circuit breaker settings
+			# By uncommenting below and using Connection Timeout + Command Timeout
+			# circuit-breaker.call-timeout=30s
 		}
 	}
 }

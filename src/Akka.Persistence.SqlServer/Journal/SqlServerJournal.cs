@@ -4,6 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
+using System;
 using System.Data.Common;
 using System.Data.SqlClient;
 using Akka.Configuration;
@@ -17,7 +18,25 @@ namespace Akka.Persistence.SqlServer.Journal
 
         public SqlServerJournal(Config journalConfig) : base(journalConfig)
         {
+            
             var config = journalConfig.WithFallback(Extension.DefaultJournalConfig);
+            var connectionTimeoutSeconds =
+                new SqlConnectionStringBuilder(
+                    config.GetString("connection-string")).ConnectTimeout;
+            var commandTimeout = config.GetTimeSpan("connection-timeout", null);
+            var circuitBreakerTimeout = journalConfig.GetTimeSpan(
+                "circuit-breaker.call-timeout",
+                null);
+            var totalTimeout = commandTimeout.Add(
+                TimeSpan.FromSeconds(connectionTimeoutSeconds));
+            if (totalTimeout >=
+                circuitBreakerTimeout)
+            {
+                Log.Warning(
+                    "Configured Total of Connection timeout ({0} seconds) and Command timeout ({1} seconds) is less than or equal to Circuit breaker timeout ({2} seconds). This may cause unintended write failures",
+                    connectionTimeoutSeconds, commandTimeout.TotalSeconds,
+                    circuitBreakerTimeout.TotalSeconds);
+            }
             QueryExecutor = new SqlServerQueryExecutor(new QueryConfiguration(
                     config.GetString("schema-name", null),
                     config.GetString("table-name", null),
