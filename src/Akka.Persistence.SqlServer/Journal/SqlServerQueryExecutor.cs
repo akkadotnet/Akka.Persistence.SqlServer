@@ -16,62 +16,72 @@ namespace Akka.Persistence.SqlServer.Journal
             ITimestampProvider timestampProvider)
             : base(configuration, serialization, timestampProvider)
         {
+            var allEventColumnNames = $@"
+                e.{Configuration.PersistenceIdColumnName} as PersistenceId, 
+                e.{Configuration.SequenceNrColumnName} as SequenceNr, 
+                e.{Configuration.TimestampColumnName} as Timestamp, 
+                e.{Configuration.IsDeletedColumnName} as IsDeleted, 
+                e.{Configuration.ManifestColumnName} as Manifest, 
+                e.{Configuration.PayloadColumnName} as Payload,
+                e.{Configuration.SerializerIdColumnName} as SerializerId";
+
             ByTagSql = $@"
             DECLARE @Tag_sized NVARCHAR(100);
             SET @Tag_sized = @Tag;
-            SELECT TOP (@Take)
-            e.{Configuration.PersistenceIdColumnName} as PersistenceId, 
-            e.{Configuration.SequenceNrColumnName} as SequenceNr, 
-            e.{Configuration.TimestampColumnName} as Timestamp, 
-            e.{Configuration.IsDeletedColumnName} as IsDeleted, 
-            e.{Configuration.ManifestColumnName} as Manifest, 
-            e.{Configuration.PayloadColumnName} as Payload,
-            e.{Configuration.SerializerIdColumnName} as SerializerId,
-            e.{Configuration.OrderingColumnName} as Ordering
+            SELECT TOP (@Take) 
+            {allEventColumnNames}, e.{Configuration.OrderingColumnName} as Ordering
             FROM {Configuration.FullJournalTableName} e
             WHERE e.{Configuration.OrderingColumnName} > @Ordering AND e.{Configuration.TagsColumnName} LIKE @Tag_sized
             ORDER BY {Configuration.OrderingColumnName} ASC
             ";
+
+            AllEventsSql = $@"
+            SELECT TOP (@Take)
+            {allEventColumnNames}, e.{Configuration.OrderingColumnName} as Ordering
+            FROM {Configuration.FullJournalTableName} e
+            WHERE e.{Configuration.OrderingColumnName} > @Ordering
+            ORDER BY {Configuration.OrderingColumnName} ASC";
+
             CreateEventsJournalSql = $@"
             IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = '{
-                    configuration.SchemaName
-                }' AND TABLE_NAME = '{configuration.JournalEventsTableName}')
+                    Configuration.SchemaName
+                }' AND TABLE_NAME = '{Configuration.JournalEventsTableName}')
             BEGIN
-                CREATE TABLE {configuration.FullJournalTableName} (
-                    {configuration.OrderingColumnName} BIGINT IDENTITY(1,1) NOT NULL,
-	                {configuration.PersistenceIdColumnName} NVARCHAR(255) NOT NULL,
-	                {configuration.SequenceNrColumnName} BIGINT NOT NULL,
-                    {configuration.TimestampColumnName} BIGINT NOT NULL,
-                    {configuration.IsDeletedColumnName} BIT NOT NULL,
-                    {configuration.ManifestColumnName} NVARCHAR(500) NOT NULL,
-	                {configuration.PayloadColumnName} VARBINARY(MAX) NOT NULL,
-                    {configuration.TagsColumnName} NVARCHAR(100) NULL,
-                    {configuration.SerializerIdColumnName} INTEGER NULL,
-                    CONSTRAINT PK_{configuration.JournalEventsTableName} PRIMARY KEY ({
-                    configuration.OrderingColumnName
+                CREATE TABLE {Configuration.FullJournalTableName} (
+                    {Configuration.OrderingColumnName} BIGINT IDENTITY(1,1) NOT NULL,
+	                {Configuration.PersistenceIdColumnName} NVARCHAR(255) NOT NULL,
+	                {Configuration.SequenceNrColumnName} BIGINT NOT NULL,
+                    {Configuration.TimestampColumnName} BIGINT NOT NULL,
+                    {Configuration.IsDeletedColumnName} BIT NOT NULL,
+                    {Configuration.ManifestColumnName} NVARCHAR(500) NOT NULL,
+	                {Configuration.PayloadColumnName} VARBINARY(MAX) NOT NULL,
+                    {Configuration.TagsColumnName} NVARCHAR(100) NULL,
+                    {Configuration.SerializerIdColumnName} INTEGER NULL,
+                    CONSTRAINT PK_{Configuration.JournalEventsTableName} PRIMARY KEY ({
+                    Configuration.OrderingColumnName
                 }),
-                    CONSTRAINT UQ_{configuration.JournalEventsTableName} UNIQUE ({
-                    configuration.PersistenceIdColumnName
-                }, {configuration.SequenceNrColumnName})
+                    CONSTRAINT UQ_{Configuration.JournalEventsTableName} UNIQUE ({
+                    Configuration.PersistenceIdColumnName
+                }, {Configuration.SequenceNrColumnName})
                 );
-                CREATE INDEX IX_{configuration.JournalEventsTableName}_{configuration.SequenceNrColumnName} ON {
-                    configuration.FullJournalTableName
-                }({configuration.SequenceNrColumnName});
-                CREATE INDEX IX_{configuration.JournalEventsTableName}_{configuration.TimestampColumnName} ON {
-                    configuration.FullJournalTableName
-                }({configuration.TimestampColumnName});
+                CREATE INDEX IX_{Configuration.JournalEventsTableName}_{Configuration.SequenceNrColumnName} ON {
+                    Configuration.FullJournalTableName
+                }({Configuration.SequenceNrColumnName});
+                CREATE INDEX IX_{Configuration.JournalEventsTableName}_{Configuration.TimestampColumnName} ON {
+                    Configuration.FullJournalTableName
+                }({Configuration.TimestampColumnName});
             END
             ";
             CreateMetaTableSql = $@"
             IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = '{
-                    configuration.SchemaName
-                }' AND TABLE_NAME = '{configuration.MetaTableName}')
+                    Configuration.SchemaName
+                }' AND TABLE_NAME = '{Configuration.MetaTableName}')
             BEGIN
-                CREATE TABLE {configuration.FullMetaTableName} (
-	                {configuration.PersistenceIdColumnName} NVARCHAR(255) NOT NULL,
-	                {configuration.SequenceNrColumnName} BIGINT NOT NULL,
-                    CONSTRAINT PK_{configuration.MetaTableName} PRIMARY KEY ({configuration.PersistenceIdColumnName}, {
-                    configuration.SequenceNrColumnName
+                CREATE TABLE {Configuration.FullMetaTableName} (
+	                {Configuration.PersistenceIdColumnName} NVARCHAR(255) NOT NULL,
+	                {Configuration.SequenceNrColumnName} BIGINT NOT NULL,
+                    CONSTRAINT PK_{Configuration.MetaTableName} PRIMARY KEY ({Configuration.PersistenceIdColumnName}, {
+                    Configuration.SequenceNrColumnName
                 })
                 );
             END
@@ -79,6 +89,7 @@ namespace Akka.Persistence.SqlServer.Journal
         }
 
         protected override string ByTagSql { get; }
+        protected override string AllEventsSql { get;}
         protected override string CreateEventsJournalSql { get; }
         protected override string CreateMetaTableSql { get; }
 
