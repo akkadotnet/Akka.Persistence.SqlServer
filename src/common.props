@@ -2,17 +2,18 @@
   <PropertyGroup>
     <Copyright>Copyright © 2013-2020 Akka.NET Team</Copyright>
     <Authors>Akka.NET Team</Authors>
-    <VersionPrefix>1.4.1</VersionPrefix>
+    <VersionPrefix>1.4.13</VersionPrefix>
     <PackageIconUrl>http://getakka.net/images/akkalogo.png</PackageIconUrl>
     <PackageProjectUrl>https://github.com/akkadotnet/Akka.Persistence.SqlServer</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/akkadotnet/Akka.Persistence.SqlServer/blob/master/LICENSE</PackageLicenseUrl>
-    <PackageReleaseNotes>Upgrades to Akka.NET v1.4.1</PackageReleaseNotes>
+    <PackageReleaseNotes>Upgrades to [Akka.NET v1.4.13](https://github.com/akkadotnet/akka.net/releases/tag/1.4.13)
+[Add AllEvents, CurrentEvents, AllPersistenceIds, and CurrentPersistenceIds support](https://github.com/akkadotnet/Akka.Persistence.SqlServer/pull/182)</PackageReleaseNotes>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
   <PropertyGroup>
     <XunitVersion>2.4.1</XunitVersion>
-    <AkkaVersion>1.4.11</AkkaVersion>
-    <TestSdkVersion>16.8.0</TestSdkVersion>
+    <AkkaVersion>1.4.13</AkkaVersion>
+    <TestSdkVersion>16.8.3</TestSdkVersion>
     <NetCoreTestVersion>netcoreapp3.1</NetCoreTestVersion>
     <NetFrameworkTestVersion>net461</NetFrameworkTestVersion>
     <NetStandardLibVersion>netstandard2.0</NetStandardLibVersion>

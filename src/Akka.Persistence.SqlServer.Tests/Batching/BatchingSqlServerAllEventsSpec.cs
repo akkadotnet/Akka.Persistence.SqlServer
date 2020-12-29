@@ -1,5 +1,5 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="SqlServerAllPersistenceIdsSpec.cs" company="Akka.NET Project">
+// <copyright file="SqlServerEventsByTagSpec.cs" company="Akka.NET Project">
 //      Copyright (C) 2013 - 2019 .NET Foundation <https://github.com/akkadotnet/akka.net>
 // </copyright>
 // -----------------------------------------------------------------------
@@ -11,13 +11,13 @@ using Akka.Persistence.TCK.Query;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Akka.Persistence.SqlServer.Tests.Query
+namespace Akka.Persistence.SqlServer.Tests.Batching
 {
     [Collection("SqlServerSpec")]
-    public class SqlServerAllPersistenceIdsSpec : PersistenceIdsSpec
+    public class BatchingSqlServerAllEventsSpec : AllEventsSpec
     {
-        public SqlServerAllPersistenceIdsSpec(ITestOutputHelper output, SqlServerFixture fixture)
-            : base(InitConfig(fixture), nameof(SqlServerAllPersistenceIdsSpec), output)
+        public BatchingSqlServerAllEventsSpec(ITestOutputHelper output, SqlServerFixture fixture) : base(InitConfig(fixture),
+            nameof(BatchingSqlServerAllEventsSpec), output)
         {
             ReadJournal = Sys.ReadJournalFor<SqlReadJournal>(SqlReadJournal.Identifier);
         }
@@ -30,9 +30,8 @@ namespace Akka.Persistence.SqlServer.Tests.Query
                     akka.test.single-expect-default = 10s
                     akka.persistence.journal.plugin = ""akka.persistence.journal.sql-server""
                     akka.persistence.journal.sql-server {{
-                        class = ""Akka.Persistence.SqlServer.Journal.SqlServerJournal, Akka.Persistence.SqlServer""
+                        class = ""Akka.Persistence.SqlServer.Journal.BatchingSqlServerJournal, Akka.Persistence.SqlServer""
                         plugin-dispatcher = ""akka.actor.default-dispatcher""
-                        table-name = EventJournal
                         schema-name = dbo
                         auto-initialize = on
                         connection-string = ""{DbUtils.ConnectionString}""
