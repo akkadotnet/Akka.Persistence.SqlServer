@@ -32,7 +32,7 @@ namespace Akka.Persistence.SqlServer.Snapshot
                 circuitBreakerTimeout)
             {
                 Log.Warning(
-                    "Configured Total of Connection timeout ({0} seconds) and Command timeout ({1} seconds) is less than or equal to Circuit breaker timeout ({2} seconds). This may cause unintended write failures",
+                    "Configured Total of Connection timeout ({0} seconds) and Command timeout ({1} seconds) is greater than or equal to Circuit breaker timeout ({2} seconds). This may cause unintended write failures",
                     connectionTimeoutSeconds, commandTimeout.TotalSeconds,
                     circuitBreakerTimeout.TotalSeconds);
             }
