@@ -8,7 +8,10 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Data;
+using System.Data.Common;
 using System.Data.SqlClient;
+using System.Linq;
+using System.Threading.Tasks;
 using Akka.Configuration;
 using Akka.Persistence.Sql.Common.Journal;
 
@@ -168,6 +171,49 @@ namespace Akka.Persistence.SqlServer.Journal
         protected override SqlConnection CreateConnection(string connectionString)
         {
             return new SqlConnection(connectionString);
+        }
+
+        /// <inheritdoc />
+        protected override async Task<ColumnSizesInfo> LoadColumnSizesInternal(DbConnection connection)
+        {
+            var conventions = Setup.NamingConventions;
+            
+            // create command that should list all columns in it's output
+            var cmd = connection.CreateCommand();
+            cmd.CommandText = $"SELECT * FROM {conventions.FullJournalTableName}";
+
+            // start reading - no need to
+            using (var reader = await cmd.ExecuteReaderAsync())
+            {
+                // load columns metadata
+                var results = LoadSchemaTableInfo(reader);
+
+                return new ColumnSizesInfo()
+                {
+                    PersistenceIdColumnSize = (int)results.First(r => r["ColumnName"].ToString() == conventions.PersistenceIdColumnName)["ColumnSize"],
+                    TagsColumnSize = (int)results.First(r => r["ColumnName"].ToString() == conventions.TagsColumnName)["ColumnSize"],
+                    ManifestColumnSize = (int)results.First(r => r["ColumnName"].ToString() == conventions.ManifestColumnName)["ColumnSize"]
+                };
+            }
+        }
+        
+        private static List<Dictionary<string, object>> LoadSchemaTableInfo(DbDataReader reader)
+        {
+            var results = new List<Dictionary<string, object>>();
+            
+            // iterate through the table schema and extract metadata
+            DataTable schemaTable = reader.GetSchemaTable();
+            foreach (DataRow row in schemaTable.Rows)
+            {
+                var dict = new Dictionary<string, object>();
+                foreach (DataColumn col in schemaTable.Columns)
+                {
+                    dict.Add(col.ColumnName, row[col.Ordinal]);
+                }
+                results.Add(dict);
+            }
+
+            return results;
         }
     }
 }
