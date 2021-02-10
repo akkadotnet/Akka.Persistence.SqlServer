@@ -113,7 +113,7 @@ namespace Akka.Persistence.SqlServer.Journal
         }
 
         /// <inheritdoc />
-        protected override void CustomDbParameterSetup(DbCommand command, DbParameter param)
+        protected override void PreAddParameterToCommand(DbCommand command, DbParameter param)
         {
             if (!_columnSizes.HasValue)
                 return;
