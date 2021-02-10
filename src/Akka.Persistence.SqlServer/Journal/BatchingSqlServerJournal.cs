@@ -77,15 +77,15 @@ namespace Akka.Persistence.SqlServer.Journal
 
     public class BatchingSqlServerJournal : BatchingSqlJournal<SqlConnection, SqlCommand>
     {
-        private Option<ColumnSizesInfo> _columnSizes = Option<ColumnSizesInfo>.None;
-        private bool _loadColumnSizes;
+        private Option<JournalColumnSizesInfo> _columnSizes = Option<JournalColumnSizesInfo>.None;
+        private readonly bool _useConstantParameterSize;
         
         public BatchingSqlServerJournal(Config config) : this(new BatchingSqlServerJournalSetup(config))
         { }
 
         public BatchingSqlServerJournal(BatchingSqlServerJournalSetup setup) : base(setup)
         {
-            _loadColumnSizes = setup.UseConstantParameterSize;
+            _useConstantParameterSize = setup.UseConstantParameterSize;
             
             var connectionTimeoutSeconds =
                 new SqlConnectionStringBuilder(setup.ConnectionString).ConnectTimeout;
@@ -190,34 +190,12 @@ namespace Akka.Persistence.SqlServer.Journal
         {
             base.PreStart();
 
-            if (_loadColumnSizes)
+            // if need to use constant parameters, prepare column sizes for parameter generation
+            if (_useConstantParameterSize)
             {
-                LoadColumnSizes();
-            }
-        }
-
-        private void LoadColumnSizes()
-        {
-            var conventions = Setup.NamingConventions;
-
-            using (var connection = CreateConnection(Setup.ConnectionString))
-            using (var command = connection.CreateCommand())
-            {
-                connection.Open();
-                command.CommandText = $"SELECT * FROM {conventions.FullJournalTableName}";
-
-                // start reading - no need to load the table's content
-                using (var reader = command.ExecuteReader())
+                using (var connection = CreateConnection(Setup.ConnectionString))
                 {
-                    // load columns metadata
-                    var results = LoadSchemaTableInfo(reader);
-
-                    _columnSizes = new ColumnSizesInfo(
-                        persistenceIdColumnSize: (int)results.First(r =>
-                            r["ColumnName"].ToString() == conventions.PersistenceIdColumnName)["ColumnSize"],
-                        tagsColumnSize: (int)results.First(r => r["ColumnName"].ToString() == conventions.TagsColumnName)[
-                            "ColumnSize"]
-                    );
+                    _columnSizes = ColumnSizeLoader.LoadJournalColumnSizes(Setup.NamingConventions, connection);
                 }
             }
         }
@@ -238,26 +216,11 @@ namespace Akka.Persistence.SqlServer.Journal
                 case "@Tag":
                     param.Size = _columnSizes.Value.TagsColumnSize;
                     break;
+                
+                case "@Manifest":
+                    param.Size = _columnSizes.Value.ManifestColumnSize;
+                    break;
             }
-        }
-        
-        private static List<Dictionary<string, object>> LoadSchemaTableInfo(DbDataReader reader)
-        {
-            var results = new List<Dictionary<string, object>>();
-            
-            // iterate through the table schema and extract metadata
-            DataTable schemaTable = reader.GetSchemaTable();
-            foreach (DataRow row in schemaTable.Rows)
-            {
-                var dict = new Dictionary<string, object>();
-                foreach (DataColumn col in schemaTable.Columns)
-                {
-                    dict.Add(col.ColumnName, row[col.Ordinal]);
-                }
-                results.Add(dict);
-            }
-
-            return results;
         }
     }
 }

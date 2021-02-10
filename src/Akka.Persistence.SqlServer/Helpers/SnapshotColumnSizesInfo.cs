@@ -1,5 +1,5 @@
 // //-----------------------------------------------------------------------
-// // <copyright file="ColumnSizesInfo.cs" company="Akka.NET Project">
+// // <copyright file="SnapshotColumnSizesInfo.cs" company="Akka.NET Project">
 // //     Copyright (C) 2009-2021 Lightbend Inc. <http://www.lightbend.com>
 // //     Copyright (C) 2013-2021 .NET Foundation <https://github.com/akkadotnet/akka.net>
 // // </copyright>
@@ -8,14 +8,14 @@
 namespace Akka.Persistence.SqlServer.Helpers
 {
     /// <summary>
-    /// Represents information about SQL Column sizes
+    /// Represents information about SQL SnapshotStore Column sizes
     /// </summary>
-    public class ColumnSizesInfo
+    internal class SnapshotColumnSizesInfo
     {
-        public ColumnSizesInfo(int persistenceIdColumnSize, int tagsColumnSize)
+        public SnapshotColumnSizesInfo(int persistenceIdColumnSize, int manifestColumnSize)
         {
             PersistenceIdColumnSize = persistenceIdColumnSize;
-            TagsColumnSize = tagsColumnSize;
+            ManifestColumnSize = manifestColumnSize;
         }
 
         /// <summary>
@@ -23,8 +23,8 @@ namespace Akka.Persistence.SqlServer.Helpers
         /// </summary>
         public int PersistenceIdColumnSize { get; }
         /// <summary>
-        /// Size of Tags column
+        /// Size of manifest column
         /// </summary>
-        public int TagsColumnSize { get; }
+        public int ManifestColumnSize { get; }
     }
 }
