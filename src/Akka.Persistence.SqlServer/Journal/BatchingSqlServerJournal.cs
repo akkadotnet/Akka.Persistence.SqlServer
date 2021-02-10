@@ -56,7 +56,7 @@ namespace Akka.Persistence.SqlServer.Journal
             CircuitBreakerSettings circuitBreakerSettings,
             ReplayFilterSettings replayFilterSettings, 
             QueryConfiguration namingConventions, 
-            string defaultSerialzier,
+            string defaultSerializer,
             bool useConstantParameterSize)
             : base(
                 connectionString: connectionString, 
@@ -69,7 +69,7 @@ namespace Akka.Persistence.SqlServer.Journal
                 circuitBreakerSettings: circuitBreakerSettings, 
                 replayFilterSettings: replayFilterSettings, 
                 namingConventions: namingConventions,
-                defaultSerializer: defaultSerialzier)
+                defaultSerializer: defaultSerializer)
         {
             UseConstantParameterSize = useConstantParameterSize;
         }
