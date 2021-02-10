@@ -18,7 +18,6 @@ namespace Akka.Persistence.SqlServer.Journal
 
         public SqlServerJournal(Config journalConfig) : base(journalConfig)
         {
-            
             var config = journalConfig.WithFallback(Extension.DefaultJournalConfig);
             var connectionTimeoutSeconds =
                 new SqlConnectionStringBuilder(

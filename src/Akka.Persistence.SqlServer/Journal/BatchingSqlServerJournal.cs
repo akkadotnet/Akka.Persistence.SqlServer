@@ -14,11 +14,15 @@ using System.Linq;
 using System.Threading.Tasks;
 using Akka.Configuration;
 using Akka.Persistence.Sql.Common.Journal;
+using Akka.Persistence.SqlServer.Helpers;
+using Akka.Util;
 
 namespace Akka.Persistence.SqlServer.Journal
 {
     public sealed class BatchingSqlServerJournalSetup : BatchingSqlJournalSetup
     {
+        public bool UseConstantParameterSize { get; }
+        
         public BatchingSqlServerJournalSetup(Config config) : base(
             config, 
             new QueryConfiguration(
@@ -38,6 +42,7 @@ namespace Akka.Persistence.SqlServer.Journal
                 config.GetString("serializer", null),
                 config.GetBoolean("sequential-access", false)))
         {
+            UseConstantParameterSize = config.GetBoolean("use-constant-parameter-size", false);
         }
 
         public BatchingSqlServerJournalSetup(
@@ -51,7 +56,8 @@ namespace Akka.Persistence.SqlServer.Journal
             CircuitBreakerSettings circuitBreakerSettings,
             ReplayFilterSettings replayFilterSettings, 
             QueryConfiguration namingConventions, 
-            string defaultSerialzier)
+            string defaultSerialzier,
+            bool useConstantParameterSize)
             : base(
                 connectionString: connectionString, 
                 maxConcurrentOperations: maxConcurrentOperations, 
@@ -65,16 +71,22 @@ namespace Akka.Persistence.SqlServer.Journal
                 namingConventions: namingConventions,
                 defaultSerializer: defaultSerialzier)
         {
+            UseConstantParameterSize = useConstantParameterSize;
         }
     }
 
     public class BatchingSqlServerJournal : BatchingSqlJournal<SqlConnection, SqlCommand>
     {
+        private Option<ColumnSizesInfo> _columnSizes = Option<ColumnSizesInfo>.None;
+        private bool _loadColumnSizes;
+        
         public BatchingSqlServerJournal(Config config) : this(new BatchingSqlServerJournalSetup(config))
         { }
 
         public BatchingSqlServerJournal(BatchingSqlServerJournalSetup setup) : base(setup)
         {
+            _loadColumnSizes = setup.UseConstantParameterSize;
+            
             var connectionTimeoutSeconds =
                 new SqlConnectionStringBuilder(setup.ConnectionString).ConnectTimeout;
             var commandTimeout = setup.ConnectionTimeout;
@@ -174,26 +186,58 @@ namespace Akka.Persistence.SqlServer.Journal
         }
 
         /// <inheritdoc />
-        protected override async Task<ColumnSizesInfo> LoadColumnSizesInternal(DbConnection connection)
+        protected override void PreStart()
+        {
+            base.PreStart();
+
+            if (_loadColumnSizes)
+            {
+                LoadColumnSizes();
+            }
+        }
+
+        private void LoadColumnSizes()
         {
             var conventions = Setup.NamingConventions;
-            
-            // create command that should list all columns in it's output
-            var cmd = connection.CreateCommand();
-            cmd.CommandText = $"SELECT * FROM {conventions.FullJournalTableName}";
 
-            // start reading - no need to
-            using (var reader = await cmd.ExecuteReaderAsync())
+            using (var connection = CreateConnection(Setup.ConnectionString))
+            using (var command = connection.CreateCommand())
             {
-                // load columns metadata
-                var results = LoadSchemaTableInfo(reader);
+                connection.Open();
+                command.CommandText = $"SELECT * FROM {conventions.FullJournalTableName}";
 
-                return new ColumnSizesInfo()
+                // start reading - no need to load the table's content
+                using (var reader = command.ExecuteReader())
                 {
-                    PersistenceIdColumnSize = (int)results.First(r => r["ColumnName"].ToString() == conventions.PersistenceIdColumnName)["ColumnSize"],
-                    TagsColumnSize = (int)results.First(r => r["ColumnName"].ToString() == conventions.TagsColumnName)["ColumnSize"],
-                    ManifestColumnSize = (int)results.First(r => r["ColumnName"].ToString() == conventions.ManifestColumnName)["ColumnSize"]
-                };
+                    // load columns metadata
+                    var results = LoadSchemaTableInfo(reader);
+
+                    _columnSizes = new ColumnSizesInfo(
+                        persistenceIdColumnSize: (int)results.First(r =>
+                            r["ColumnName"].ToString() == conventions.PersistenceIdColumnName)["ColumnSize"],
+                        tagsColumnSize: (int)results.First(r => r["ColumnName"].ToString() == conventions.TagsColumnName)[
+                            "ColumnSize"]
+                    );
+                }
+            }
+        }
+
+        /// <inheritdoc />
+        protected override void CustomDbParameterSetup(SqlCommand command, DbParameter param)
+        {
+            if (!_columnSizes.HasValue)
+                return;
+            
+            // if column sizes are loaded, use them to define constant parameter size values
+            switch (param.ParameterName)
+            {
+                case "@PersistenceId":
+                    param.Size = _columnSizes.Value.PersistenceIdColumnSize;
+                    break;
+                
+                case "@Tag":
+                    param.Size = _columnSizes.Value.TagsColumnSize;
+                    break;
             }
         }
         
