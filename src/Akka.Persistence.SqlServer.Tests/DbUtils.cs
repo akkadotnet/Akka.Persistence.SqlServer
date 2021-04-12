@@ -4,7 +4,8 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-using System.Data.SqlClient;
+using System;
+using Microsoft.Data.SqlClient;
 
 namespace Akka.Persistence.SqlServer.Tests
 {
@@ -14,6 +15,7 @@ namespace Akka.Persistence.SqlServer.Tests
 
         public static void Initialize(string connectionString)
         {
+            Console.WriteLine(connectionString); 
             var connectionBuilder = new SqlConnectionStringBuilder(connectionString);
 
             //connect to postgres database to create a new database

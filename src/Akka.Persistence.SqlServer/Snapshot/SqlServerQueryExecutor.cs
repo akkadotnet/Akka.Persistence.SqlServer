@@ -5,7 +5,7 @@
 // -----------------------------------------------------------------------
 
 using System.Data.Common;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using Akka.Persistence.Sql.Common.Snapshot;
 
 namespace Akka.Persistence.SqlServer.Snapshot
