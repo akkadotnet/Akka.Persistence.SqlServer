@@ -7,12 +7,18 @@
 using System.Data.Common;
 using Microsoft.Data.SqlClient;
 using Akka.Persistence.Sql.Common.Journal;
+using Akka.Persistence.SqlServer.Helpers;
+using Akka.Util;
 
 namespace Akka.Persistence.SqlServer.Journal
 {
     public class SqlServerQueryExecutor : AbstractQueryExecutor
     {
-        public SqlServerQueryExecutor(QueryConfiguration configuration, Akka.Serialization.Serialization serialization,
+        private Option<JournalColumnSizesInfo> _columnSizes = Option<JournalColumnSizesInfo>.None;
+
+        public SqlServerQueryExecutor(
+            QueryConfiguration configuration, 
+            Akka.Serialization.Serialization serialization,
             ITimestampProvider timestampProvider)
             : base(configuration, serialization, timestampProvider)
         {
@@ -95,7 +101,38 @@ namespace Akka.Persistence.SqlServer.Journal
 
         protected override DbCommand CreateCommand(DbConnection connection)
         {
-            return new SqlCommand {Connection = (SqlConnection) connection};
+            return new SqlCommand { Connection = (SqlConnection) connection };
+        }
+
+        /// <summary>
+        /// Sets column sizes loaded from db schema, so that constant parameter sizes could be set during parameter generation
+        /// </summary>
+        internal void SetColumnSizes(JournalColumnSizesInfo columnSizesInfo)
+        {
+            _columnSizes = columnSizesInfo;
+        }
+
+        /// <inheritdoc />
+        protected override void PreAddParameterToCommand(DbCommand command, DbParameter param)
+        {
+            if (!_columnSizes.HasValue)
+                return;
+            
+            // if column sizes are loaded, use them to define constant parameter size values
+            switch (param.ParameterName)
+            {
+                case "@PersistenceId":
+                    param.Size = _columnSizes.Value.PersistenceIdColumnSize;
+                    break;
+                
+                case "@Tag":
+                    param.Size = _columnSizes.Value.TagsColumnSize;
+                    break;
+                
+                case "@Manifest":
+                    param.Size = _columnSizes.Value.ManifestColumnSize;
+                    break;
+            }
         }
     }
 }

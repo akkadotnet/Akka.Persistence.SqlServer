@@ -7,19 +7,24 @@
 using System;
 using System.Data.Common;
 using Microsoft.Data.SqlClient;
+using Akka.Actor.Setup;
 using Akka.Configuration;
 using Akka.Persistence.Sql.Common.Journal;
+using Akka.Persistence.SqlServer.Helpers;
 
 namespace Akka.Persistence.SqlServer.Journal
 {
     public class SqlServerJournal : SqlJournal
     {
+        private readonly bool _useConstantParameterSize;
         public static readonly SqlServerPersistence Extension = SqlServerPersistence.Get(Context.System);
 
         public SqlServerJournal(Config journalConfig) : base(journalConfig)
         {
-            
             var config = journalConfig.WithFallback(Extension.DefaultJournalConfig);
+
+            _useConstantParameterSize = config.GetBoolean("use-constant-parameter-size", false);
+                
             var connectionTimeoutSeconds =
                 new SqlConnectionStringBuilder(
                     config.GetString("connection-string")).ConnectTimeout;
@@ -63,6 +68,22 @@ namespace Akka.Persistence.SqlServer.Journal
         protected override DbConnection CreateDbConnection(string connectionString)
         {
             return new SqlConnection(connectionString);
+        }
+
+        /// <inheritdoc />
+        protected override void PreStart()
+        {
+            base.PreStart();
+
+            // if constant parameter sizes required, provide column sizes to query executor
+            if (_useConstantParameterSize)
+            {
+                using (var connection = CreateDbConnection(GetConnectionString()))
+                {
+                    var columnSizes = ColumnSizeLoader.LoadJournalColumnSizes(QueryExecutor.Configuration, connection);
+                    (QueryExecutor as SqlServerQueryExecutor)?.SetColumnSizes(columnSizes);
+                }
+            }
         }
     }
 }
