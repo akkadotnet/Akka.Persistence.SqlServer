@@ -2,12 +2,13 @@
   <PropertyGroup>
     <Copyright>Copyright © 2013-2020 Akka.NET Team</Copyright>
     <Authors>Akka.NET Team</Authors>
-    <VersionPrefix>1.4.13</VersionPrefix>
+    <VersionPrefix>1.4.18</VersionPrefix>
     <PackageIconUrl>http://getakka.net/images/akkalogo.png</PackageIconUrl>
     <PackageProjectUrl>https://github.com/akkadotnet/Akka.Persistence.SqlServer</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/akkadotnet/Akka.Persistence.SqlServer/blob/master/LICENSE</PackageLicenseUrl>
-    <PackageReleaseNotes>Upgrades to [Akka.NET v1.4.13](https://github.com/akkadotnet/akka.net/releases/tag/1.4.13)
-[Add AllEvents, CurrentEvents, AllPersistenceIds, and CurrentPersistenceIds support](https://github.com/akkadotnet/Akka.Persistence.SqlServer/pull/182)</PackageReleaseNotes>
+    <PackageReleaseNotes>Upgrades to [Akka.NET v1.4.18](https://github.com/akkadotnet/akka.net/releases/tag/1.4.18)
+[Added Support for Microsoft AD Authentication](https://github.com/akkadotnet/Akka.Persistence.SqlServer/issues/203)
+[Load string parameters column sizes to reduce SqlServer query plans count](https://github.com/akkadotnet/Akka.Persistence.SqlServer/pull/197)</PackageReleaseNotes>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
   <PropertyGroup>
