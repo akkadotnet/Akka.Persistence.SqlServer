@@ -5,6 +5,7 @@
 // -----------------------------------------------------------------------
 
 using System.Data.SqlClient;
+using System.IO;
 
 namespace Akka.Persistence.SqlServer.Tests
 {
@@ -45,6 +46,11 @@ namespace Akka.Persistence.SqlServer.Tests
                 connectionBuilder.InitialCatalog = databaseName;
                 ConnectionString = connectionBuilder.ToString();
             }
+
+            // Delete local snapshot flat file database
+            var path = "./snapshots";
+            if(Directory.Exists(path))
+                Directory.Delete(path, true);
         }
 
         public static void Clean()
@@ -56,6 +62,11 @@ namespace Akka.Persistence.SqlServer.Tests
                 conn.Open();
                 DropTables(conn, databaseName);
             }
+
+            // Delete local snapshot flat file database
+            var path = "./snapshots";
+            if(Directory.Exists(path))
+                Directory.Delete(path, true);
         }
 
         private static void DropTables(SqlConnection conn, string databaseName)
