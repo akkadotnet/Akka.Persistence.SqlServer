@@ -221,3 +221,5 @@ resetdev.bat
 
 # FAKE build folder
 .fake/
+
+.idea/

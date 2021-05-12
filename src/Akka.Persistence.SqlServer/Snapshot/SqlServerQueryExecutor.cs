@@ -5,13 +5,17 @@
 // -----------------------------------------------------------------------
 
 using System.Data.Common;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using Akka.Persistence.Sql.Common.Snapshot;
+using Akka.Persistence.SqlServer.Helpers;
+using Akka.Util;
 
 namespace Akka.Persistence.SqlServer.Snapshot
 {
     public class SqlServerQueryExecutor : AbstractQueryExecutor
     {
+        private Option<SnapshotColumnSizesInfo> _columnSizes = Option<SnapshotColumnSizesInfo>.None;
+        
         public SqlServerQueryExecutor(QueryConfiguration configuration, Akka.Serialization.Serialization serialization)
             : base(configuration, serialization)
         {
@@ -94,6 +98,33 @@ namespace Akka.Persistence.SqlServer.Snapshot
         protected override DbCommand CreateCommand(DbConnection connection)
         {
             return new SqlCommand {Connection = (SqlConnection) connection};
+        }
+
+        /// <summary>
+        /// Sets column sizes loaded from db schema, so that constant parameter sizes could be set during parameter generation
+        /// </summary>
+        internal void SetColumnSizes(SnapshotColumnSizesInfo columnSizesInfo)
+        {
+            _columnSizes = columnSizesInfo;
+        }
+
+        /// <inheritdoc />
+        protected override void PreAddParameterToCommand(DbCommand command, DbParameter param)
+        {
+            if (!_columnSizes.HasValue)
+                return;
+            
+            // if column sizes are loaded, use them to define constant parameter size values
+            switch (param.ParameterName)
+            {
+                case "@PersistenceId":
+                    param.Size = _columnSizes.Value.PersistenceIdColumnSize;
+                    break;
+                
+                case "@Manifest":
+                    param.Size = _columnSizes.Value.ManifestColumnSize;
+                    break;
+            }
         }
     }
 }
