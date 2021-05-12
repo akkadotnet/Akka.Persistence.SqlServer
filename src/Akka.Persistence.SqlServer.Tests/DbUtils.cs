@@ -4,7 +4,8 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-using System.Data.SqlClient;
+using System;
+using Microsoft.Data.SqlClient;
 
 namespace Akka.Persistence.SqlServer.Tests
 {
