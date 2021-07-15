@@ -44,8 +44,7 @@ namespace Akka.Persistence.SqlServer.Tests
             return ConfigurationFactory.ParseString(specString);
         }
 
-        // TODO: hack. Replace when https://github.com/akkadotnet/akka.net/issues/3811
-        protected override bool SupportsSerialization => false;
+        protected override bool SupportsSerialization => true;
 
         protected override void Dispose(bool disposing)
         {
