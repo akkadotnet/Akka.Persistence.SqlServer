@@ -110,7 +110,12 @@ namespace Akka.Persistence.SqlServer.Tests
                         }
                     }
                 },
-                Env = new[] {"ACCEPT_EULA=Y", "SA_PASSWORD=l0lTh1sIsOpenSource"}
+                Env = new[]
+                {
+                    "ACCEPT_EULA=Y", 
+                    "MSSQL_SA_PASSWORD=l0lTh1sIsOpenSource",
+                    "MSSQL_PID=Express"
+                }
             });
 
             // start the container
