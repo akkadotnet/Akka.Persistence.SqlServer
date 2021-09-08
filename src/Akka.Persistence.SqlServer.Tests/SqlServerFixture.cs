@@ -110,7 +110,11 @@ namespace Akka.Persistence.SqlServer.Tests
                         }
                     }
                 },
-                Env = new[] {"ACCEPT_EULA=Y", "SA_PASSWORD=l0lTh1sIsOpenSource"}
+                Env = new[]
+                {
+                    "ACCEPT_EULA=Y", 
+                    "MSSQL_SA_PASSWORD=l0l!Th1sIsOpenSource",
+                }
             });
 
             // start the container
@@ -131,6 +135,8 @@ namespace Akka.Persistence.SqlServer.Tests
                 var stopwatch = Stopwatch.StartNew();
                 while (stopwatch.ElapsedMilliseconds < timeoutInMilis && (line = await reader.ReadLineAsync()) != null)
                 {
+                    if(!string.IsNullOrWhiteSpace(line))
+                        Console.WriteLine(line);
                     if (line.Contains("SQL Server is now ready for client connections."))
                     {
                         break;
@@ -145,15 +151,19 @@ namespace Akka.Persistence.SqlServer.Tests
 #endif
             if (!line?.Contains("SQL Server is now ready for client connections.") ?? false)
                 throw new Exception("MSSQL docker image failed to run.");
-            
+
             var connectionString = new DbConnectionStringBuilder
             {
-                ConnectionString =
-                    "data source=.;database=akka_persistence_tests;user id=sa;password=l0lTh1sIsOpenSource"
+                ["Server"] = $"localhost,{sqlServerHostPort}",
+                ["Database"] = "akka_persistence_tests",
+                ["User Id"] = "sa",
+                ["Password"] = "l0l!Th1sIsOpenSource"
             };
-            connectionString["Data Source"] = $"localhost,{sqlServerHostPort}";
 
             ConnectionString = connectionString.ToString();
+            Console.WriteLine($"Connection string: [{ConnectionString}]");
+
+            await Task.Delay(10000);
         }
 
         public async Task DisposeAsync()
