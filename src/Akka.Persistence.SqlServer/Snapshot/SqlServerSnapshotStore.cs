@@ -24,9 +24,7 @@ namespace Akka.Persistence.SqlServer.Snapshot
             
             _useConstantParameterSize = config.GetBoolean("use-constant-parameter-size", false);
 
-            var connectionTimeoutSeconds =
-                new SqlConnectionStringBuilder(
-                    config.GetString("connection-string")).ConnectTimeout;
+            var connectionTimeoutSeconds =new SqlConnectionStringBuilder(GetConnectionString()).ConnectTimeout;
             var commandTimeout = config.GetTimeSpan("connection-timeout", null);
             var circuitBreakerTimeout = snapshotConfig.GetTimeSpan(
                 "circuit-breaker.call-timeout",
