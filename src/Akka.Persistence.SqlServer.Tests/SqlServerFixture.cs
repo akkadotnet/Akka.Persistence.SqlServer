@@ -113,7 +113,7 @@ namespace Akka.Persistence.SqlServer.Tests
                 Env = new[]
                 {
                     "ACCEPT_EULA=Y", 
-                    "SA_PASSWORD=l0l!Th1sIsOpenSource",
+                    "MSSQL_SA_PASSWORD=l0l!Th1sIsOpenSource",
                 }
             });
 
@@ -135,7 +135,8 @@ namespace Akka.Persistence.SqlServer.Tests
                 var stopwatch = Stopwatch.StartNew();
                 while (stopwatch.ElapsedMilliseconds < timeoutInMilis && (line = await reader.ReadLineAsync()) != null)
                 {
-                    Console.WriteLine(line);
+                    if(!string.IsNullOrWhiteSpace(line))
+                        Console.WriteLine(line);
                     if (line.Contains("SQL Server is now ready for client connections."))
                     {
                         break;
@@ -160,6 +161,9 @@ namespace Akka.Persistence.SqlServer.Tests
             };
 
             ConnectionString = connectionString.ToString();
+            Console.WriteLine($"Connection string: [{ConnectionString}]");
+
+            await Task.Delay(10000);
         }
 
         public async Task DisposeAsync()
