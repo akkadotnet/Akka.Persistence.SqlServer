@@ -7,12 +7,15 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Diagnostics;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Akka.Util;
 using Docker.DotNet;
 using Docker.DotNet.Models;
 using Xunit;
+using Xunit.Sdk;
 
 namespace Akka.Persistence.SqlServer.Tests
 {
@@ -42,10 +45,7 @@ namespace Akka.Persistence.SqlServer.Tests
             Client = config.CreateClient();
         }
 
-        protected string ImageName =>
-            RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-                ? "microsoft/mssql-server-windows-express"
-                : "mcr.microsoft.com/mssql/server";
+        protected string ImageName => "mcr.microsoft.com/mssql/server";
         protected string Tag => "2017-latest";
 
         protected string SqlServerImageName => $"{ImageName}:{Tag}";
@@ -54,6 +54,10 @@ namespace Akka.Persistence.SqlServer.Tests
 
         public async Task InitializeAsync()
         {
+            var sysInfo = await Client.System.GetSystemInfoAsync();
+            if (sysInfo.OSType.ToLowerInvariant() != "linux")
+                throw new TestClassException("MSSQL docker image only available for linux containers");
+            
             var images = await Client.Images.ListImagesAsync(new ImagesListParameters
             {
                 Filters = new Dictionary<string, IDictionary<string, bool>>
@@ -106,34 +110,80 @@ namespace Akka.Persistence.SqlServer.Tests
                         }
                     }
                 },
-                Env = new[] {"ACCEPT_EULA=Y", "SA_PASSWORD=l0lTh1sIsOpenSource"}
+                Env = new[]
+                {
+                    "ACCEPT_EULA=Y", 
+                    "MSSQL_SA_PASSWORD=l0l!Th1sIsOpenSource",
+                }
             });
 
             // start the container
             await Client.Containers.StartContainerAsync(SqlContainerName, new ContainerStartParameters());
 
-            // Provide a 30 second startup delay
-            await Task.Delay(TimeSpan.FromSeconds(30));
+            // Wait until MSSQL is completely ready
+            var logStream = await Client.Containers.GetContainerLogsAsync(SqlContainerName, new ContainerLogsParameters
+            {
+                Follow = true,
+                ShowStdout = true,
+                ShowStderr = true
+            });
 
+            string line = null;
+            var timeoutInMilis = 60000;
+            using (var reader = new StreamReader(logStream))
+            {
+                var stopwatch = Stopwatch.StartNew();
+                while (stopwatch.ElapsedMilliseconds < timeoutInMilis && (line = await reader.ReadLineAsync()) != null)
+                {
+                    if(!string.IsNullOrWhiteSpace(line))
+                        Console.WriteLine(line);
+                    if (line.Contains("SQL Server is now ready for client connections."))
+                    {
+                        break;
+                    }
+                }
+                stopwatch.Stop();
+            }
+#if NET461
+            logStream.Dispose();
+#else
+            await logStream.DisposeAsync();
+#endif
+            if (!line?.Contains("SQL Server is now ready for client connections.") ?? false)
+                throw new Exception("MSSQL docker image failed to run.");
 
             var connectionString = new DbConnectionStringBuilder
             {
-                ConnectionString =
-                    "data source=.;database=akka_persistence_tests;user id=sa;password=l0lTh1sIsOpenSource"
+                ["Server"] = $"localhost,{sqlServerHostPort}",
+                ["Database"] = "akka_persistence_tests",
+                ["User Id"] = "sa",
+                ["Password"] = "l0l!Th1sIsOpenSource"
             };
-            connectionString["Data Source"] = $"localhost,{sqlServerHostPort}";
 
             ConnectionString = connectionString.ToString();
+            Console.WriteLine($"Connection string: [{ConnectionString}]");
+
+            await Task.Delay(10000);
         }
 
         public async Task DisposeAsync()
         {
             if (Client != null)
             {
-                await Client.Containers.StopContainerAsync(SqlContainerName, new ContainerStopParameters());
-                await Client.Containers.RemoveContainerAsync(SqlContainerName,
-                    new ContainerRemoveParameters {Force = true});
-                Client.Dispose();
+                try
+                {
+                    await Client.Containers.StopContainerAsync(SqlContainerName, new ContainerStopParameters());
+                    await Client.Containers.RemoveContainerAsync(SqlContainerName,
+                        new ContainerRemoveParameters {Force = true});
+                }
+                catch (DockerContainerNotFoundException)
+                {
+                    // no-op
+                }
+                finally
+                {
+                    Client.Dispose();
+                }
             }
         }
     }
