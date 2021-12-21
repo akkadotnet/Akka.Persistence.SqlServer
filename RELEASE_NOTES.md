@@ -1,3 +1,6 @@
+#### 1.4.31 December 20 2021 ####
+* [Update Akka.NET to v1.4.31](https://github.com/akkadotnet/akka.net/releases/tag/1.4.319)
+
 #### 1.4.29 December 15 2021 ####
 * [Update Akka.NET to v1.4.29](https://github.com/akkadotnet/akka.net/releases/tag/1.4.29)
 * [Update Microsoft.Data.SqlClient to v3.0.1](https://github.com/akkadotnet/Akka.Persistence.SqlServer/pull/223)
