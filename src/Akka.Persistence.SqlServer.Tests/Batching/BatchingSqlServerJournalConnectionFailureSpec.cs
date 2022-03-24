@@ -23,6 +23,7 @@ namespace Akka.Persistence.SqlServer.Tests.Batching
             return ConfigurationFactory.ParseString(@"
                 akka.persistence {
                     publish-plugin-commands = on
+                    akka.persistence.query.journal.sql.refresh-interval = 1s
                     journal {
                         plugin = ""akka.persistence.journal.sql-server""
                         sql-server {
@@ -33,7 +34,6 @@ namespace Akka.Persistence.SqlServer.Tests.Batching
                             schema-name = dbo
                             auto-initialize = on
                             connection-string = """ + connectionString + @"""
-                            refresh-interval = 1s
                         }
                     }
                 }");

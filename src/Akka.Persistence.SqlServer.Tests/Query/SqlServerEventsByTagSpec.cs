@@ -29,6 +29,7 @@ namespace Akka.Persistence.SqlServer.Tests.Query
                     akka.loglevel = INFO
                     akka.test.single-expect-default = 10s
                     akka.persistence.journal.plugin = ""akka.persistence.journal.sql-server""
+                    akka.persistence.query.journal.sql.refresh-interval = 1s
                     akka.persistence.journal.sql-server {{
                         event-adapters {{
                           color-tagger  = ""Akka.Persistence.TCK.Query.ColorFruitTagger, Akka.Persistence.TCK""
@@ -42,7 +43,6 @@ namespace Akka.Persistence.SqlServer.Tests.Query
                         schema-name = dbo
                         auto-initialize = on
                         connection-string = ""{DbUtils.ConnectionString}""
-                        refresh-interval = 1s
                     }}")
                 .WithFallback(SqlReadJournal.DefaultConfiguration());
         }
