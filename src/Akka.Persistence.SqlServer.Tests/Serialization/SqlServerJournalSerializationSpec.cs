@@ -50,7 +50,7 @@ namespace Akka.Persistence.SqlServer.Tests.Serialization
 
         protected override void Dispose(bool disposing)
         {
-            base.Dispose(disposing);
+            
             DbUtils.Clean();
         }
 

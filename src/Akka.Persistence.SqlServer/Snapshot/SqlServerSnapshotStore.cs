@@ -7,6 +7,7 @@
 using System;
 using System.Data.Common;
 using Akka.Configuration;
+using Akka.Event;
 using Akka.Persistence.Sql.Common.Snapshot;
 using Akka.Persistence.SqlServer.Helpers;
 using Microsoft.Data.SqlClient;

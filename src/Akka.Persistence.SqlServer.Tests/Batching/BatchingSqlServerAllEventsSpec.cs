@@ -41,9 +41,8 @@ namespace Akka.Persistence.SqlServer.Tests.Batching
                 .WithFallback(SqlReadJournal.DefaultConfiguration());
         }
 
-        protected override void Dispose(bool disposing)
+        protected void Dispose(bool disposing)
         {
-            base.Dispose(disposing);
             DbUtils.Clean();
         }
     }

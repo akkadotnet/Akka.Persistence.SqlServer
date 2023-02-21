@@ -1,12 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
-    <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
-        <TargetFrameworks>$(NetFrameworkTestVersion);$(NetCoreTestVersion)</TargetFrameworks>
-    </PropertyGroup>
-
-    <!-- disable .NET Framework (Mono) on Linux-->
-    <PropertyGroup Condition="'$(OS)' != 'Windows_NT'">
-        <TargetFrameworks>$(NetCoreTestVersion)</TargetFrameworks>
+    <PropertyGroup>
+        <TargetFramework>$(NetCoreTestVersion)</TargetFramework>
     </PropertyGroup>
 
     <ItemGroup>

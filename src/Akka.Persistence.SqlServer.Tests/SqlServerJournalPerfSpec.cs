@@ -47,9 +47,9 @@ namespace Akka.Persistence.SqlServer.Tests
             return ConfigurationFactory.ParseString(specString);
         }
 
-        protected override void Dispose(bool disposing)
+        protected void Dispose(bool disposing)
         {
-            base.Dispose(disposing);
+            
             DbUtils.Clean();
         }
     }
