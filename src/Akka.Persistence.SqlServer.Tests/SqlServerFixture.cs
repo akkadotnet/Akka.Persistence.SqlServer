@@ -46,7 +46,7 @@ namespace Akka.Persistence.SqlServer.Tests
         }
 
         protected string ImageName => "mcr.microsoft.com/mssql/server";
-        protected string Tag => "2017-latest";
+        protected string Tag => "2019-latest";
 
         protected string SqlServerImageName => $"{ImageName}:{Tag}";
 
