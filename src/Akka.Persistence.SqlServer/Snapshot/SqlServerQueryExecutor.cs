@@ -1,28 +1,28 @@
 ﻿// -----------------------------------------------------------------------
 // <copyright file="SqlServerQueryExecutor.cs" company="Akka.NET Project">
-//      Copyright (C) 2013 - 2019 .NET Foundation <https://github.com/akkadotnet/akka.net>
+//      Copyright (C) 2013 - 2023 .NET Foundation <https://github.com/akkadotnet/akka.net>
 // </copyright>
 // -----------------------------------------------------------------------
 
 using System.Data.Common;
-using Microsoft.Data.SqlClient;
 using Akka.Persistence.Sql.Common.Snapshot;
 using Akka.Persistence.SqlServer.Helpers;
 using Akka.Util;
+using Microsoft.Data.SqlClient;
 
 namespace Akka.Persistence.SqlServer.Snapshot
 {
     public class SqlServerQueryExecutor : AbstractQueryExecutor
     {
         private Option<SnapshotColumnSizesInfo> _columnSizes = Option<SnapshotColumnSizesInfo>.None;
-        
+
         public SqlServerQueryExecutor(QueryConfiguration configuration, Akka.Serialization.Serialization serialization)
             : base(configuration, serialization)
         {
             CreateSnapshotTableSql = $@"
             IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = '{
-                    configuration.SchemaName
-                }' AND TABLE_NAME = '{configuration.SnapshotTableName}')
+                configuration.SchemaName
+            }' AND TABLE_NAME = '{configuration.SnapshotTableName}')
             BEGIN
                 CREATE TABLE {configuration.FullSnapshotTableName} (
 	                {configuration.PersistenceIdColumnName} NVARCHAR(255) NOT NULL,
@@ -32,8 +32,8 @@ namespace Akka.Persistence.SqlServer.Snapshot
 	                {configuration.PayloadColumnName} VARBINARY(MAX) NOT NULL,
                     {configuration.SerializerIdColumnName} INTEGER NULL
                     CONSTRAINT PK_{configuration.SnapshotTableName} PRIMARY KEY ({
-                    configuration.PersistenceIdColumnName
-                }, {configuration.SequenceNrColumnName})
+                        configuration.PersistenceIdColumnName
+                    }, {configuration.SequenceNrColumnName})
                 );
                 CREATE INDEX IX_{configuration.SnapshotTableName}_{configuration.SequenceNrColumnName} ON {
                     configuration.FullSnapshotTableName
@@ -97,11 +97,11 @@ namespace Akka.Persistence.SqlServer.Snapshot
 
         protected override DbCommand CreateCommand(DbConnection connection)
         {
-            return new SqlCommand {Connection = (SqlConnection) connection};
+            return new SqlCommand { Connection = (SqlConnection)connection };
         }
 
         /// <summary>
-        /// Sets column sizes loaded from db schema, so that constant parameter sizes could be set during parameter generation
+        ///     Sets column sizes loaded from db schema, so that constant parameter sizes could be set during parameter generation
         /// </summary>
         internal void SetColumnSizes(SnapshotColumnSizesInfo columnSizesInfo)
         {
@@ -113,14 +113,14 @@ namespace Akka.Persistence.SqlServer.Snapshot
         {
             if (!_columnSizes.HasValue)
                 return;
-            
+
             // if column sizes are loaded, use them to define constant parameter size values
             switch (param.ParameterName)
             {
                 case "@PersistenceId":
                     param.Size = _columnSizes.Value.PersistenceIdColumnSize;
                     break;
-                
+
                 case "@Manifest":
                     param.Size = _columnSizes.Value.ManifestColumnSize;
                     break;

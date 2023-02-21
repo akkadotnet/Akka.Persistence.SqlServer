@@ -1,6 +1,6 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="SqlServerEventsByTagSpec.cs" company="Akka.NET Project">
-//      Copyright (C) 2013 - 2019 .NET Foundation <https://github.com/akkadotnet/akka.net>
+// <copyright file="SqlServerCurrentEventsByTagSpec.cs" company="Akka.NET Project">
+//      Copyright (C) 2013 - 2023 .NET Foundation <https://github.com/akkadotnet/akka.net>
 // </copyright>
 // -----------------------------------------------------------------------
 
@@ -16,7 +16,8 @@ namespace Akka.Persistence.SqlServer.Tests.Query
     [Collection("SqlServerSpec")]
     public class SqlServerCurrentEventsByTagSpec : CurrentEventsByTagSpec
     {
-        public SqlServerCurrentEventsByTagSpec(ITestOutputHelper output, SqlServerFixture fixture) : base(InitConfig(fixture),
+        public SqlServerCurrentEventsByTagSpec(ITestOutputHelper output, SqlServerFixture fixture) : base(
+            InitConfig(fixture),
             nameof(SqlServerCurrentEventsByTagSpec), output)
         {
             ReadJournal = Sys.ReadJournalFor<SqlReadJournal>(SqlReadJournal.Identifier);

@@ -1,14 +1,14 @@
 ﻿// -----------------------------------------------------------------------
 // <copyright file="SqlServerQueryExecutor.cs" company="Akka.NET Project">
-//      Copyright (C) 2013 - 2019 .NET Foundation <https://github.com/akkadotnet/akka.net>
+//      Copyright (C) 2013 - 2023 .NET Foundation <https://github.com/akkadotnet/akka.net>
 // </copyright>
 // -----------------------------------------------------------------------
 
 using System.Data.Common;
-using Microsoft.Data.SqlClient;
 using Akka.Persistence.Sql.Common.Journal;
 using Akka.Persistence.SqlServer.Helpers;
 using Akka.Util;
+using Microsoft.Data.SqlClient;
 
 namespace Akka.Persistence.SqlServer.Journal
 {
@@ -17,7 +17,7 @@ namespace Akka.Persistence.SqlServer.Journal
         private Option<JournalColumnSizesInfo> _columnSizes = Option<JournalColumnSizesInfo>.None;
 
         public SqlServerQueryExecutor(
-            QueryConfiguration configuration, 
+            QueryConfiguration configuration,
             Akka.Serialization.Serialization serialization,
             ITimestampProvider timestampProvider)
             : base(configuration, serialization, timestampProvider)
@@ -50,8 +50,8 @@ namespace Akka.Persistence.SqlServer.Journal
 
             CreateEventsJournalSql = $@"
             IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = '{
-                    Configuration.SchemaName
-                }' AND TABLE_NAME = '{Configuration.JournalEventsTableName}')
+                Configuration.SchemaName
+            }' AND TABLE_NAME = '{Configuration.JournalEventsTableName}')
             BEGIN
                 CREATE TABLE {Configuration.FullJournalTableName} (
                     {Configuration.OrderingColumnName} BIGINT IDENTITY(1,1) NOT NULL,
@@ -64,11 +64,11 @@ namespace Akka.Persistence.SqlServer.Journal
                     {Configuration.TagsColumnName} NVARCHAR(100) NULL,
                     {Configuration.SerializerIdColumnName} INTEGER NULL,
                     CONSTRAINT PK_{Configuration.JournalEventsTableName} PRIMARY KEY ({
-                    Configuration.OrderingColumnName
-                }),
+                        Configuration.OrderingColumnName
+                    }),
                     CONSTRAINT UQ_{Configuration.JournalEventsTableName} UNIQUE ({
-                    Configuration.PersistenceIdColumnName
-                }, {Configuration.SequenceNrColumnName})
+                        Configuration.PersistenceIdColumnName
+                    }, {Configuration.SequenceNrColumnName})
                 );
                 CREATE INDEX IX_{Configuration.JournalEventsTableName}_{Configuration.SequenceNrColumnName} ON {
                     Configuration.FullJournalTableName
@@ -80,32 +80,32 @@ namespace Akka.Persistence.SqlServer.Journal
             ";
             CreateMetaTableSql = $@"
             IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = '{
-                    Configuration.SchemaName
-                }' AND TABLE_NAME = '{Configuration.MetaTableName}')
+                Configuration.SchemaName
+            }' AND TABLE_NAME = '{Configuration.MetaTableName}')
             BEGIN
                 CREATE TABLE {Configuration.FullMetaTableName} (
 	                {Configuration.PersistenceIdColumnName} NVARCHAR(255) NOT NULL,
 	                {Configuration.SequenceNrColumnName} BIGINT NOT NULL,
                     CONSTRAINT PK_{Configuration.MetaTableName} PRIMARY KEY ({Configuration.PersistenceIdColumnName}, {
-                    Configuration.SequenceNrColumnName
-                })
+                        Configuration.SequenceNrColumnName
+                    })
                 );
             END
             ";
         }
 
         protected override string ByTagSql { get; }
-        protected override string AllEventsSql { get;}
+        protected override string AllEventsSql { get; }
         protected override string CreateEventsJournalSql { get; }
         protected override string CreateMetaTableSql { get; }
 
         protected override DbCommand CreateCommand(DbConnection connection)
         {
-            return new SqlCommand { Connection = (SqlConnection) connection };
+            return new SqlCommand { Connection = (SqlConnection)connection };
         }
 
         /// <summary>
-        /// Sets column sizes loaded from db schema, so that constant parameter sizes could be set during parameter generation
+        ///     Sets column sizes loaded from db schema, so that constant parameter sizes could be set during parameter generation
         /// </summary>
         internal void SetColumnSizes(JournalColumnSizesInfo columnSizesInfo)
         {
@@ -117,18 +117,18 @@ namespace Akka.Persistence.SqlServer.Journal
         {
             if (!_columnSizes.HasValue)
                 return;
-            
+
             // if column sizes are loaded, use them to define constant parameter size values
             switch (param.ParameterName)
             {
                 case "@PersistenceId":
                     param.Size = _columnSizes.Value.PersistenceIdColumnSize;
                     break;
-                
+
                 case "@Tag":
                     param.Size = _columnSizes.Value.TagsColumnSize;
                     break;
-                
+
                 case "@Manifest":
                     param.Size = _columnSizes.Value.ManifestColumnSize;
                     break;

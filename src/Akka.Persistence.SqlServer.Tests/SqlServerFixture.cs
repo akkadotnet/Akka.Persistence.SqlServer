@@ -1,6 +1,6 @@
 ﻿// -----------------------------------------------------------------------
 // <copyright file="SqlServerFixture.cs" company="Akka.NET Project">
-//      Copyright (C) 2013 - 2019 .NET Foundation <https://github.com/akkadotnet/akka.net>
+//      Copyright (C) 2013 - 2023 .NET Foundation <https://github.com/akkadotnet/akka.net>
 // </copyright>
 // -----------------------------------------------------------------------
 
@@ -57,7 +57,7 @@ namespace Akka.Persistence.SqlServer.Tests
             var sysInfo = await Client.System.GetSystemInfoAsync();
             if (sysInfo.OSType.ToLowerInvariant() != "linux")
                 throw new TestClassException("MSSQL docker image only available for linux containers");
-            
+
             var images = await Client.Images.ListImagesAsync(new ImagesListParameters
             {
                 Filters = new Dictionary<string, IDictionary<string, bool>>
@@ -66,15 +66,15 @@ namespace Akka.Persistence.SqlServer.Tests
                         "reference",
                         new Dictionary<string, bool>
                         {
-                            {SqlServerImageName, true}
+                            { SqlServerImageName, true }
                         }
                     }
                 }
-            }); 
+            });
 
             if (images.Count == 0)
                 await Client.Images.CreateImageAsync(
-                    new ImagesCreateParameters {FromImage = ImageName, Tag = Tag}, null,
+                    new ImagesCreateParameters { FromImage = ImageName, Tag = Tag }, null,
                     new Progress<JSONMessage>(message =>
                     {
                         Console.WriteLine(!string.IsNullOrEmpty(message.ErrorMessage)
@@ -92,7 +92,7 @@ namespace Akka.Persistence.SqlServer.Tests
                 Tty = true,
                 ExposedPorts = new Dictionary<string, EmptyStruct>
                 {
-                    {"1433/tcp", new EmptyStruct()}
+                    { "1433/tcp", new EmptyStruct() }
                 },
                 HostConfig = new HostConfig
                 {
@@ -112,8 +112,8 @@ namespace Akka.Persistence.SqlServer.Tests
                 },
                 Env = new[]
                 {
-                    "ACCEPT_EULA=Y", 
-                    "MSSQL_SA_PASSWORD=l0l!Th1sIsOpenSource",
+                    "ACCEPT_EULA=Y",
+                    "MSSQL_SA_PASSWORD=l0l!Th1sIsOpenSource"
                 }
             });
 
@@ -135,13 +135,11 @@ namespace Akka.Persistence.SqlServer.Tests
                 var stopwatch = Stopwatch.StartNew();
                 while (stopwatch.ElapsedMilliseconds < timeoutInMilis && (line = await reader.ReadLineAsync()) != null)
                 {
-                    if(!string.IsNullOrWhiteSpace(line))
+                    if (!string.IsNullOrWhiteSpace(line))
                         Console.WriteLine(line);
-                    if (line.Contains("SQL Server is now ready for client connections."))
-                    {
-                        break;
-                    }
+                    if (line.Contains("SQL Server is now ready for client connections.")) break;
                 }
+
                 stopwatch.Stop();
             }
 #if NET461
@@ -169,12 +167,11 @@ namespace Akka.Persistence.SqlServer.Tests
         public async Task DisposeAsync()
         {
             if (Client != null)
-            {
                 try
                 {
                     await Client.Containers.StopContainerAsync(SqlContainerName, new ContainerStopParameters());
                     await Client.Containers.RemoveContainerAsync(SqlContainerName,
-                        new ContainerRemoveParameters {Force = true});
+                        new ContainerRemoveParameters { Force = true });
                 }
                 catch (DockerContainerNotFoundException)
                 {
@@ -184,7 +181,6 @@ namespace Akka.Persistence.SqlServer.Tests
                 {
                     Client.Dispose();
                 }
-            }
         }
     }
 }

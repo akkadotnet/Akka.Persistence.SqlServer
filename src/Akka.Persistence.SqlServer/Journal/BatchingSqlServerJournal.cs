@@ -1,6 +1,6 @@
 ﻿// -----------------------------------------------------------------------
 // <copyright file="BatchingSqlServerJournal.cs" company="Akka.NET Project">
-//      Copyright (C) 2013 - 2019 .NET Foundation <https://github.com/akkadotnet/akka.net>
+//      Copyright (C) 2013 - 2023 .NET Foundation <https://github.com/akkadotnet/akka.net>
 // </copyright>
 // -----------------------------------------------------------------------
 
@@ -8,23 +8,19 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Data;
-using Microsoft.Data.SqlClient;
 using System.Data.Common;
-using System.Linq;
-using System.Threading.Tasks;
 using Akka.Configuration;
 using Akka.Persistence.Sql.Common.Journal;
 using Akka.Persistence.SqlServer.Helpers;
 using Akka.Util;
+using Microsoft.Data.SqlClient;
 
 namespace Akka.Persistence.SqlServer.Journal
 {
     public sealed class BatchingSqlServerJournalSetup : BatchingSqlJournalSetup
     {
-        public bool UseConstantParameterSize { get; }
-        
         public BatchingSqlServerJournalSetup(Config config) : base(
-            config, 
+            config,
             new QueryConfiguration(
                 config.GetString("schema-name", "dbo"),
                 config.GetString("table-name", "EventJournal"),
@@ -39,54 +35,57 @@ namespace Akka.Persistence.SqlServer.Journal
                 "Ordering",
                 "SerializerId",
                 config.GetTimeSpan("connection-timeout", TimeSpan.FromSeconds(30)),
-                config.GetString("serializer", null),
-                config.GetBoolean("sequential-access", false)))
+                config.GetString("serializer"),
+                config.GetBoolean("sequential-access")))
         {
-            UseConstantParameterSize = config.GetBoolean("use-constant-parameter-size", false);
+            UseConstantParameterSize = config.GetBoolean("use-constant-parameter-size");
         }
 
         public BatchingSqlServerJournalSetup(
-            string connectionString, 
-            int maxConcurrentOperations, 
+            string connectionString,
+            int maxConcurrentOperations,
             int maxBatchSize,
-            int maxBufferSize, 
+            int maxBufferSize,
             bool autoInitialize,
-            TimeSpan connectionTimeout, 
-            IsolationLevel isolationLevel, 
+            TimeSpan connectionTimeout,
+            IsolationLevel isolationLevel,
             CircuitBreakerSettings circuitBreakerSettings,
-            ReplayFilterSettings replayFilterSettings, 
-            QueryConfiguration namingConventions, 
+            ReplayFilterSettings replayFilterSettings,
+            QueryConfiguration namingConventions,
             string defaultSerializer,
             bool useConstantParameterSize)
             : base(
-                connectionString: connectionString, 
-                maxConcurrentOperations: maxConcurrentOperations, 
-                maxBatchSize: maxBatchSize, 
-                maxBufferSize: maxBufferSize, 
-                autoInitialize: autoInitialize,
-                connectionTimeout: connectionTimeout, 
-                isolationLevel: isolationLevel, 
-                circuitBreakerSettings: circuitBreakerSettings, 
-                replayFilterSettings: replayFilterSettings, 
-                namingConventions: namingConventions,
-                defaultSerializer: defaultSerializer)
+                connectionString,
+                maxConcurrentOperations,
+                maxBatchSize,
+                maxBufferSize,
+                autoInitialize,
+                connectionTimeout,
+                isolationLevel,
+                circuitBreakerSettings,
+                replayFilterSettings,
+                namingConventions,
+                defaultSerializer)
         {
             UseConstantParameterSize = useConstantParameterSize;
         }
+
+        public bool UseConstantParameterSize { get; }
     }
 
     public class BatchingSqlServerJournal : BatchingSqlJournal<SqlConnection, SqlCommand>
     {
-        private Option<JournalColumnSizesInfo> _columnSizes = Option<JournalColumnSizesInfo>.None;
         private readonly bool _useConstantParameterSize;
-        
+        private Option<JournalColumnSizesInfo> _columnSizes = Option<JournalColumnSizesInfo>.None;
+
         public BatchingSqlServerJournal(Config config) : this(new BatchingSqlServerJournalSetup(config))
-        { }
+        {
+        }
 
         public BatchingSqlServerJournal(BatchingSqlServerJournalSetup setup) : base(setup)
         {
             _useConstantParameterSize = setup.UseConstantParameterSize;
-            
+
             var connectionTimeoutSeconds =
                 new SqlConnectionStringBuilder(setup.ConnectionString).ConnectTimeout;
             var commandTimeout = setup.ConnectionTimeout;
@@ -94,13 +93,11 @@ namespace Akka.Persistence.SqlServer.Journal
             var totalTimeout = commandTimeout
                 .Add(TimeSpan.FromSeconds(connectionTimeoutSeconds));
             if (totalTimeout >= circuitBreakerTimeout)
-            {
                 Log.Warning(
                     "Configured Total of Connection timeout ({0} seconds) and Command timeout ({1} seconds) is greater than or equal to Circuit breaker timeout ({2} seconds). This may cause unintended write failures",
-                    connectionTimeoutSeconds, 
+                    connectionTimeoutSeconds,
                     commandTimeout.TotalSeconds,
                     circuitBreakerTimeout.TotalSeconds);
-            }
 
             var c = Setup.NamingConventions;
             var allEventColumnNames = $@"
@@ -133,8 +130,8 @@ namespace Akka.Persistence.SqlServer.Journal
             {
                 ["CreateJournalSql"] =
                     $@"IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = '{
-                            c.SchemaName
-                        }' AND TABLE_NAME = '{c.JournalEventsTableName}')
+                        c.SchemaName
+                    }' AND TABLE_NAME = '{c.JournalEventsTableName}')
                 BEGIN
                     CREATE TABLE {c.FullJournalTableName} (
                         {c.OrderingColumnName} BIGINT IDENTITY(1,1) NOT NULL,
@@ -152,27 +149,26 @@ namespace Akka.Persistence.SqlServer.Journal
                         })
                     );
                     CREATE INDEX IX_{c.JournalEventsTableName}_{c.SequenceNrColumnName} ON {c.FullJournalTableName}({
-                            c.SequenceNrColumnName
-                        });
+                        c.SequenceNrColumnName
+                    });
                     CREATE INDEX IX_{c.JournalEventsTableName}_{c.TimestampColumnName} ON {c.FullJournalTableName}({
-                            c.TimestampColumnName
-                        });
+                        c.TimestampColumnName
+                    });
                 END",
                 ["CreateMetadataSql"] = $@"
                 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = '{
-                        c.SchemaName
-                    }' AND TABLE_NAME = '{c.MetaTableName}')
+                    c.SchemaName
+                }' AND TABLE_NAME = '{c.MetaTableName}')
                 BEGIN
                     CREATE TABLE {c.FullMetaTableName} (
 	                    {c.PersistenceIdColumnName} NVARCHAR(255) NOT NULL,
 	                    {c.SequenceNrColumnName} BIGINT NOT NULL,
                         CONSTRAINT PK_{c.MetaTableName} PRIMARY KEY ({c.PersistenceIdColumnName}, {
-                        c.SequenceNrColumnName
-                    })
+                            c.SequenceNrColumnName
+                        })
                     );
                 END"
             });
-            
         }
 
         protected override string ByTagSql { get; }
@@ -192,12 +188,10 @@ namespace Akka.Persistence.SqlServer.Journal
 
             // if need to use constant parameters, prepare column sizes for parameter generation
             if (_useConstantParameterSize)
-            {
                 using (var connection = CreateConnection(Setup.ConnectionString))
                 {
                     _columnSizes = ColumnSizeLoader.LoadJournalColumnSizes(Setup.NamingConventions, connection);
                 }
-            }
         }
 
         /// <inheritdoc />
@@ -205,18 +199,18 @@ namespace Akka.Persistence.SqlServer.Journal
         {
             if (!_columnSizes.HasValue)
                 return;
-            
+
             // if column sizes are loaded, use them to define constant parameter size values
             switch (param.ParameterName)
             {
                 case "@PersistenceId":
                     param.Size = _columnSizes.Value.PersistenceIdColumnSize;
                     break;
-                
+
                 case "@Tag":
                     param.Size = _columnSizes.Value.TagsColumnSize;
                     break;
-                
+
                 case "@Manifest":
                     param.Size = _columnSizes.Value.ManifestColumnSize;
                     break;

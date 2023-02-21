@@ -1,6 +1,6 @@
 ﻿// -----------------------------------------------------------------------
 // <copyright file="BatchingSqlServerJournalSpec.cs" company="Akka.NET Project">
-//      Copyright (C) 2013 - 2019 .NET Foundation <https://github.com/akkadotnet/akka.net>
+//      Copyright (C) 2013 - 2023 .NET Foundation <https://github.com/akkadotnet/akka.net>
 // </copyright>
 // -----------------------------------------------------------------------
 
@@ -19,6 +19,9 @@ namespace Akka.Persistence.SqlServer.Tests.Batching
         {
             Initialize();
         }
+
+        // TODO: hack. Replace when https://github.com/akkadotnet/akka.net/issues/3811
+        protected override bool SupportsSerialization => false;
 
         private static Config InitConfig(SqlServerFixture fixture)
         {
@@ -41,9 +44,6 @@ namespace Akka.Persistence.SqlServer.Tests.Batching
 
             return ConfigurationFactory.ParseString(specString);
         }
-
-        // TODO: hack. Replace when https://github.com/akkadotnet/akka.net/issues/3811
-        protected override bool SupportsSerialization => false;
 
         protected override void Dispose(bool disposing)
         {

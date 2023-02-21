@@ -1,6 +1,6 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="SqlServerEventsByTagSpec.cs" company="Akka.NET Project">
-//      Copyright (C) 2013 - 2019 .NET Foundation <https://github.com/akkadotnet/akka.net>
+// <copyright file="BatchingSqlServerCurrentAllEventsSpec.cs" company="Akka.NET Project">
+//      Copyright (C) 2013 - 2023 .NET Foundation <https://github.com/akkadotnet/akka.net>
 // </copyright>
 // -----------------------------------------------------------------------
 
@@ -16,7 +16,8 @@ namespace Akka.Persistence.SqlServer.Tests.Batching
     [Collection("SqlServerSpec")]
     public class BatchingSqlServerCurrentAllEventsSpec : CurrentAllEventsSpec
     {
-        public BatchingSqlServerCurrentAllEventsSpec(ITestOutputHelper output, SqlServerFixture fixture) : base(InitConfig(fixture),
+        public BatchingSqlServerCurrentAllEventsSpec(ITestOutputHelper output, SqlServerFixture fixture) : base(
+            InitConfig(fixture),
             nameof(BatchingSqlServerCurrentAllEventsSpec), output)
         {
             ReadJournal = Sys.ReadJournalFor<SqlReadJournal>(SqlReadJournal.Identifier);
