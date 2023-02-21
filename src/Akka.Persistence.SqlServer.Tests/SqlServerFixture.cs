@@ -142,10 +142,10 @@ namespace Akka.Persistence.SqlServer.Tests
 
                 stopwatch.Stop();
             }
-#if NET461
-            logStream.Dispose();
-#else
+#if NETCOREAPP3_1_OR_GREATER
             await logStream.DisposeAsync();
+#else
+            logStream.Dispose();
 #endif
             if (!line?.Contains("SQL Server is now ready for client connections.") ?? false)
                 throw new Exception("MSSQL docker image failed to run.");
