@@ -13,7 +13,7 @@
     <XunitVersion>2.4.2</XunitVersion>
     <AkkaVersion>1.4.49</AkkaVersion>
     <TestSdkVersion>17.4.1</TestSdkVersion>
-    <NetCoreTestVersion>netcoreapp3.1</NetCoreTestVersion>
+    <NetCoreTestVersion>net6.0</NetCoreTestVersion>
     <NetFrameworkTestVersion>net461</NetFrameworkTestVersion>
     <NetStandardLibVersion>netstandard2.0</NetStandardLibVersion>
   </PropertyGroup>
@@ -30,6 +30,6 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
   </ItemGroup>
 </Project>
