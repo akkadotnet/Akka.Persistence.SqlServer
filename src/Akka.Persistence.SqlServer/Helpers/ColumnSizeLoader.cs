@@ -1,9 +1,8 @@
-// //-----------------------------------------------------------------------
-// // <copyright file="ColumnSizeLoader.cs" company="Akka.NET Project">
-// //     Copyright (C) 2009-2021 Lightbend Inc. <http://www.lightbend.com>
-// //     Copyright (C) 2013-2021 .NET Foundation <https://github.com/akkadotnet/akka.net>
-// // </copyright>
-// //-----------------------------------------------------------------------
+// -----------------------------------------------------------------------
+// <copyright file="ColumnSizeLoader.cs" company="Akka.NET Project">
+//      Copyright (C) 2013 - 2023 .NET Foundation <https://github.com/akkadotnet/akka.net>
+// </copyright>
+// -----------------------------------------------------------------------
 
 using System.Collections.Generic;
 using System.Data;
@@ -14,15 +13,16 @@ using Akka.Persistence.Sql.Common.Journal;
 namespace Akka.Persistence.SqlServer.Helpers
 {
     /// <summary>
-    /// Helper class that can load column sizes from SqlServer table
+    ///     Helper class that can load column sizes from SqlServer table
     /// </summary>
     internal static class ColumnSizeLoader
     {
         /// <summary>
-        /// Loads column sizes for Journal
+        ///     Loads column sizes for Journal
         /// </summary>
         /// <returns></returns>
-        public static JournalColumnSizesInfo LoadJournalColumnSizes(QueryConfiguration conventions, DbConnection connection)
+        public static JournalColumnSizesInfo LoadJournalColumnSizes(QueryConfiguration conventions,
+            DbConnection connection)
         {
             using (var command = connection.CreateCommand())
             {
@@ -36,15 +36,18 @@ namespace Akka.Persistence.SqlServer.Helpers
                     var results = LoadSchemaTableInfo(reader);
 
                     return new JournalColumnSizesInfo(
-                        persistenceIdColumnSize: (int)results.First(r => r["ColumnName"].ToString() == conventions.PersistenceIdColumnName)["ColumnSize"],
-                        tagsColumnSize: (int)results.First(r => r["ColumnName"].ToString() == conventions.TagsColumnName)["ColumnSize"],
-                        manifestColumnSize: (int)results.First(r => r["ColumnName"].ToString() == conventions.ManifestColumnName)["ColumnSize"]
+                        (int)results.First(r => r["ColumnName"].ToString() == conventions.PersistenceIdColumnName)[
+                            "ColumnSize"],
+                        (int)results.First(r => r["ColumnName"].ToString() == conventions.TagsColumnName)["ColumnSize"],
+                        (int)results.First(r => r["ColumnName"].ToString() == conventions.ManifestColumnName)[
+                            "ColumnSize"]
                     );
                 }
             }
         }
 
-        public static SnapshotColumnSizesInfo LoadSnapshotColumnSizes(Sql.Common.Snapshot.QueryConfiguration conventions, DbConnection connection)
+        public static SnapshotColumnSizesInfo LoadSnapshotColumnSizes(
+            Sql.Common.Snapshot.QueryConfiguration conventions, DbConnection connection)
         {
             using (var command = connection.CreateCommand())
             {
@@ -58,26 +61,25 @@ namespace Akka.Persistence.SqlServer.Helpers
                     var results = LoadSchemaTableInfo(reader);
 
                     return new SnapshotColumnSizesInfo(
-                        persistenceIdColumnSize: (int)results.First(r => r["ColumnName"].ToString() == conventions.PersistenceIdColumnName)["ColumnSize"],
-                        manifestColumnSize: (int)results.First(r => r["ColumnName"].ToString() == conventions.ManifestColumnName)["ColumnSize"]
+                        (int)results.First(r => r["ColumnName"].ToString() == conventions.PersistenceIdColumnName)[
+                            "ColumnSize"],
+                        (int)results.First(r => r["ColumnName"].ToString() == conventions.ManifestColumnName)[
+                            "ColumnSize"]
                     );
                 }
             }
         }
-        
+
         private static List<Dictionary<string, object>> LoadSchemaTableInfo(DbDataReader reader)
         {
             var results = new List<Dictionary<string, object>>();
-            
+
             // iterate through the table schema and extract metadata
-            DataTable schemaTable = reader.GetSchemaTable();
+            var schemaTable = reader.GetSchemaTable();
             foreach (DataRow row in schemaTable.Rows)
             {
                 var dict = new Dictionary<string, object>();
-                foreach (DataColumn col in schemaTable.Columns)
-                {
-                    dict.Add(col.ColumnName, row[col.Ordinal]);
-                }
+                foreach (DataColumn col in schemaTable.Columns) dict.Add(col.ColumnName, row[col.Ordinal]);
                 results.Add(dict);
             }
 

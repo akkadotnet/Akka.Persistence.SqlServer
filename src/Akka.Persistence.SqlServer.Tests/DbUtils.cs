@@ -1,11 +1,11 @@
 ﻿// -----------------------------------------------------------------------
 // <copyright file="DbUtils.cs" company="Akka.NET Project">
-//      Copyright (C) 2013 - 2019 .NET Foundation <https://github.com/akkadotnet/akka.net>
+//      Copyright (C) 2013 - 2023 .NET Foundation <https://github.com/akkadotnet/akka.net>
 // </copyright>
 // -----------------------------------------------------------------------
 
-using Microsoft.Data.SqlClient;
 using System.IO;
+using Microsoft.Data.SqlClient;
 
 namespace Akka.Persistence.SqlServer.Tests
 {
@@ -49,7 +49,7 @@ namespace Akka.Persistence.SqlServer.Tests
 
             // Delete local snapshot flat file database
             var path = "./snapshots";
-            if(Directory.Exists(path))
+            if (Directory.Exists(path))
                 Directory.Delete(path, true);
         }
 
@@ -65,7 +65,7 @@ namespace Akka.Persistence.SqlServer.Tests
 
             // Delete local snapshot flat file database
             var path = "./snapshots";
-            if(Directory.Exists(path))
+            if (Directory.Exists(path))
                 Directory.Delete(path, true);
         }
 

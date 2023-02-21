@@ -1,14 +1,12 @@
 <Project>
   <PropertyGroup>
-    <Copyright>Copyright © 2013-2020 Akka.NET Team</Copyright>
+    <Copyright>Copyright © 2013-2023 Akka.NET Team</Copyright>
     <Authors>Akka.NET Team</Authors>
-    <VersionPrefix>1.4.18</VersionPrefix>
+    <VersionPrefix>1.4.35</VersionPrefix>
     <PackageIconUrl>http://getakka.net/images/akkalogo.png</PackageIconUrl>
     <PackageProjectUrl>https://github.com/akkadotnet/Akka.Persistence.SqlServer</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/akkadotnet/Akka.Persistence.SqlServer/blob/master/LICENSE</PackageLicenseUrl>
-    <PackageReleaseNotes>Upgrades to [Akka.NET v1.4.18](https://github.com/akkadotnet/akka.net/releases/tag/1.4.18)
-[Added Support for Microsoft AD Authentication](https://github.com/akkadotnet/Akka.Persistence.SqlServer/issues/203)
-[Load string parameters column sizes to reduce SqlServer query plans count](https://github.com/akkadotnet/Akka.Persistence.SqlServer/pull/197)</PackageReleaseNotes>
+    <PackageReleaseNotes>[Update Akka.NET to v1.4.35](https://github.com/akkadotnet/akka.net/releases/tag/1.4.35)</PackageReleaseNotes>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
   <PropertyGroup>

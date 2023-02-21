@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Akka.Actor;
-using Akka.Configuration;
-using Akka.Event;
-using Akka.Persistence.TCK.Journal;
-using Akka.TestKit;
-using Akka.Util.Internal;
-using Xunit;
-using Xunit.Abstractions;
+﻿// -----------------------------------------------------------------------
+// <copyright file="BatchingSqlJournalFailureSpec.cs" company="Akka.NET Project">
+//      Copyright (C) 2013 - 2023 .NET Foundation <https://github.com/akkadotnet/akka.net>
+// </copyright>
+// -----------------------------------------------------------------------
+
+
 
 /*
 namespace Akka.Persistence.SqlServer.Tests.Batching
