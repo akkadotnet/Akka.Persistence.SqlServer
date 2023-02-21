@@ -13,7 +13,7 @@ using Xunit.Abstractions;
 namespace Akka.Persistence.SqlServer.Tests
 {
     [Collection("SqlServerSpec")]
-    public class SqlServerJournalPerfSpec : JournalPerfSpec
+    public class SqlServerJournalPerfSpec : JournalPerfSpec, IDisposable
     {
         public SqlServerJournalPerfSpec(ITestOutputHelper output, SqlServerFixture fixture)
             : base(InitConfig(fixture), "SqlServerJournalPerfSpec", output)
@@ -47,10 +47,15 @@ namespace Akka.Persistence.SqlServer.Tests
             return ConfigurationFactory.ParseString(specString);
         }
 
-        protected override void Dispose(bool disposing)
+        protected void Dispose(bool disposing)
         {
-            base.Dispose(disposing);
             DbUtils.Clean();
+        }
+
+        public void Dispose()
+        {
+            GC.SuppressFinalize(this);
+            Dispose(true);
         }
     }
 }

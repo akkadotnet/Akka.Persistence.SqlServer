@@ -10,6 +10,7 @@ using System.Collections.Immutable;
 using System.Data;
 using System.Data.Common;
 using Akka.Configuration;
+using Akka.Event;
 using Akka.Persistence.Sql.Common.Journal;
 using Akka.Persistence.SqlServer.Helpers;
 using Akka.Util;

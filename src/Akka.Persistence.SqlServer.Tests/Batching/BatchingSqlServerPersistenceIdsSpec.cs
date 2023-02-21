@@ -4,6 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
+using System;
 using Akka.Configuration;
 using Akka.Persistence.Query;
 using Akka.Persistence.Query.Sql;
@@ -14,7 +15,7 @@ using Xunit.Abstractions;
 namespace Akka.Persistence.SqlServer.Tests.Batching
 {
     [Collection("SqlServerSpec")]
-    public class BatchingSqlServerPersistenceIdsSpec : PersistenceIdsSpec
+    public class BatchingSqlServerPersistenceIdsSpec : PersistenceIdsSpec, IDisposable
     {
         public BatchingSqlServerPersistenceIdsSpec(ITestOutputHelper output, SqlServerFixture fixture)
             : base(InitConfig(fixture), nameof(BatchingSqlServerPersistenceIdsSpec), output)
@@ -43,10 +44,15 @@ namespace Akka.Persistence.SqlServer.Tests.Batching
             return conf.WithFallback(SqlReadJournal.DefaultConfiguration());
         }
 
-        protected override void Dispose(bool disposing)
+        protected void Dispose(bool disposing)
         {
-            base.Dispose(disposing);
             DbUtils.Clean();
+        }
+
+        public void Dispose()
+        {
+            GC.SuppressFinalize(this);
+            Dispose(true);
         }
     }
 }
