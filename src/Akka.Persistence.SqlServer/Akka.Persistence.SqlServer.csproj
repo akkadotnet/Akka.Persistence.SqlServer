@@ -1,6 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
-    <Import Project="..\common.props"/>
     <PropertyGroup>
         <AssemblyTitle>Akka.Persistence.SqlServer</AssemblyTitle>
         <Description>Akka.Persistence support for SQL Server.
@@ -14,7 +13,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Akka.Persistence.Sql.Common" Version="$(AkkaVersion)"/>
-        <PackageReference Include="Microsoft.Data.SqlClient" Version="3.0.1"/>
+        <PackageReference Include="Akka.Persistence.Sql.Common"/>
+        <PackageReference Include="Microsoft.Data.SqlClient"/>
     </ItemGroup>
 </Project>
