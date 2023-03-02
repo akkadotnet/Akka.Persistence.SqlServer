@@ -6,12 +6,12 @@
     <PackageIconUrl>http://getakka.net/images/akkalogo.png</PackageIconUrl>
     <PackageProjectUrl>https://github.com/akkadotnet/Akka.Persistence.SqlServer</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/akkadotnet/Akka.Persistence.SqlServer/blob/master/LICENSE</PackageLicenseUrl>
-    <PackageReleaseNotes>[Update Akka.NET to v1.5.0-beta1](https://github.com/akkadotnet/akka.net/releases/tag/1.5.0-beta1)</PackageReleaseNotes>
+    <PackageReleaseNotes>[Update Akka.NET to v1.5.0](https://github.com/akkadotnet/akka.net/releases/tag/1.5.0)</PackageReleaseNotes>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
   <PropertyGroup>
     <XunitVersion>2.4.2</XunitVersion>
-    <AkkaVersion>1.5.0-beta3</AkkaVersion>
+    <AkkaVersion>1.5.0-beta2</AkkaVersion>
     <TestSdkVersion>17.4.1</TestSdkVersion>
     <NetCoreTestVersion>net6.0</NetCoreTestVersion>
     <NetFrameworkTestVersion>net48</NetFrameworkTestVersion>
