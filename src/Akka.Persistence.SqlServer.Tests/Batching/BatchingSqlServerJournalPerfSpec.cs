@@ -5,7 +5,6 @@
 // -----------------------------------------------------------------------
 
 using System;
-using System.Threading.Tasks;
 using Akka.Configuration;
 using Akka.Persistence.TestKit.Performance;
 using Xunit;
@@ -14,7 +13,7 @@ using Xunit.Abstractions;
 namespace Akka.Persistence.SqlServer.Tests
 {
     [Collection("SqlServerSpec")]
-    public class BatchingSqlServerJournalPerfSpec : JournalPerfSpec
+    public class BatchingSqlServerJournalPerfSpec : JournalPerfSpec, IDisposable
     {
         public BatchingSqlServerJournalPerfSpec(ITestOutputHelper output, SqlServerFixture fixture)
             : base(InitConfig(fixture), "BatchingSqlServerJournalPerfSpec", output)
@@ -48,11 +47,15 @@ namespace Akka.Persistence.SqlServer.Tests
             return ConfigurationFactory.ParseString(specString);
         }
 
-        public override Task DisposeAsync()
+        protected void Dispose(bool disposing)
+        {
+            DbUtils.Clean();
+        }
+
+        public void Dispose()
         {
             GC.SuppressFinalize(this);
-            DbUtils.Clean();
-            return base.DisposeAsync();
+            Dispose(true);
         }
     }
 }
