@@ -5,7 +5,7 @@
   <!-- App dependencies -->
   <ItemGroup>
     <PackageVersion Include="Akka.Persistence.Sql.Common" Version="$(AkkaVersion)"/>
-    <PackageVersion Include="Microsoft.Data.SqlClient" Version="3.0.1"/>
+    <PackageVersion Include="Microsoft.Data.SqlClient" Version="5.1.0"/>
   </ItemGroup>
 
   <!-- Test dependencies -->  
