@@ -16,7 +16,7 @@
     <PackageVersion Include="xunit.runner.visualstudio" Version="$(XunitVersion)" />
     <PackageVersion Include="Akka.TestKit.Xunit2" Version="$(AkkaVersion)" />
     <PackageVersion Include="Akka.Persistence.Sql.TestKit" Version="$(AkkaVersion)"/>
-    <PackageVersion Include="Docker.DotNet" Version="3.125.12"/>
+    <PackageVersion Include="Docker.DotNet" Version="3.125.13"/>
   </ItemGroup>
 
 	<!-- SourceLink support for all Akka.NET projects -->
