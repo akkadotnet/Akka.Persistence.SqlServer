@@ -4,6 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
+using System;
 using System.IO;
 using Microsoft.Data.SqlClient;
 
@@ -11,40 +12,34 @@ namespace Akka.Persistence.SqlServer.Tests
 {
     public static class DbUtils
     {
-        public static string ConnectionString { get; private set; }
+        private static SqlConnectionStringBuilder _builder;
+        public static string ConnectionString => _builder.ToString();
 
         public static void Initialize(string connectionString)
         {
-            var connectionBuilder = new SqlConnectionStringBuilder(connectionString);
+            _builder = new SqlConnectionStringBuilder(connectionString);
+            var databaseName = $"akka_persistence_tests_{Guid.NewGuid()}";
+            _builder.InitialCatalog = databaseName;
+            
+            var connectionBuilder = new SqlConnectionStringBuilder(connectionString)
+            {
+                InitialCatalog = "master"
+            };
 
-            //connect to postgres database to create a new database
-            var databaseName = connectionBuilder.InitialCatalog;
-            connectionBuilder.InitialCatalog = "master";
-            ConnectionString = connectionBuilder.ToString();
-
-            using (var conn = new SqlConnection(ConnectionString))
+            using (var conn = new SqlConnection(connectionBuilder.ToString()))
             {
                 conn.Open();
 
                 using (var cmd = new SqlCommand())
                 {
-                    cmd.CommandText = string.Format(@"
-                        IF db_id('{0}') IS NULL
-                            BEGIN
-                                CREATE DATABASE {0}
-                            END
-                            
-                    ", databaseName);
+                    cmd.CommandText = $@"
+IF db_id('{databaseName}') IS NULL
+BEGIN
+    CREATE DATABASE [{databaseName}];
+END";
                     cmd.Connection = conn;
-
-                    var result = cmd.ExecuteScalar();
+                    cmd.ExecuteScalar();
                 }
-
-                DropTables(conn, databaseName);
-
-                // set this back to the journal/snapshot database
-                connectionBuilder.InitialCatalog = databaseName;
-                ConnectionString = connectionBuilder.ToString();
             }
 
             // Delete local snapshot flat file database
@@ -55,32 +50,42 @@ namespace Akka.Persistence.SqlServer.Tests
 
         public static void Clean()
         {
-            var connectionBuilder = new SqlConnectionStringBuilder(ConnectionString);
-            var databaseName = connectionBuilder.InitialCatalog;
-            using (var conn = new SqlConnection(ConnectionString))
+            var oldDatabaseName = _builder.InitialCatalog;
+            var databaseName = $"akka_persistence_tests_{Guid.NewGuid()}";
+            _builder.InitialCatalog = databaseName;
+            
+            var connectionBuilder = new SqlConnectionStringBuilder(ConnectionString)
+            {
+                InitialCatalog = "master"
+            };
+
+            using (var conn = new SqlConnection(connectionBuilder.ToString()))
             {
                 conn.Open();
-                DropTables(conn, databaseName);
+
+                using (var cmd = new SqlCommand())
+                {
+                    cmd.CommandText = $@"
+IF db_id('{oldDatabaseName}') IS NOT NULL
+BEGIN
+    ALTER DATABASE [{oldDatabaseName}] SET  SINGLE_USER WITH ROLLBACK IMMEDIATE;
+    DROP DATABASE [{oldDatabaseName}];
+END
+
+IF db_id('{databaseName}') IS NULL
+BEGIN
+    CREATE DATABASE [{databaseName}];
+END
+";
+                    cmd.Connection = conn;
+                    cmd.ExecuteScalar();
+                }
             }
 
             // Delete local snapshot flat file database
             var path = "./snapshots";
             if (Directory.Exists(path))
                 Directory.Delete(path, true);
-        }
-
-        private static void DropTables(SqlConnection conn, string databaseName)
-        {
-            using (var cmd = new SqlCommand())
-            {
-                cmd.CommandText = $@"
-                    USE {databaseName};
-                    IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'EventJournal') BEGIN DROP TABLE dbo.EventJournal END;
-                    IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'Metadata') BEGIN DROP TABLE dbo.Metadata END;
-                    IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'SnapshotStore') BEGIN DROP TABLE dbo.SnapshotStore END;";
-                cmd.Connection = conn;
-                cmd.ExecuteNonQuery();
-            }
         }
     }
 }

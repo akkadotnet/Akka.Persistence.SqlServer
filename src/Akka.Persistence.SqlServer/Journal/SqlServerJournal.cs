@@ -6,8 +6,11 @@
 
 using System;
 using System.Data.Common;
+using System.Runtime.CompilerServices;
+using Akka.Annotations;
 using Akka.Configuration;
 using Akka.Event;
+using Akka.Persistence.Sql.Common;
 using Akka.Persistence.Sql.Common.Journal;
 using Akka.Persistence.SqlServer.Helpers;
 using Microsoft.Data.SqlClient;
@@ -38,24 +41,34 @@ namespace Akka.Persistence.SqlServer.Journal
                     "Configured Total of Connection timeout ({0} seconds) and Command timeout ({1} seconds) is greater than or equal to Circuit breaker timeout ({2} seconds). This may cause unintended write failures",
                     connectionTimeoutSeconds, commandTimeout.TotalSeconds,
                     circuitBreakerTimeout.TotalSeconds);
-            QueryExecutor = new SqlServerQueryExecutor(new QueryConfiguration(
-                    config.GetString("schema-name"),
-                    config.GetString("table-name"),
-                    config.GetString("metadata-table-name"),
-                    "PersistenceId",
-                    "SequenceNr",
-                    "Payload",
-                    "Manifest",
-                    "Timestamp",
-                    "IsDeleted",
-                    "Tags",
-                    "Ordering",
-                    "SerializerId",
-                    config.GetTimeSpan("connection-timeout"),
-                    config.GetString("serializer"),
-                    config.GetBoolean("sequential-access")),
+            QueryExecutor = new SqlServerQueryExecutor(
+                CreateQueryConfiguration(config, Settings),
                 Context.System.Serialization,
                 GetTimestampProvider(config.GetString("timestamp-provider")));
+        }
+
+        [InternalApi]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static QueryConfiguration CreateQueryConfiguration(Config config, JournalSettings settings)
+        {
+            return new QueryConfiguration(
+                schemaName: config.GetString("schema-name"),
+                journalEventsTableName: config.GetString("table-name"),
+                metaTableName: config.GetString("metadata-table-name"),
+                persistenceIdColumnName: "PersistenceId",
+                sequenceNrColumnName: "SequenceNr",
+                payloadColumnName: "Payload",
+                manifestColumnName: "Manifest",
+                timestampColumnName: "Timestamp",
+                isDeletedColumnName: "IsDeleted",
+                tagsColumnName: "Tags",
+                orderingColumnName: "Ordering",
+                serializerIdColumnName: "SerializerId",
+                timeout: config.GetTimeSpan("connection-timeout"),
+                defaultSerializer: config.GetString("serializer"),
+                useSequentialAccess: config.GetBoolean("sequential-access"),
+                readIsolationLevel: settings.ReadIsolationLevel,
+                writeIsolationLevel: settings.WriteIsolationLevel);
         }
 
         protected override string JournalConfigPath => SqlServerJournalSettings.ConfigPath;
