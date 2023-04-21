@@ -6,8 +6,11 @@
 
 using System;
 using System.Data.Common;
+using System.Runtime.CompilerServices;
+using Akka.Annotations;
 using Akka.Configuration;
 using Akka.Event;
+using Akka.Persistence.Sql.Common;
 using Akka.Persistence.Sql.Common.Snapshot;
 using Akka.Persistence.SqlServer.Helpers;
 using Microsoft.Data.SqlClient;
@@ -37,19 +40,29 @@ namespace Akka.Persistence.SqlServer.Snapshot
                     "Configured Total of Connection timeout ({0} seconds) and Command timeout ({1} seconds) is greater than or equal to Circuit breaker timeout ({2} seconds). This may cause unintended write failures",
                     connectionTimeoutSeconds, commandTimeout.TotalSeconds,
                     circuitBreakerTimeout.TotalSeconds);
-            QueryExecutor = new SqlServerQueryExecutor(new QueryConfiguration(
-                    config.GetString("schema-name"),
-                    config.GetString("table-name"),
-                    "PersistenceId",
-                    "SequenceNr",
-                    "Snapshot",
-                    "Manifest",
-                    "Timestamp",
-                    "SerializerId",
-                    config.GetTimeSpan("connection-timeout"),
-                    config.GetString("serializer"),
-                    config.GetBoolean("sequential-access")),
+            QueryExecutor = new SqlServerQueryExecutor(
+                CreateQueryConfiguration(config, Settings),
                 Context.System.Serialization);
+        }
+
+        [InternalApi]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static QueryConfiguration CreateQueryConfiguration(Config config, SnapshotStoreSettings settings)
+        {
+            return new QueryConfiguration(
+                schemaName: config.GetString("schema-name"),
+                snapshotTableName: config.GetString("table-name"),
+                persistenceIdColumnName: "PersistenceId",
+                sequenceNrColumnName: "SequenceNr",
+                payloadColumnName: "Snapshot",
+                manifestColumnName: "Manifest",
+                timestampColumnName: "Timestamp",
+                serializerIdColumnName: "SerializerId",
+                timeout: config.GetTimeSpan("connection-timeout"),
+                defaultSerializer: config.GetString("serializer"),
+                useSequentialAccess: config.GetBoolean("sequential-access"),
+                readIsolationLevel: settings.ReadIsolationLevel,
+                writeIsolationLevel: settings.WriteIsolationLevel);
         }
 
         public override ISnapshotQueryExecutor QueryExecutor { get; }
