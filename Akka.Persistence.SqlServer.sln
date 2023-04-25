@@ -24,6 +24,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Akka.Persistence.SqlServer"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Akka.Persistence.SqlServer.Tests", "src\Akka.Persistence.SqlServer.Tests\Akka.Persistence.SqlServer.Tests.csproj", "{DEAC600E-5B71-4124-BE4B-5BF26C21575E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Akka.Persistence.SqlServer.Performance.Tests", "src\Akka.Persistence.SqlServer.Performance.Tests\Akka.Persistence.SqlServer.Performance.Tests.csproj", "{5B792D05-2CCE-4513-BAAD-100394E9E161}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -38,6 +40,10 @@ Global
 		{DEAC600E-5B71-4124-BE4B-5BF26C21575E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DEAC600E-5B71-4124-BE4B-5BF26C21575E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DEAC600E-5B71-4124-BE4B-5BF26C21575E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5B792D05-2CCE-4513-BAAD-100394E9E161}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5B792D05-2CCE-4513-BAAD-100394E9E161}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5B792D05-2CCE-4513-BAAD-100394E9E161}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5B792D05-2CCE-4513-BAAD-100394E9E161}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

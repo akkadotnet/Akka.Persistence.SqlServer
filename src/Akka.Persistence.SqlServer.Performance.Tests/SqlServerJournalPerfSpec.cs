@@ -1,5 +1,5 @@
 // -----------------------------------------------------------------------
-// <copyright file="BatchingSqlServerJournalPerfSpec.cs" company="Akka.NET Project">
+// <copyright file="SqlServerJournalPerfSpec.cs" company="Akka.NET Project">
 //      Copyright (C) 2013 - 2023 .NET Foundation <https://github.com/akkadotnet/akka.net>
 // </copyright>
 // -----------------------------------------------------------------------
@@ -10,13 +10,13 @@ using Akka.Persistence.TestKit.Performance;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Akka.Persistence.SqlServer.Tests
+namespace Akka.Persistence.SqlServer.Performance.Tests
 {
     [Collection("SqlServerSpec")]
-    public class BatchingSqlServerJournalPerfSpec : JournalPerfSpec, IDisposable
+    public class SqlServerJournalPerfSpec : JournalPerfSpec, IDisposable
     {
-        public BatchingSqlServerJournalPerfSpec(ITestOutputHelper output, SqlServerFixture fixture)
-            : base(InitConfig(fixture), "BatchingSqlServerJournalPerfSpec", output)
+        public SqlServerJournalPerfSpec(ITestOutputHelper output, SqlServerFixture fixture)
+            : base(InitConfig(fixture), "SqlServerJournalPerfSpec", output)
         {
             EventsCount = 1000;
             ExpectDuration = TimeSpan.FromMinutes(10);
@@ -34,7 +34,7 @@ namespace Akka.Persistence.SqlServer.Tests
                     journal {{
                         plugin = ""akka.persistence.journal.sql-server""
                         sql-server {{
-                            class = ""Akka.Persistence.SqlServer.Journal.BatchingSqlServerJournal, Akka.Persistence.SqlServer""
+                            class = ""Akka.Persistence.SqlServer.Journal.SqlServerJournal, Akka.Persistence.SqlServer""
                             plugin-dispatcher = ""akka.actor.default-dispatcher""
                             table-name = EventJournal
                             schema-name = dbo
