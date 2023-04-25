@@ -95,7 +95,9 @@ Target "RunTests" (fun _ ->
     let projects = 
         match (isWindows) with 
         | true -> !! "./src/**/*.Tests.csproj"
+                  -- "./src/**/*.Performance.Tests.csproj"
         | _ -> !! "./src/**/*.Tests.csproj" // if you need to filter specs for Linux vs. Windows, do it here
+               -- "./src/**/*.Performance.Tests.csproj"
 
     let runSingleProject project =
         let arguments =
