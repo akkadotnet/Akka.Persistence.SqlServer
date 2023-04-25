@@ -50,7 +50,6 @@ END";
 
         public static void Clean()
         {
-            var oldDatabaseName = _builder.InitialCatalog;
             var databaseName = $"akka_persistence_tests_{Guid.NewGuid()}";
             _builder.InitialCatalog = databaseName;
             
@@ -66,12 +65,6 @@ END";
                 using (var cmd = new SqlCommand())
                 {
                     cmd.CommandText = $@"
-IF db_id('{oldDatabaseName}') IS NOT NULL
-BEGIN
-    ALTER DATABASE [{oldDatabaseName}] SET  SINGLE_USER WITH ROLLBACK IMMEDIATE;
-    DROP DATABASE [{oldDatabaseName}];
-END
-
 IF db_id('{databaseName}') IS NULL
 BEGIN
     CREATE DATABASE [{databaseName}];
