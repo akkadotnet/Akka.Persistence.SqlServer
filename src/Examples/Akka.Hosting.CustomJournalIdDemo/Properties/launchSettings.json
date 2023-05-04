@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "Akka.Hosting.CustomJournalIdDemo": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:21293;http://localhost:21297"
+    }
+  }
+}

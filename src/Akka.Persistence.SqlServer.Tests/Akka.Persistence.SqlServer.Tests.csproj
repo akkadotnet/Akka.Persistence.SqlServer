@@ -21,6 +21,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\Akka.Persistence.SqlServer.Hosting\Akka.Persistence.SqlServer.Hosting.csproj" />
         <ProjectReference Include="..\Akka.Persistence.SqlServer\Akka.Persistence.SqlServer.csproj" />
     </ItemGroup>
 </Project>

@@ -26,6 +26,14 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Akka.Persistence.SqlServer.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Akka.Persistence.SqlServer.Performance.Tests", "src\Akka.Persistence.SqlServer.Performance.Tests\Akka.Persistence.SqlServer.Performance.Tests.csproj", "{5B792D05-2CCE-4513-BAAD-100394E9E161}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Akka.Persistence.SqlServer.Hosting", "src\Akka.Persistence.SqlServer.Hosting\Akka.Persistence.SqlServer.Hosting.csproj", "{8E47A245-3F92-421A-90CC-D49A6162486A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{E5A4FE07-0354-472F-9DF0-458F68FDE2DE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Akka.Hosting.CustomJournalIdDemo", "src\Examples\Akka.Hosting.CustomJournalIdDemo\Akka.Hosting.CustomJournalIdDemo.csproj", "{EE293645-8486-4D81-8387-DDD5F617FCE5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Akka.Hosting.SqlSharding", "src\Examples\Akka.Hosting.SqlSharding\Akka.Hosting.SqlSharding.csproj", "{06734F4B-5995-4A08-92CA-0177C0DFD512}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -44,11 +52,27 @@ Global
 		{5B792D05-2CCE-4513-BAAD-100394E9E161}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5B792D05-2CCE-4513-BAAD-100394E9E161}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5B792D05-2CCE-4513-BAAD-100394E9E161}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8E47A245-3F92-421A-90CC-D49A6162486A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8E47A245-3F92-421A-90CC-D49A6162486A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8E47A245-3F92-421A-90CC-D49A6162486A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8E47A245-3F92-421A-90CC-D49A6162486A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EE293645-8486-4D81-8387-DDD5F617FCE5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EE293645-8486-4D81-8387-DDD5F617FCE5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EE293645-8486-4D81-8387-DDD5F617FCE5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EE293645-8486-4D81-8387-DDD5F617FCE5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{06734F4B-5995-4A08-92CA-0177C0DFD512}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{06734F4B-5995-4A08-92CA-0177C0DFD512}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{06734F4B-5995-4A08-92CA-0177C0DFD512}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{06734F4B-5995-4A08-92CA-0177C0DFD512}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F5B10DE4-8703-405E-B6ED-DDFE0D20198D}
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{EE293645-8486-4D81-8387-DDD5F617FCE5} = {E5A4FE07-0354-472F-9DF0-458F68FDE2DE}
+		{06734F4B-5995-4A08-92CA-0177C0DFD512} = {E5A4FE07-0354-472F-9DF0-458F68FDE2DE}
 	EndGlobalSection
 EndGlobal
