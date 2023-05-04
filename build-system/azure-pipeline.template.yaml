@@ -20,6 +20,10 @@ jobs:
         displayName: 'Use .NET 7'
         inputs:
           version: '7.x'
+      - task: UseDotNet@2
+        displayName: 'Use .NET 6'
+        inputs:
+          version: '6.x'
       - task: Bash@3 
         displayName: Linux / OSX Build
         inputs:
