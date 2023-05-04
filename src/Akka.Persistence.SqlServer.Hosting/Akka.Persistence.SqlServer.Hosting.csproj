@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>$(NetStandardLibVersion)</TargetFramework>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <Description>Akka.Persistence.SqlServer Microsoft.Extensions.Hosting support.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Akka.Persistence.Query.Sql" />
+    <PackageReference Include="Akka.Persistence.Hosting" />
+    <PackageReference Include="Akka.Hosting" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Akka.Persistence.SqlServer\Akka.Persistence.SqlServer.csproj" />
+  </ItemGroup>
+</Project>
