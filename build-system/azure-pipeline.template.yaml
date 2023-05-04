@@ -17,9 +17,9 @@ jobs:
         persistCredentials: true
       # Linux or macOS
       - task: UseDotNet@2
-        displayName: 'Use .NET 6'
+        displayName: 'Use .NET 7'
         inputs:
-          version: '6.x'
+          version: '7.x'
       - task: Bash@3 
         displayName: Linux / OSX Build
         inputs:
