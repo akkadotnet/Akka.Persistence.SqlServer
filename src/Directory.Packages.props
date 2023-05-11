@@ -4,7 +4,7 @@
   </PropertyGroup>
   <!-- App dependencies -->
   <ItemGroup>
-    <PackageVersion Include="Akka.Cluster.Hosting" Version="1.5.4.1" />
+    <PackageVersion Include="Akka.Cluster.Hosting" Version="1.5.6" />
     <PackageVersion Include="Akka.Persistence.Sql.Common" Version="$(AkkaVersion)" />
     <PackageVersion Include="Akka.Persistence.Query.Sql" Version="$(AkkaVersion)" />
     <PackageVersion Include="Akka.Hosting" Version="$(AkkaVersion)" />
