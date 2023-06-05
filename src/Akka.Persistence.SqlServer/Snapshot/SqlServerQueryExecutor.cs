@@ -51,29 +51,27 @@ namespace Akka.Persistence.SqlServer.Snapshot
             SET @Manifest_sized = @Manifest;
             SET @Payload_sized = @Payload;
             SET @PersistenceId_sized = @PersistenceId;
-            IF (
-                SELECT COUNT(*) 
-                FROM {configuration.FullSnapshotTableName}
-                WHERE {configuration.SequenceNrColumnName} = @SequenceNr 
-                AND {configuration.PersistenceIdColumnName} = @PersistenceId_sized) > 0 
-            UPDATE {configuration.FullSnapshotTableName} 
-            SET 
-                {configuration.PersistenceIdColumnName} = @PersistenceId_sized, 
-                {configuration.SequenceNrColumnName} = @SequenceNr, 
-                {configuration.TimestampColumnName} = @Timestamp, 
-                {configuration.ManifestColumnName} = @Manifest_sized,
-                {configuration.PayloadColumnName} = @Payload_sized,
-                {configuration.SerializerIdColumnName} = @SerializerId
-            WHERE {configuration.SequenceNrColumnName} = @SequenceNr 
-            AND {configuration.PersistenceIdColumnName} = @PersistenceId_sized ELSE 
-            INSERT INTO {configuration.FullSnapshotTableName} (
+
+            MERGE {configuration.FullSnapshotTableName} AS DEST
+            USING (SELECT @PersistenceId_sized P, @SequenceNr N, @Timestamp T, @Manifest_sized M, @Payload_sized L, @SerializerId S) AS SRC
+            ON DEST.{configuration.SequenceNrColumnName} = SRC.N
+                AND DEST.{configuration.PersistenceIdColumnName} = SRC.P
+
+            WHEN NOT MATCHED THEN INSERT (
                 {configuration.PersistenceIdColumnName}, 
                 {configuration.SequenceNrColumnName}, 
                 {configuration.TimestampColumnName}, 
                 {configuration.ManifestColumnName}, 
                 {configuration.PayloadColumnName},
-                {configuration.SerializerIdColumnName}) 
-            VALUES (@PersistenceId_sized, @SequenceNr, @Timestamp, @Manifest_sized, @Payload_sized, @SerializerId);";
+                {configuration.SerializerIdColumnName})  
+            VALUES (SRC.P, SRC.N, SRC.T, SRC.M, SRC.L, SRC.S)
+            WHEN MATCHED THEN UPDATE SET
+                DEST.{configuration.PersistenceIdColumnName} = SRC.P, 
+                DEST.{configuration.SequenceNrColumnName} = SRC.N, 
+                DEST.{configuration.TimestampColumnName} = SRC.T, 
+                DEST.{configuration.ManifestColumnName} = SRC.M,
+                DEST.{configuration.PayloadColumnName} = SRC.L,
+                DEST.{configuration.SerializerIdColumnName} = SRC.S;";
 
             SelectSnapshotSql = $@"
                 DECLARE @PersistenceId_sized NVARCHAR(255);
