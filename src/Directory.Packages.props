@@ -1,24 +1,29 @@
 <Project>
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <AkkaVersion>1.5.12</AkkaVersion>
+    <AkkaHostingVersion>1.5.8.1</AkkaHostingVersion>
   </PropertyGroup>
   <!-- App dependencies -->
   <ItemGroup>
-    <PackageVersion Include="Akka.Cluster.Hosting" Version="1.5.12.1" />
+    <PackageVersion Include="Akka.Cluster.Hosting" Version="$(AkkaHostingVersion)" />
     <PackageVersion Include="Akka.Persistence.Sql.Common" Version="$(AkkaVersion)" />
     <PackageVersion Include="Akka.Persistence.Query.Sql" Version="$(AkkaVersion)" />
-    <PackageVersion Include="Akka.Hosting" Version="$(AkkaVersion)" />
-    <PackageVersion Include="Akka.Persistence.Hosting" Version="$(AkkaVersion)" />
+    <PackageVersion Include="Akka.Hosting" Version="$(AkkaHostingVersion)" />
+    <PackageVersion Include="Akka.Persistence.Hosting" Version="$(AkkaHostingVersion)" />
     <PackageVersion Include="Microsoft.Data.SqlClient" Version="3.0.1" />
   </ItemGroup>
   <!-- Test dependencies -->
   <ItemGroup>
     <PackageVersion Include="FluentAssertions" Version="6.12.0" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.7.0" />
-    <PackageVersion Include="xunit" Version="$(XunitVersion)" />
-    <PackageVersion Include="xunit.runner.visualstudio" Version="$(XunitVersion)" />
+    <PackageVersion Include="FluentAssertions" Version="6.11.0" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.6.3" />
+    <PackageVersion Include="xunit" Version="2.5.1" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="2.5.1" />
     <PackageVersion Include="Akka.TestKit.Xunit2" Version="$(AkkaVersion)" />
     <PackageVersion Include="Akka.Persistence.Sql.TestKit" Version="$(AkkaVersion)" />
+    <PackageVersion Include="Akka.Persistence.TCK" Version="$(AkkaVersion)" />
     <PackageVersion Include="Docker.DotNet" Version="3.125.14" />
   </ItemGroup>
   <!-- SourceLink support for all Akka.NET projects -->

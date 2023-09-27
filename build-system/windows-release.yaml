@@ -22,11 +22,16 @@ variables:
   - name: githubRepositoryName
     value: akkadotnet/Akka.Persistence.SqlServer
 steps:
+- task: UseDotNet@2
+  displayName: 'Use .NET 7'
+  inputs:
+    version: '7.x'
+  
 - task: BatchScript@1
   displayName: 'FAKE Build'
   inputs:
     filename: build.cmd
-    arguments: 'nuget nugetpublishurl=https://www.nuget.org/api/v2/package nugetkey=$(nugetKey)'
+    arguments: 'nuget nugetpublishurl=https://api.nuget.org/v3/index.json nugetkey=$(nugetKey)'
 
 - task: GitHubRelease@0
   displayName: 'GitHub release (create)'

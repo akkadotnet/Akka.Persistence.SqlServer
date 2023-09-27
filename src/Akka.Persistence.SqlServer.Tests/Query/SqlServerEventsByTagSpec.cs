@@ -48,6 +48,8 @@ namespace Akka.Persistence.SqlServer.Tests.Query
                 .WithFallback(SqlReadJournal.DefaultConfiguration());
         }
 
+        protected override bool SupportsTagsInEventEnvelope => true;
+
         protected void Dispose(bool disposing)
         {
             DbUtils.Clean();

@@ -10,6 +10,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{D8BAD8E8
 		build.sh = build.sh
 		src\Directory.Build.props = src\Directory.Build.props
 		src\Directory.Packages.props = src\Directory.Packages.props
+		build.ps1 = build.ps1
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{85A25CFE-0B51-45FC-9C5E-271F9557F8D3}"
@@ -33,6 +34,14 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Akka.Hosting.CustomJournalIdDemo", "src\Examples\Akka.Hosting.CustomJournalIdDemo\Akka.Hosting.CustomJournalIdDemo.csproj", "{EE293645-8486-4D81-8387-DDD5F617FCE5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Akka.Hosting.SqlSharding", "src\Examples\Akka.Hosting.SqlSharding\Akka.Hosting.SqlSharding.csproj", "{06734F4B-5995-4A08-92CA-0177C0DFD512}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build-system", "build-system", "{7B559856-A130-4ABB-88C0-FBA72D5C209C}"
+	ProjectSection(SolutionItems) = preProject
+		build-system\azure-pipeline.template.yaml = build-system\azure-pipeline.template.yaml
+		build-system\linux-pr-validation.yaml = build-system\linux-pr-validation.yaml
+		build-system\README.md = build-system\README.md
+		build-system\windows-release.yaml = build-system\windows-release.yaml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -74,5 +83,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{EE293645-8486-4D81-8387-DDD5F617FCE5} = {E5A4FE07-0354-472F-9DF0-458F68FDE2DE}
 		{06734F4B-5995-4A08-92CA-0177C0DFD512} = {E5A4FE07-0354-472F-9DF0-458F68FDE2DE}
+		{7B559856-A130-4ABB-88C0-FBA72D5C209C} = {D8BAD8E8-F881-4B23-8CCC-E5724CF9292B}
 	EndGlobalSection
 EndGlobal

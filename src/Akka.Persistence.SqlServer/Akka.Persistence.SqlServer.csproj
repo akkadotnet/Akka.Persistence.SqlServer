@@ -6,6 +6,8 @@
         </Description>
         <TargetFramework>$(NetStandardLibVersion)</TargetFramework>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <PackageIcon>icon.png</PackageIcon>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
 
     <ItemGroup>
@@ -15,5 +17,9 @@
     <ItemGroup>
         <PackageReference Include="Akka.Persistence.Sql.Common"/>
         <PackageReference Include="Microsoft.Data.SqlClient"/>
+    </ItemGroup>
+    <ItemGroup>
+        <None Include="../../README.md" Pack="true" PackagePath="\" />
+        <None Include="../../docs/images/icon.png" Pack="true" PackagePath="\" />
     </ItemGroup>
 </Project>

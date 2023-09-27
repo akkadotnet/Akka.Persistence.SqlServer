@@ -3,6 +3,8 @@
     <TargetFramework>$(NetStandardLibVersion)</TargetFramework>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <Description>Akka.Persistence.SqlServer Microsoft.Extensions.Hosting support.</Description>
+    <PackageIcon>icon.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,5 +19,6 @@
   
   <ItemGroup>
     <None Include="README.md" Pack="true" PackagePath="\"/>
+    <None Include="../../docs/images/icon.png" Pack="true" PackagePath="\" />
   </ItemGroup>
 </Project>
