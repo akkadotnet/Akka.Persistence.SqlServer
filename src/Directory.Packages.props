@@ -24,7 +24,7 @@
     <PackageVersion Include="Akka.TestKit.Xunit2" Version="$(AkkaVersion)" />
     <PackageVersion Include="Akka.Persistence.Sql.TestKit" Version="$(AkkaVersion)" />
     <PackageVersion Include="Akka.Persistence.TCK" Version="$(AkkaVersion)" />
-    <PackageVersion Include="Docker.DotNet" Version="3.125.14" />
+    <PackageVersion Include="Docker.DotNet" Version="3.125.15" />
   </ItemGroup>
   <!-- SourceLink support for all Akka.NET projects -->
   <ItemGroup>
