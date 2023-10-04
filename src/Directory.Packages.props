@@ -11,7 +11,7 @@
     <PackageVersion Include="Akka.Persistence.Query.Sql" Version="$(AkkaVersion)" />
     <PackageVersion Include="Akka.Hosting" Version="$(AkkaHostingVersion)" />
     <PackageVersion Include="Akka.Persistence.Hosting" Version="$(AkkaHostingVersion)" />
-    <PackageVersion Include="Microsoft.Data.SqlClient" Version="3.0.1" />
+    <PackageVersion Include="Microsoft.Data.SqlClient" Version="5.1.1" />
   </ItemGroup>
   <!-- Test dependencies -->
   <ItemGroup>
