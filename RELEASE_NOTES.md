@@ -1,3 +1,9 @@
+#### 1.5.13 April 24 2023 ####
+
+* [Update Akka.NET to v1.5.13](https://github.com/akkadotnet/akka.net/releases/tag/1.5.13)
+* [Update snapshot SQL to prevent deadlock](https://github.com/akkadotnet/Akka.Persistence.SqlServer/pull/319)
+* [Update Akka.Hosting version to 1.5.13](https://github.com/akkadotnet/Akka.Hosting/releases/tag/1.5.13)
+
 #### 1.5.4 April 24 2023 ####
 
 * [Update Akka.NET to v1.5.4](https://github.com/akkadotnet/akka.net/releases/tag/1.5.4)
