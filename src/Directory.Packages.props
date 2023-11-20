@@ -20,7 +20,7 @@
     <PackageVersion Include="FluentAssertions" Version="6.12.0" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.7.2" />
     <PackageVersion Include="xunit" Version="2.5.1" />
-    <PackageVersion Include="xunit.runner.visualstudio" Version="2.5.1" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="2.5.4" />
     <PackageVersion Include="Akka.TestKit.Xunit2" Version="$(AkkaVersion)" />
     <PackageVersion Include="Akka.Persistence.Sql.TestKit" Version="$(AkkaVersion)" />
     <PackageVersion Include="Akka.Persistence.TCK" Version="$(AkkaVersion)" />
