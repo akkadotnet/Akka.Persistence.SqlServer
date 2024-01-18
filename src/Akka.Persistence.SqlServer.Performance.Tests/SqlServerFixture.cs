@@ -46,7 +46,7 @@ namespace Akka.Persistence.SqlServer.Performance.Tests
         }
 
         protected string ImageName => "mcr.microsoft.com/mssql/server";
-        protected string Tag => "2019-latest";
+        protected string Tag => "2022-latest";
 
         protected string SqlServerImageName => $"{ImageName}:{Tag}";
 
@@ -155,7 +155,8 @@ namespace Akka.Persistence.SqlServer.Performance.Tests
                 ["Server"] = $"localhost,{sqlServerHostPort}",
                 ["Database"] = "akka_persistence_tests",
                 ["User Id"] = "sa",
-                ["Password"] = "l0l!Th1sIsOpenSource"
+                ["Password"] = "l0l!Th1sIsOpenSource",
+                ["TrustServerCertificate"] = true,
             };
 
             ConnectionString = connectionString.ToString();
