@@ -2,7 +2,7 @@
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <AkkaVersion>1.5.15</AkkaVersion>
-    <AkkaHostingVersion>1.5.15</AkkaHostingVersion>
+    <AkkaHostingVersion>1.5.16</AkkaHostingVersion>
   </PropertyGroup>
   <!-- App dependencies -->
   <ItemGroup>
