@@ -1,3 +1,9 @@
+#### 1.5.28 September 11th 2024 ####
+
+* [Update Akka.NET to v1.5.28](https://github.com/akkadotnet/akka.net/releases/tag/1.5.28)
+* [Update Akka.Hosting version to 1.5.28](https://github.com/akkadotnet/Akka.Hosting/releases/tag/1.5.28)
+* [Bump Microsoft.Data.SqlClient to 5.2.1](https://github.com/akkadotnet/Akka.Persistence.SqlServer/pull/380)
+
 #### 1.5.15 January 18 2024 ####
 
 * [Update Akka.NET to v1.5.15](https://github.com/akkadotnet/akka.net/releases/tag/1.5.15)
