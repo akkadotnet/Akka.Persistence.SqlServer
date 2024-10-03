@@ -1,4 +1,15 @@
+#### 1.5.30 October 3rd 2024 ####
+
+* [Update Akka.NET to v1.5.30](https://github.com/akkadotnet/akka.net/releases/tag/1.5.30)
+* [Update Akka.Hosting version to 1.5.30](https://github.com/akkadotnet/Akka.Hosting/releases/tag/1.5.30)
+
 #### 1.5.29 October 1st 2024 ####
+
+> [!NOTE]
+>
+> **Deprecated**
+>
+> Deprecated due to Akka.NET 1.5.29 deprecation. Please use 1.5.30 instead.
 
 * [Update Akka.NET to v1.5.29](https://github.com/akkadotnet/akka.net/releases/tag/1.5.29)
 * [Update Akka.Hosting version to 1.5.29](https://github.com/akkadotnet/Akka.Hosting/releases/tag/1.5.29)
