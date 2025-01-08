@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-    <AkkaVersion>1.5.30</AkkaVersion>
+    <AkkaVersion>1.5.34</AkkaVersion>
     <AkkaHostingVersion>1.5.30</AkkaHostingVersion>
   </PropertyGroup>
   <!-- App dependencies -->
