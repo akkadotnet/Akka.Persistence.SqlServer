@@ -10,6 +10,7 @@
     <NetCoreTestVersion>net6.0</NetCoreTestVersion>
     <NetFrameworkTestVersion>net48</NetFrameworkTestVersion>
     <NetStandardLibVersion>netstandard2.0</NetStandardLibVersion>
+    <NetLibVersion>net6.0</NetLibVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <DefineConstants>$(DefineConstants);RELEASE</DefineConstants>

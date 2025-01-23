@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>$(NetStandardLibVersion)</TargetFramework>
+    <TargetFrameworks>$(NetStandardLibVersion);$(NetLibVersion)</TargetFrameworks>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <Description>Akka.Persistence.SqlServer Microsoft.Extensions.Hosting support.</Description>
     <PackageIcon>icon.png</PackageIcon>
