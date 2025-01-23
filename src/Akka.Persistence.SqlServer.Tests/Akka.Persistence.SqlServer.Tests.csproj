@@ -16,6 +16,7 @@
         <PackageReference Include="Microsoft.NET.Test.Sdk" />
         <PackageReference Include="Akka.Persistence.Sql.TestKit" />
         <PackageReference Include="Docker.DotNet" />
+        <PackageReference Include="Microsoft.Extensions.Hosting" />
         <PackageReference Include="xunit" />
         <PackageReference Include="xunit.runner.visualstudio" />
     </ItemGroup>
