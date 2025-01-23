@@ -4,7 +4,7 @@
         <AssemblyTitle>Akka.Persistence.SqlServer</AssemblyTitle>
         <Description>Akka.Persistence support for SQL Server.
         </Description>
-        <TargetFramework>$(NetStandardLibVersion)</TargetFramework>
+        <TargetFrameworks>$(NetStandardLibVersion);$(NetLibVersion)</TargetFrameworks>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <PackageIcon>icon.png</PackageIcon>
         <PackageReadmeFile>README.md</PackageReadmeFile>
