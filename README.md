@@ -1,4 +1,25 @@
-## Akka.Persistence.SqlServer
+# Deprecation Notice: Akka.Persistence.SqlServer
+
+> [!WARNING]
+>
+> All Akka.Persistence plugins based on the `Akka.Persistence.Sql.Common` package are now **deprecated**. We strongly recommend that you migrate to the new [`Akka.Persistence.Sql` or the `Akka.Persistence.Sql.Hosting`](https://github.com/akkadotnet/Akka.Persistence.Sql) package.
+
+## Migration Resources
+
+To assist with the migration, please refer to the following resources:
+
+- **Migration Guide:**  
+  Learn the necessary steps to upgrade by following the [Migration Guide](https://github.com/akkadotnet/Akka.Persistence.Sql/blob/dev/docs/articles/migration.md).
+
+- **Migration Walkthrough:**  
+  For a step-by-step walkthrough, check out our [Migration Walkthrough](https://github.com/akkadotnet/Akka.Persistence.Sql/blob/dev/docs/articles/migration-walkthrough.md).
+
+- **Migration Guide Video:**  
+  Watch the [Migration Guide Video](https://www.youtube.com/watch?v=gSmqUrVHPq8) on YouTube for a detailed explanation of the migration process.
+
+---
+
+# Akka.Persistence.SqlServer
 
 Akka Persistence journal and snapshot store backed by SQL Server database.
 
